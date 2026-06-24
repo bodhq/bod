@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnp
+.pnp.*
+
+# Build output and caches
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Coverage
+coverage/
+.coverage
+htmlcov/
+
+# Backups
+backups/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+
+# OS and editor
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+
+# Generovaný API klient NENÍ verzován. Vždy když stáhnete kód, pusťte `pnpm build`
+# nebo `pnpm gen:api`, který ho automaticky vygeneruje z backendu (resp. z openapi.json).
+packages/api-client/src

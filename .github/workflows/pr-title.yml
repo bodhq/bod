@@ -1,0 +1,27 @@
+name: "PR Title Check"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  main:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            Tento projekt vynucuje Conventional Commits pravidla pro jména Pull Requestů.
+            Zároveň nesmí popisek (subject) začínat velkým písmenem. 
+            Například: 'feat: add timetable' místo 'feat: Add timetable'.

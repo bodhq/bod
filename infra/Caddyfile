@@ -1,0 +1,17 @@
+# Caddyfile pro automatické HTTPS a Reverse Proxy
+# Lokálně běží na localhost, v produkci použije reálnou doménu a vygeneruje Let's Encrypt certifikát.
+
+{$DOMAIN:localhost} {
+    # Routování veškerého API provozu na backend
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # Routování všeho ostatního na Next.js frontend
+    handle {
+        reverse_proxy web:3000
+    }
+
+    # Komprese dat pro rychlejší načítání
+    encode zstd gzip
+}
