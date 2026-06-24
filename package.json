@@ -1,0 +1,28 @@
+{
+  "name": "bod",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "pnpm gen:api && turbo run build",
+    "lint": "turbo run lint",
+    "format": "biome format --write .",
+    "typecheck": "turbo run typecheck",
+    "check": "pnpm lint && pnpm typecheck && pnpm build",
+    "db:dev": "docker compose -f infra/docker-compose.dev.yml up -d",
+    "db:seed": "cd apps/api && pnpm db:seed",
+    "api:dev": "pnpm --filter @bod/api dev",
+    "api:openapi": "pnpm --filter @bod/api openapi",
+    "gen:api": "pnpm api:openapi && rm -rf packages/api-client/src && openapi-ts -i ./docs/openapi.json -o packages/api-client/src",
+    "web:dev": "pnpm --filter @bod/web dev"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@biomejs/biome": "^2.3.8",
+    "turbo": "^2.6.3"
+  }
+}

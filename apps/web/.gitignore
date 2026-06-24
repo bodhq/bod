@@ -1,0 +1,9 @@
+# Lokální next.js build artefakty — ignorovány v root .gitignore
+# Tento soubor je redundantní, ale Next.js ho generuje a udržuje jako konvenci.
+/.next/
+/out/
+/build
+node_modules
+*.tsbuildinfo
+next-env.d.ts
+.vercel

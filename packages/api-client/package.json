@@ -1,0 +1,21 @@
+{
+  "name": "@bod/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@bod/config-typescript": "workspace:*",
+    "typescript": "^5.3.3"
+  }
+}
