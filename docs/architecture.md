@@ -1,85 +1,90 @@
-# Architektura a API Kontrakt
+# 🏗️ Architektura a API Kontrakt
 
-Tento dokument poskytuje technickou specifikaci architektury systému `bod`, definici jeho doménových modulů a mechanismy komunikačního rozhraní mezi klientskou a serverovou vrstvou.
+Tento dokument poskytuje kompletní technickou specifikaci architektury systému `bod`, definici jeho doménových modulů a mechanismy komunikačního rozhraní mezi klientskou a serverovou vrstvou.
+
+> [!NOTE]
+> Veškerá architektura je navržena pro maximální testovatelnost a dlouhodobou udržitelnost kódu, přičemž těží ze silné typové bezpečnosti (End-to-End Type Safety).
+
+## 📖 Obsah
+- [Technologický Stack](#1-technologický-stack)
+- [Strukturální návrh (Jádro vs Moduly)](#2-strukturální-návrh-jádro-vs-moduly)
+- [Tvorba Modulů (Backend a Frontend)](#3-tvorba-modulů)
+- [Komunikační kontrakt (OpenAPI)](#4-komunikační-kontrakt-single-source-of-truth)
+- [Inicializace databáze a Lifecycle](#5-inicializace-databáze-a-lifecycle)
+
+---
 
 ## 1. Technologický stack
 
 Systém implementuje asymetrickou architekturu distribuovanou v prostředí monorepa pomocí nástroje **Turborepo**.
 
-**Frontend (`apps/web`)**
-- Next.js 16 (App Router) a React 19 pro vykreslování uživatelského rozhraní.
-- TypeScript pro statickou typovou analýzu a bezpečnost.
-- Tailwind CSS v4 pro styling komponent bez nutnosti dedikovaných CSS modulů.
+### Frontend (`apps/web`)
+- **Next.js 16** (App Router) a **React 19** pro vykreslování uživatelského rozhraní.
+- **TypeScript** pro statickou typovou analýzu a bezpečnost.
+- **Tailwind CSS v4** pro moderní utility-first styling.
 
-**Backend (`apps/api`)**
-- FastAPI a Python 3.12 pro vysokovýkonné asynchronní API služby.
-- SQLModel pro unifikovanou definici objektově-relačního mapování (ORM) a validačních schémat.
-- Balíčkovací manažer `uv` pro rychlou a izolovanou správu běhového prostředí.
+### Backend (`apps/api`)
+- **FastAPI** a **Python 3.12** pro vysokovýkonné asynchronní API služby.
+- **SQLModel** pro unifikovanou definici objektově-relačního mapování (ORM) a validačních schémat.
+- **PostgreSQL 16** jako primární databázový systém.
+- **Redis** jako vrstva pro caching a výkonnou správu relací (Sliding Sessions).
 
-**Infrastruktura a Data**
-- PostgreSQL 16 kontejnerizovaný prostřednictvím Dockeru jako primární databázový systém.
-- Biome a Ruff pro striktní statickou analýzu zdrojových kódů.
-- Playwright pro vykonávání komplexních End-to-End testů.
+### Infrastruktura a Kvalita
+- Nástroje **uv** a **pnpm** pro správu prostředí a závislostí.
+- **Biome** a **Ruff** pro bleskovou statickou analýzu a formátování kódu.
+- **Playwright**, **Vitest** a **Pytest** pro pokročilé testování.
 
-## 2. Strukturální návrh (Doménové moduly)
+---
 
-Projekt používá architektonický vzor **Vertical Slicing**. Kód není rozdělen plošně podle typu (všechny komponenty na hromadu, všechny API cesty na hromadu), ale je rozdělen "vertikálně" podle byznys logiky (např. modul pro rozvrh, modul pro uživatele). 
+## 2. Strukturální návrh (Jádro vs Moduly)
 
-Backend i Frontend tuto architekturu symetricky zrcadlí:
+Projekt používá architektonický vzor **Vertical Slicing** kombinovaný s přísným oddělením **Jádra (Core)** a **Modulů**. 
 
-> 👉 **Tvorba nového API (Backend):** [Návod a Boilerplate zde](api-boilerplate.md)
-> 👉 **Tvorba nového UI (Frontend):** [Návod a Boilerplate zde](web-boilerplate.md)
+> [!IMPORTANT]
+> **Jádro** poskytuje jednotný datový model a společnou infrastrukturu (uživatele, autentizaci, připojení k DB). **Moduly** (např. rozvrhy, známky) rozšiřují funkcionalitu nezávisle na sobě nad tímto sdíleným jádrem.
 
-### Byznys Moduly (`server/modules/`)
-Tady se odehrává veškerá funkcionalita. Projekt je dělen vertikálně (Domain-Driven Design). Každá logická oblast (např. `timetable`, `users`) má vlastní složku a dodržuje **Striktní 5-vrstvou Enterprise Architekturu**:
+---
 
-1. **`models.py`** – Databázové tabulky (`SQLModel`). Žádná HTTP struktura.
-2. **`schemas.py`** – DTOs (Data Transfer Objects, `Pydantic`). Určují přesný tvar JSONu pro frontend. Tím zabraňují úniku databázových sloupců ven.
-3. **`repository.py`** – Data Access Layer. Jediné místo v projektu s povoleným přístupem do databáze (SQL dotazy).
-4. **`services.py`** – Byznys logika ("dirigent"). Zpracovává výpočty, volá `repository` a nesahá na HTTP kontext. 
-5. **`router.py`** – HTTP Endpoints. Zcela hloupá HTTP obálka, která pouze zavolá `services` a zabalí výstup do `schemas`.
+## 3. Tvorba Modulů
 
-Tato izolace zajišťuje extrémní testovatelnost a naprostou bezpečnost. 
-> 👉 **Potřebujete vytvořit nový modul?** Použijte přesný návod a ukázkový kód v dokumentu [Tvorba nového API Modulu (Boilerplate)](api-boilerplate.md).
+Pro zajištění konzistence musí každý nový modul na backendu i frontendu dodržovat přesně specifikovanou vrstvenou architekturu.
 
-### Infrastruktura (`server/core/` a `server/api/`)
-Zatímco doménové moduly řeší specifické problémy (rozvrh, známky), infrastrukturní vrstva se stará o celkový chod aplikace:
-- `core/`: Nastavení (Environment proměnné), připojení k DB, bezpečnost a globální výjimky.
-- `api/`: Root router (přijímá všechny moduly a dává jim prefix `/api/v1`) a globální middlewares.
+### Backend Modul (`apps/api/server/modules/`)
+Každá logická oblast dodržuje striktní 5-vrstvou Enterprise Architekturu. Pro zajištění dlouhodobé udržitelnosti a prevence architektonické degradace je přeskakování vrstev striktně zakázáno.
 
-## 3. Komunikační kontrakt (Single Source of Truth)
+1. **`models.py`** – Databázové tabulky (`SQLModel`). Nesmí obsahovat HTTP struktury.
+2. **`schemas.py`** – DTOs (Data Transfer Objects). Určují přesný tvar JSONu a chrání databázové struktury před únikem ven.
+3. **`repository.py`** – Data Access vrstva. Jediné místo v modulu, kde je povoleno sahat do databáze (SQL dotazy a transakce).
+4. **`services.py`** – Byznys logika. Dirigent, který provádí výpočty a volá repozitář. Neinteraguje s HTTP požadavky.
+5. **`router.py`** – HTTP Endpointy. Tenká obálka, která přijme požadavek, ověří oprávnění a předá úkol service vrstvě.
 
-Klientská aplikace komunikuje se serverovou vrstvou výhradně prostřednictvím autogenerovaného klienta. Tím je zajištěno striktní typování na obou stranách síťové komunikace (Single Source of Truth).
+### Frontend Modul (`apps/web/src/modules/`)
+Frontend zrcadlí backend pomocí 4-vrstvého modelu:
+
+1. **`api.ts`** – Komunikační vrstva. Funkce volající automaticky generovaného API klienta.
+2. **`hooks/`** – Logika a Stav (např. `useTimetable.ts`). Řeší načítání a cachování dat.
+3. **`components/`** – Prezentační UI. Komponenty, které nepřemýšlí – pouze renderují data předaná z hooks.
+4. **`app/` (Stránky)** – Kompoziční vrstva v Next.js. Skládá komponenty dohromady a poskytuje routing.
+
+---
+
+## 4. Komunikační kontrakt (Single Source of Truth)
+
+Klientská aplikace komunikuje se serverovou vrstvou výhradně prostřednictvím autogenerovaného TypeScript klienta. 
+
+> [!TIP]
+> Neexistují žádná ručně psaná `fetch()` volání pro interní API. Vše se generuje ze schématu.
 
 **Proces aktualizace kontraktu:**
-1. Po modifikaci API endpoints nebo databázových modelů na backendu je vyžadována spuštění synchronizační úlohy:
-   ```bash
-   pnpm gen:api
-   ```
-2. Skript extrahuje OpenAPI schéma a transpiluje jej do TypeScript balíčku `@bod/api-client`.
-3. Datové interakce na frontendu následně probíhají striktně voláním staticky typovaných funkcí. Příklad v implementaci:
+1. Změna struktury endpointu nebo DTO na backendu.
+2. Backend vygeneruje novou OpenAPI specifikaci do `docs/openapi.json`.
+3. Vývojář frontendu spustí `pnpm gen:api`, což transpiluje schéma do NPM balíčku `@bod/api-client`.
+4. Frontend striktně využívá nové, plně otypované metody z tohoto balíčku.
 
-```tsx
-import { getTimetableApiV1TimetableClassIdGet } from "@bod/api-client";
+---
 
-const { data } = await getTimetableApiV1TimetableClassIdGet({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-    path: { class_id: 1 },
-});
-```
+## 5. Inicializace databáze a Lifecycle
 
-*Tento přístup systematicky eliminuje vznik runtime výjimek plynoucích z nesouladu mezi očekávaným a dodaným datovým strukturám.*
+V prostředí lokálního vývoje nevyužívá systém migrační skripty. Místo toho se spoléháme na proces **Auto-Init**.
 
-## 4. Inicializace databáze (Auto-Init)
-
-V prostředí lokálního vývoje nevyužívá systém explicitní migrační skripty (jako je např. Alembic). K udržování databázové synchronizace s kódem je využíván Auto-Init proces v rámci životního cyklu aplikačního serveru.
-
-Při spuštění služby `pnpm dev` dojde k instanciaci backendového frameworku. Systém dynamicky porovná definované SQLModel třídy s existující strukturou databáze v PostgreSQL a případné neexistující relace automaticky vytvoří. Tím odpadá administrativa spojená se správou migrací.
-
-## 5. Zajištění kvality (Testování a Seedování)
-
-Aplikace vyžaduje dodržování 80% pokrytí kódu testy na backendu (`cov-fail-under=80`). Architektura zaručuje konzistenci a testovatelnost:
-
-1. **Seedování Dat:** V `apps/api/server/scripts/seed.py` je definován skript pro naplnění lokální/testovací databáze deterministickými (předvídatelnými) daty. Seed data slouží jako sdílený základ pro všechny vývojáře a izolované End-to-End testy.
-2. **Backend (Pytest):** Testy se nachází centrálně ve složce `tests/api/`. Jsou koncipovány pomocí **AAA vzoru (Arrange-Act-Assert)** s využitím `In-Memory SQLite` databáze pro rychlé izolované testování business logiky.
-3. **Frontend (Vitest):** Místo křehkých testů UI komponent testujeme výhradně frontendovou byznys logiku (React Hooks a API wrappery). Testovací soubory sídlí centrálně ve složce `tests/web/`. Pomocí izolačního mockování zajišťujeme spolehlivost datového toku, aniž bychom testovali Tailwind třídy.
+Při spuštění `pnpm dev` backend analyzuje definované `SQLModel` třídy a porovná je s tabulkami v databázi PostgreSQL. Chybějící struktury (tabulky, relace) jsou automaticky vytvořeny za chodu, což dramaticky zrychluje vývojovou iteraci. Pro produkční prostředí a údržbu je nicméně uvažováno o nasazení plnohodnotného migračního nástroje (Alembic).

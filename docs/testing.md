@@ -1,16 +1,27 @@
-# Testovací příručka (Testing Guidelines)
+# 🧪 Testovací příručka (Testing Guidelines)
 
-Tento dokument slouží jako jednoduchý a jasný průvodce testováním v našem projektu. Pokud se cítíš přehlcený (overwhelmed), nezoufej – testování tu má jasná a striktní pravidla, aby se z toho nestal chaos.
+Tento dokument definuje testovací strategie, nástroje a standardy využívané v repozitáři `bod`. Hlavním cílem je zajištění spolehlivosti klíčové byznys logiky a prevence regresních chyb prostřednictvím standardizovaných postupů.
 
-## Základní příkazy
+> [!TIP]
+> Testovací architektura využívá striktně vymezené hranice a standardizované šablony. Pro implementaci nových testů se doporučuje replikovat strukturu existujících testovacích sad.
 
-Všechny testy v projektu můžeš spustit jedním příkazem z kořenové složky:
+## 📖 Obsah
+- [Základní příkazy](#-základní-příkazy)
+- [Backend: FastAPI (Pytest)](#1-backend-fastapi-pytest)
+- [Frontend: Next.js (Vitest)](#2-frontend-react-a-nextjs-vitest)
+- [End-to-End: Playwright](#3-end-to-end-playwright)
+
+---
+
+## ⚡ Základní příkazy
+
+Všechny testy napříč monorepem jsou symetricky zmapovány do hlavního skriptu v kořenové složce.
 
 ```bash
-# Spustí všechny testy (Frontend, Backend i E2E)
+# Spuštění kompletní sady testů (Frontend, Backend, E2E)
 pnpm test
 
-# Spustí testy spolu s buildem a lintingem (tzv. CI kontrola)
+# Komplexní QA (Testy + Linting + Build) - simulace CI
 pnpm check
 ```
 
@@ -18,40 +29,45 @@ pnpm check
 
 ## 1. Backend: FastAPI (Pytest)
 
-Na backendu testujeme **byznys logiku** a **HTTP API**. Cílem je dosáhnout 80% pokrytí kódu (`cov-fail-under=80`).
+Na backendu je testování zaměřeno na ověřování výstupů Byznys Logiky (Services) a HTTP Kontraktů (Routers). Cílové pokrytí (Code Coverage) je stanoveno na 80 % (`cov-fail-under=80`).
 
-- **Umístění:** `tests/api/`
-- **Spuštění izolovaně:** `cd apps/api && uv run pytest`
-- **Pravidla:**
-  - Vždy používáme in-memory SQLite databázi (viz `tests/api/test_timetable.py`), takže si neničíme lokální PostgreSQL data.
-  - Testy se píší pomocí **AAA vzoru (Arrange - Act - Assert)**:
-    1. *Arrange*: Připrav (namockuj) data, vlož do DB.
-    2. *Act*: Zavolej náš endpoint nebo service funkci.
-    3. *Assert*: Zkontroluj, zda HTTP status je 200/404 a zda výsledek sedí.
+- **Umístění testů:** `apps/api/tests/`
+- **Spuštění modulu:** `cd apps/api && uv run pytest`
 
-**💡 Ukázkový příklad:** Podívej se do `tests/api/test_timetable.py`. Najdeš tam dokonalý "Prod Grade" příklad testu pro úspěšné získání rozvrhu i pro selhání (404).
+### Metodika testování
+Používáme standardní vzor **AAA (Arrange - Act - Assert)** nad dočasnou In-Memory SQLite databází:
+
+1. **Arrange (Příprava):** Seedování potřebných mockovaných záznamů do DB.
+2. **Act (Zavolání):** Vykonání logiky skrz API router nebo zavolání Service metody.
+3. **Assert (Ověření):** Validace, že výstup odpovídá očekávání (status kód, JSON data).
+
+> [!IMPORTANT]
+> Nikdy nespouštějte testy proti produkční nebo vývojové PostgreSQL databázi. Pytest fixtures automaticky izolují testy do bezpečné paměťové SQLite. Příklad správného nastavení testu naleznete v `tests/api/test_timetable.py`.
 
 ---
 
 ## 2. Frontend: React a Next.js (Vitest)
 
-Zde **netestujeme** vizuální komponenty (např. jestli se vyrenderovalo tlačítko správnou barvou). Takové testy jsou křehké a při každé změně designu se rozbijí. 
-Testujeme pouze **Byznys Logiku Frontendu** – tedy naše **React Hooky** a API integrace.
+V prostředí frontendu **netestujeme vizuální vrstvu** (prezentační React komponenty a Tailwind třídy). Testování UI je často nestabilní a narušuje rychlost vývoje. Zaměřujeme se výhradně na datovou vrstvu frontendu.
 
-- **Umístění:** Všechny frontend testy jsou izolované v rootu ve složce `tests/web/`
-- **Spuštění izolovaně:** `pnpm --filter @bod/web test`
-- **Pravidla:**
-  - Testujeme Hooky (`useTimetable.ts`), které obalují volání našeho autogenerovaného API klienta.
-  - Pro testování hooků používáme funkci `renderHook` z `@testing-library/react`.
-  - Vždy mockujeme samotného API klienta pomocí `vi.spyOn(api, "jméno_funkce")`.
+- **Umístění testů:** `apps/web/tests/web/`
+- **Spuštění modulu:** `pnpm --filter @bod/web test`
 
-**💡 Ukázkový příklad:** Podívej se do `tests/web/timetable/useTimetable.test.tsx`. Krásně ukazuje, jak ověřit načítání, úspěšná data i chybové stavy bez nutnosti testovat DOM.
+### Metodika testování (Hooks a API)
+1. Cílem je testování výlučně **Custom Hooks** (např. `useTimetable.ts`), které zprostředkovávají datový most.
+2. Používáme knihovnu `@testing-library/react` (zejména funkci `renderHook`).
+3. Veškerá komunikace na backend se izolačně mockuje přímo na úrovni autogenerovaného API klienta přes `vi.spyOn()`. Tím testujeme, jak hook správně mění stav při načítání a chybách.
+
+> [!NOTE]
+> Pro ukázkovou architekturu testování React Hooks si prohlédněte soubor `tests/web/timetable/useTimetable.test.tsx`.
 
 ---
 
 ## 3. End-to-End (Playwright)
 
-Pro zajištění toho, že systém funguje jako celek (frontend si správně povídá s backendem a databází), máme E2E testy.
+Zatímco Unit testy (Pytest, Vitest) ověřují izolované jednotky kódu, E2E testování slouží k prověření zdraví celého distribuovaného systému (Frontend ↔ Backend ↔ Databáze).
 
-- **Umístění:** `tests/e2e/` (nebo v balíčku `apps/e2e`)
-- **Pravidla:** Tyto testy spouští opravdový prohlížeč a "klikají" jako uživatel. Slouží k otestování nejkritičtějších uživatelských flow (např. "přihlášení uživatele").
+- **Umístění testů:** `tests/e2e/`
+- **Spuštění modulu:** K dispozici globální skript, vyžaduje běžící aplikaci a nasazená seed data.
+
+Tyto testy využívají engine Playwright k inicializaci prostředí reálného prohlížeče, který automatizovaně simuluje interakce uživatele s aplikací. Nasazují se výhradně pro kritické cesty (uživatelská flow, např. úspěšné přihlášení nebo zobrazení rozvrhu). End-to-End testy pokrývají fundamentální chování systému a garantují jeho základní funkčnost.

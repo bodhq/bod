@@ -1,6 +1,10 @@
 <div align="center">
-  <h1>bod</h1>
-  <p><strong>Modulární informační systém pro výukové instituce</strong></p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./apps/web/public/logo-white.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./apps/web/public/logo-black.svg">
+    <img alt="bod logo" src="./apps/web/public/logo-white.svg" width="200">
+  </picture>
+  <p><strong>Modulární informační systém pro moderní výukové instituce</strong></p>
   
   [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](#)
   [![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](#)
@@ -11,53 +15,92 @@
 
 ---
 
-**bod** je moderní informační systém postavený na asymetrické architektuře klient-server. Projekt je strukturován jako monorepo a klade důraz na striktní typovou bezpečnost (End-to-End Type Safety), modularitu a automatizaci vývojových procesů.
+> [!NOTE]
+> **bod** vzniká jako návrh moderního a modulárního školního informačního systému, který má sloužit jako plnohodnotná alternativa k existujícím řešením pro správu školních agend. Projekt je výsledkem společné maturitní práce dvou studentů.
 
-## Klíčová dokumentace
-- 🏗️ [**Architektura a API Kontrakt** (docs/architecture.md)](docs/architecture.md) – Specifikace technologického stacku, struktury modulů a autogenerování API klienta.
-- 🧪 [**Testování (Testing Guidelines)** (docs/testing.md)](docs/testing.md) – Přehledný návod, jak, kde a co testovat na frontendu a backendu.
-- 🤝 [**Pravidla a Workflow** (CONTRIBUTING.md)](CONTRIBUTING.md) – Závazná pravidla pro verzování, strukturu PR, GitHub Actions a schvalovací procesy.
+## 📖 Obsah
+- [Filozofie a Architektura](#-filozofie-a-architektura)
+- [Rozdělení odpovědností](#-rozdělení-odpovědností-a-technologie)
+- [Klíčová dokumentace](#-klíčová-dokumentace)
+- [Začínáme (Getting Started)](#-začínáme-getting-started)
+- [Životní cyklus a Deployment](#-životní-cyklus-a-deployment)
 
 ---
 
-## Vývojové prostředí (Local Environment)
+## 🏛 Filozofie a Architektura
 
-Tato sekce obsahuje standardizovaný postup pro inicializaci vývojového prostředí.
+Základní filozofií projektu je **striktní oddělení jádra systému od jednotlivých aplikačních modulů**:
 
-### 1. Systémové požadavky
-- **Node.js** (>= 20.19.0) a **pnpm** (>= 9.0.0) pro správu frontendových a sdílených balíčků.
-- **Python** (>= 3.12) a **uv** (>= 0.11.0) pro izolované běhové prostředí backendu.
-- **Docker Desktop** pro lokální instanci PostgreSQL.
+- **Jádro (Core):** Poskytuje jednotný datový model, zabezpečení (autentizaci) a sdílenou infrastrukturu.
+- **Moduly (Feature Slices):** Rozšiřují funkcionalitu systému zcela nezávisle na sobě (např. rozvrh, klasifikace, zprávy), čímž minimalizují riziko narušení existujících částí aplikace při přidávání nových funkcí.
 
-### 2. Inicializace projektu
-Následující příkazy provedou instalaci NPM závislostí, vytvoření virtuálního prostředí pro Python a přípravu lokální konfigurace.
+Cílem není pouze implementace funkční aplikace, ale především návrh vysoce škálovatelného systému, který reflektuje moderní přístupy k softwarové architektuře (*Domain-Driven Design*, *Vertical Slicing*, *End-to-End Type Safety*).
+
+---
+
+## 🛠 Rozdělení odpovědností a Technologie
+
+Projekt je postaven jako asymetrická fullstack aplikace (oddělený klient a server) strukturovaná v prostředí monorepa pomocí nástroje Turborepo.
+
+| Vrstva | Vývojář | Technologie |
+| ------ | -------- | ----------- |
+| **Backend & DB** | Filip Nagy | FastAPI, Python 3.12, PostgreSQL, Redis, SQLModel |
+| **Frontend & UX** | Eliáš Jan Procházka | Next.js 16, React 19, Tailwind CSS v4 |
+
+> [!TIP]
+> Analytika, návrh datové struktury a architektury vzniká společným úsilím celého týmu.
+
+---
+
+## 📚 Klíčová dokumentace
+
+Díky přísným konvencím a silné architektuře udržujeme dokumentaci minimalistickou, ale vysoce deskriptivní. Vše najdete koncentrované na třech místech:
+
+- 🏗️ [**Architektura a API Kontrakt** (docs/architecture.md)](docs/architecture.md) – Hlavní technická specifikace vrstvené architektury a autogenerování API.
+- 🧪 [**Testování (Testing Guidelines)** (docs/testing.md)](docs/testing.md) – Metodika pro unit a E2E testování (Pytest, Vitest, Playwright).
+- 🤝 [**Pravidla a Workflow** (CONTRIBUTING.md)](CONTRIBUTING.md) – GitHub procesy a standardy pro psaní PR.
+
+---
+
+## 🚀 Začínáme (Getting Started)
+
+Aplikace vyžaduje lokálně nainstalované `Node.js` (>=20), `pnpm`, `Python` (>=3.12), `uv` a `Docker` (pro lokální databázi).
+
+> [!IMPORTANT]
+> Pro bezproblémový běh backendu využíváme nástroj `uv` pro bleskovou a izolovanou správu Python prostředí.
 
 ```bash
+# 1. Instalace Node závislostí a inicializace Python prostředí
 pnpm install
 uv sync --dev
+
+# 2. Příprava konfigurace
 cp .env.example .env
-```
 
-### 3. Spuštění aplikací
-Infrastruktura se spouští ve dvou oddělených procesech.
-
-**Spuštění databáze (Docker):**
-Tento příkaz inicializuje kontejner s PostgreSQL na pozadí.
-```bash
+# 3. Spuštění infrastruktury (PostgreSQL + Redis v Dockeru)
 pnpm db:dev
-```
 
-**Spuštění vývojových serverů:**
-Tento příkaz prostřednictvím nástroje Turborepo paralelně spustí frontend (Next.js na `localhost:3000`) a backend (FastAPI na `localhost:8000`).
-```bash
+# 4. Spuštění aplikačních serverů (Frontend: 3000, Backend: 8000)
 pnpm dev
 ```
-*Poznámka: Databázové tabulky jsou v rámci lokálního vývoje inicializovány automaticky při startu backendu (Auto-Init).*
 
-### 4. Lokální validace kódu (Quality Assurance)
-Před začleněním kódu do repozitáře (vytvoření Pull Requestu) je vyžadována lokální kontrola konzistence kódu.
+*Databázové tabulky se během lokálního vývoje inicializují automaticky při startu backendového serveru (Auto-Init).*
+
+---
+
+## 🔄 Životní cyklus a Deployment
+
+### Lokální Validace (Quality Assurance)
+Před každým vytvořením Pull Requestu se provádí komplexní lokální kontrola celého monorepa, která simuluje CI server:
 
 ```bash
 pnpm check
 ```
-Příkaz provádí linting, statickou typovou analýzu a testovací kompilaci, čímž simuluje validaci prováděnou na CI serveru.
+Tento příkaz paralelně ověřuje formátování (Biome, Ruff), statické typy (TSC, Mypy) a spouští všechny testy.
+
+### Nasazení (Deployment Lifecycle)
+Produkční nasazení respektuje kontejnerovou architekturu a bezestavový (stateless) přístup:
+
+1. **CI/CD Pipeline:** Při sloučení kódu do hlavní větve `main` se spouští GitHub Actions pro konečnou verifikaci.
+2. **Kontejnerizace:** Backend i Frontend jsou odděleně zabaleny do vysoce optimalizovaných Docker obrazů (images).
+3. **Infrastruktura:** Produkční prostředí vyžaduje spravovanou instanci PostgreSQL pro trvalá data a Redis pro bezpečné ukládání relací. Samotné běhové servery aplikací jsou plně horizontálně škálovatelné.
