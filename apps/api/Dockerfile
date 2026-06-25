@@ -13,5 +13,8 @@ COPY apps/api/pyproject.toml apps/api/README.md ./
 RUN uv sync --frozen --no-dev --package api --no-install-project
 COPY apps/api ./
 
+RUN useradd -m -r appuser && chown -R appuser /workspace
+USER appuser
+
 EXPOSE 8000
 CMD ["uv", "run", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]

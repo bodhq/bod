@@ -24,12 +24,23 @@ jobs:
           pnpm api:openapi
           if ! git diff --exit-code docs/openapi.json; then
             echo "::error::OpenAPI schema docs/openapi.json je neaktuální!"
-            echo "::error::Změnil/a jsi backend kód, ale nevygeneroval/a nový schema. Spusť lokálně 'pnpm api:openapi' a commitni docs/openapi.json."
             exit 1
           fi
 
       - name: Generate API Client
         run: pnpm gen:api
 
-      - name: Quality Assurance (Lint, Types, Build)
-        run: pnpm exec turbo run lint typecheck build
+      - name: Install Playwright Browsers
+        run: pnpm --filter @bod/e2e exec playwright install --with-deps
+
+      - name: Lint Codebase
+        run: pnpm exec turbo run lint
+
+      - name: Typecheck
+        run: pnpm exec turbo run typecheck
+
+      - name: Run Unit & E2E Tests
+        run: pnpm exec turbo run test
+
+      - name: Build Applications
+        run: pnpm exec turbo run build

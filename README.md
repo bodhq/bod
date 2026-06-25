@@ -7,84 +7,57 @@
   [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](#)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white)](#)
   [![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=flat-square&logo=turborepo&logoColor=white)](#)
-  [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](#)
-  [![Caddy](https://img.shields.io/badge/Caddy-00ADD8?style=flat-square&logo=caddy&logoColor=white)](#)
 </div>
 
 ---
 
-**bod** je vysoce modulární, výkonný informační systém postavený na asymetrické architektuře klient-server. Využívá striktní separaci domén (Domain-Driven Design), pnpm workspaces a plně automatizované generování API kontraktů pro dosažení maximální typové bezpečnosti (End-to-End Type Safety).
+**bod** je moderní informační systém postavený na asymetrické architektuře klient-server. Projekt je strukturován jako monorepo a klade důraz na striktní typovou bezpečnost (End-to-End Type Safety), modularitu a automatizaci vývojových procesů.
 
-## Klíčové vlastnosti
+## Klíčová dokumentace
+- 🏗️ [**Architektura a API Kontrakt** (docs/architecture.md)](docs/architecture.md) – Specifikace technologického stacku, struktury modulů a autogenerování API klienta.
+- 🧪 [**Testování (Testing Guidelines)** (docs/testing.md)](docs/testing.md) – Přehledný návod, jak, kde a co testovat na frontendu a backendu.
+- 🤝 [**Pravidla a Workflow** (CONTRIBUTING.md)](CONTRIBUTING.md) – Závazná pravidla pro verzování, strukturu PR, GitHub Actions a schvalovací procesy.
 
-- **Symmetrical Modular Design**: Obě vrstvy (Next.js i FastAPI) sdílejí identickou adresářovou strukturu doménových modulů, což eliminuje vznik monolitických závislostí.
-- **Single Source of Truth (SSOT)**: Datové transportní objekty (DTO) jsou na frontendu exkluzivně odvozeny z `OpenAPI` specifikace backendu přes automatizovaný transpilátor.
-- **Auto-Init Lifecycle**: Eliminace asynchronních databázových migrací pro lokální vývoj – inicializace tabulek probíhá programaticky při vzniku instance aplikace.
-- **Zero-Config Monorepo**: Turborepo orchestrace s odděleným `uv` prostředím pro Python a `pnpm` workspace pro Node.js komponenty.
+---
 
-## Technická dokumentace (Knowledge Base)
+## Vývojové prostředí (Local Environment)
 
-Oficiální architektonická a procesní dokumentace je k dispozici v adresáři `/docs`:
+Tato sekce obsahuje standardizovaný postup pro inicializaci vývojového prostředí.
 
-- [Přehled Systému](docs/overview.md) — Identifikace technologického stacku a izolace.
-- [Architektura a Moduly](docs/architecture.md) — Zásady strukturálního návrhu, datový tok, konvence modulů a inicializace databáze (obsahuje Mermaid diagramy).
-- [Vývojové Prostředí](docs/development.md) — Instalace závislostí, definice instancí v Docker Compose a exekuce lokálního běhu.
-- [API Kontrakt a Tok Dat](docs/api.md) — Definice Single Source of Truth principu a generativního typování.
-- [Workflow a Verze](docs/workflow.md) — Branching strategie (Trunk-Based) a integrační standardy (CI).
+### 1. Systémové požadavky
+- **Node.js** (>= 20.19.0) a **pnpm** (>= 9.0.0) pro správu frontendových a sdílených balíčků.
+- **Python** (>= 3.12) a **uv** (>= 0.11.0) pro izolované běhové prostředí backendu.
+- **Docker Desktop** pro lokální instanci PostgreSQL.
 
-## Rychlý start (Local Environment)
-
-### Prerekvizity
-- `Node.js >= 20.19.0` & `pnpm 9.x`
-- `Python >= 3.12` & `uv >= 0.11`
-- `Docker Desktop` (pro PostgreSQL kontejner)
-
-### Inicializace
+### 2. Inicializace projektu
+Následující příkazy provedou instalaci NPM závislostí, vytvoření virtuálního prostředí pro Python a přípravu lokální konfigurace.
 
 ```bash
-# 1. Instalace klientských závislostí
 pnpm install
-
-# 2. Inicializace Python prostředí a závislostí backendu
 uv sync --dev
-
-# 3. Překopírování lokálních proměnných prostředí
 cp .env.example .env
 ```
 
-### Spuštění
+### 3. Spuštění aplikací
+Infrastruktura se spouští ve dvou oddělených procesech.
 
+**Spuštění databáze (Docker):**
+Tento příkaz inicializuje kontejner s PostgreSQL na pozadí.
 ```bash
-# A. Inicializace PostgreSQL (Běží na pozadí)
 pnpm db:dev
-
-# B. Souběžné spuštění Next.js (port 3000) a FastAPI (port 8000)
-pnpm dev
-
-# C. Naplnění databáze testovacími daty (volitelné)
-pnpm db:seed
 ```
 
-*(Systém automaticky provede Auto-Init proceduru databázových tabulek přes SQLModel.)*
-
-## Produkční nasazení (Self-Hosted)
-
-Systém je navržen pro Self-Hosted nasazení s izolovanými porty, automatickými denními zálohami databáze a reverzní proxy (Caddy). Každá instituce provozuje vlastní instanci systému.
-
+**Spuštění vývojových serverů:**
+Tento příkaz prostřednictvím nástroje Turborepo paralelně spustí frontend (Next.js na `localhost:3000`) a backend (FastAPI na `localhost:8000`).
 ```bash
-# Nastav doménu v .env
-DOMAIN=bod.skola.cz
-
-# Spustí produkční kontejnery na pozadí (Caddy, API, Web, DB, Backups)
-docker compose -f infra/docker-compose.yml up -d --build
+pnpm dev
 ```
-*Caddy automaticky vyjedná TLS certifikát přes Let's Encrypt.*
+*Poznámka: Databázové tabulky jsou v rámci lokálního vývoje inicializovány automaticky při startu backendu (Auto-Init).*
 
-## Kontrola kvality kódu (Quality Assurance)
-
-Před odesláním Pull Requestu je nutné garantovat technologickou stabilitu kódu. Spuštění lokální CI verifikace:
+### 4. Lokální validace kódu (Quality Assurance)
+Před začleněním kódu do repozitáře (vytvoření Pull Requestu) je vyžadována lokální kontrola konzistence kódu.
 
 ```bash
 pnpm check
 ```
-*(Paralelně vyvolá: Biome & Ruff Linting, tsc & mypy Typechecking, generování API a Next.js Build.)*
+Příkaz provádí linting, statickou typovou analýzu a testovací kompilaci, čímž simuluje validaci prováděnou na CI serveru.

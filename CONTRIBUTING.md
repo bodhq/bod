@@ -1,40 +1,58 @@
-# Pravidla pro vývoj a přispívání (Contributing)
+# Pravidla vývoje a GitHub Workflow
 
-Tento dokument definuje závazná pravidla pro vývoj systému `bod`. Projekt využívá metodiku **Trunk-Based Development** s důrazem na typovou bezpečnost a automatizovanou kontrolu kvality kódu. Cílem je udržet hlavní větev (`main`) v permanentně nasaditelném stavu.
+Tento dokument definuje závazná pravidla pro proces vývoje, začleňování kódu a kontrolu kvality v repozitáři projektu `bod`. Systém využívá metodologii **Trunk-Based Development** pro minimalizaci integračních konfliktů.
 
-## 1. Technická dokumentace (Knowledge Base)
-Před zahájením prací je vyžadováno seznámení s architekturou v adresáři `docs/`. Klíčové dokumenty zahrnují definici [Workflow](docs/workflow.md) a pravidla generování [API Kontraktu](docs/api.md).
+## 1. Názvové konvence pro větve (Branching)
 
-## 2. Standardní pracovní postup (Workflow)
+V repozitáři je aktivní automatizovaná kontrola prostřednictvím GitHub Actions. Systém neumožní integraci větví, jejichž názvy neodpovídají specifikovanému formátu. 
 
-1. **Větvení:** Nové větve musí vždy vycházet z aktuálního stavu větve `main`.
-2. **Názvosloví větví:** Je vyžadováno používat jasné prefixy reflektující účel úpravy (např. `feat/název`, `fix/název`, `docs/název`).
-3. **Single Source of Truth:** 
-   Při jakékoliv úpravě backendových modelů nebo rout (FastAPI) je **povinné** přegenerovat TypeScript klienta:
-   ```bash
-   pnpm gen:api
-   ```
-   *(Při nesplnění tohoto kroku dojde k selhání automatizované kontroly `Verify OpenAPI Sync` v rámci CI/CD pipeliny.)*
-4. **Lokální ověření (Quality Assurance):** Před založením Pull Requestu je nutné spustit kompletní sadu testů:
-   ```bash
-   pnpm check
-   ```
-   *(Tento příkaz paralelně ověřuje linting, statickou typovou analýzu a provádí zkušební build.)*
+| Prefix | Účel větve | Příklad |
+| --- | --- | --- |
+| `feat/` | Implementace nové funkcionality. | `feat/login-page` |
+| `fix/` | Oprava identifikované chyby (bugfix). | `fix/db-connection` |
+| `docs/` | Úpravy či rozšíření dokumentace. | `docs/readme-update` |
+| `chore/` | Údržba systému, aktualizace konfigurací a závislostí. | `chore/update-react` |
+| `refactor/`| Restrukturalizace kódu bez změny chování systému. | `refactor/api-routes` |
+| `test/` | Implementace nebo úprava testovacích sad. | `test/login-form` |
+| `infra/` | Změny konfigurace infrastruktury (Docker, Caddy, CI).| `infra/caddy-port` |
 
-## 3. Pull Requesty a konvence commitů
+## 2. Pull Requesty a Scopes (Conventional Commits)
 
-Integrace kódu do větve `main` probíhá výhradně prostřednictvím Pull Requestů. Je striktně vyžadováno dodržování standardu **Conventional Commits** v názvech Pull Requestů i jednotlivých commitů. Dodržování tohoto pravidla je vynucováno automatizovanou kontrolou na GitHubu.
+Názvy Pull Requestů musí povinně dodržovat standard **Conventional Commits**, včetně definovaného pole Scope (oblasti změny). 
 
-Příklady platných názvů:
-- `feat: přidání komponenty pro rozvrh` (Nová funkcionalita)
-- `fix: oprava pádu při chybějících datech` (Oprava chyby)
-- `docs: aktualizace instalačního návodu` (Úprava dokumentace)
-- `refactor: optimalizace databázového dotazu` (Úprava kódu bez změny chování)
+| Povolené Scopes | Příslušná doména |
+| --- | --- |
+| `(web)` | Úpravy klientské vrstvy (Next.js, UI komponenty). |
+| `(api)` | Úpravy serverové vrstvy (FastAPI, modely, endpoints). |
+| `(e2e)` | Úpravy automatizovaných End-to-End testů (Playwright). |
+| `(deps)` | Aktualizace systémových a knihovních závislostí. |
+| `(chore)` | Obecná údržba repozitáře bez vlivu na logiku. |
+| `(docs)` | Změny v textové dokumentaci projektu. |
+| `(infra)` | Konfigurace infrastruktury a CI/CD procesů. |
 
-## 4. Architektonická omezení a pravidla
+*Závazné příklady:*
+- `feat(web): implementace přihlašovacího formuláře`
+- `fix(api): oprava validační logiky pro JWT`
 
-- **Frontend (`apps/web`):** Je zakázáno používat nativní funkci `fetch` pro volání API. Datová integrace probíhá výhradně přes autogenerovaný balíček `@bod/api-client`.
-- **Backend (`apps/api`):** Architektura nevyužívá horizontální vrstvení (např. oddělené složky pro controllers/services). Logika je vertikálně dělena do doménových modulů (např. `server/modules/timetable`).
-- **Autogenerovaný kód:** Je zakázáno provádět manuální úpravy v adresáři `packages/api-client/src`. Kód je plně spravován transpilátorem.
-- **Infrastruktura (`infra/`):** Změny v síťové konfiguraci a proxy probíhají výhradně úpravou Docker a Caddy konfigurací. Porty služeb se nepublikují na hostitelský systém.
-- **Konfigurace prostředí (`.env`):** Soubor `.env` slouží výhradně pro lokální vývoj a nesmí obsahovat produkční tajemství. Struktura proměnných je verzována v souboru `.env.example`.
+Během vytváření Pull Requestu je vyžadováno vyplnění přednastavené šablony a verifikace splnění všech kontrolních bodů (Checklist).
+
+## 3. Schvalovací proces (CODEOWNERS)
+
+Přímý zápis (push) do větve `main` je z bezpečnostních důvodů uzamčen. Začlenění kódu je možné výhradně prostřednictvím schváleného Pull Requestu.
+
+Konfigurace `.github/CODEOWNERS` vyžaduje provedení revize kódu (Code Review). Každý Pull Request musí získat status *Approve* od oprávněných správců repozitáře (Elias `@ejaprrr` nebo Filip `@zorkonator`). Bez tohoto schválení systém znemožní fúzi kódu.
+
+## 4. Kontinuální integrace (GitHub Actions CI)
+
+Každý otevřený Pull Request spouští izolovanou kontrolní pipelinu (Continuous Integration), složenou z následujících automatizovaných kroků:
+1. Ověření aktuálnosti sdíleného `openapi.json` (OpenAPI Sync).
+2. Transpilace TypeScript klienta na základě API schématu (Gen API).
+3. Kontrola formátování a pravidel lintingu (`Biome` a `Ruff`).
+4. Statická analýza typů (`tsc` a `mypy`).
+5. Exekuce automatizovaných testů (`Vitest`, `Pytest`, `Playwright`).
+6. Verifikační kompilace projektu (Next.js Build).
+
+Selhání kteréhokoliv z těchto kroků má za následek zablokování Pull Requestu. Lokální simulace tohoto procesu se provádí příkazem `pnpm check`.
+
+## 5. Automatizace závislostí (Dependabot)
+V repozitáři je integrována služba Dependabot, která kontinuálně monitoruje dostupné verze využívaných softwarových balíčků (NPM, Python, GitHub Actions). V případě detekce novější verze nebo bezpečnostní záplaty služba automaticky generuje odpovídající Pull Request.

@@ -4,8 +4,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "lint": "biome check .",
+    "lint": "biome check --error-on-warnings .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
     "start": "next start"
   },
   "dependencies": {
@@ -19,10 +20,17 @@
   "devDependencies": {
     "@bod/config-typescript": "workspace:*",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/coverage-v8": "^4.1.9",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.9"
   }
 }

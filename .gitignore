@@ -49,3 +49,9 @@ yarn-debug.log*
 # Generovaný API klient NENÍ verzován. Vždy když stáhnete kód, pusťte `pnpm build`
 # nebo `pnpm gen:api`, který ho automaticky vygeneruje z backendu (resp. z openapi.json).
 packages/api-client/src
+
+# Playwright E2E Testing
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

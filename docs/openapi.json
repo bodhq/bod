@@ -14,16 +14,13 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
-      "Lesson": {
+      "LessonPublic": {
         "properties": {
           "class_id": {
-            "minimum": 1.0,
             "title": "Class Id",
             "type": "integer"
           },
           "day": {
-            "maximum": 7.0,
-            "minimum": 1.0,
             "title": "Day",
             "type": "integer"
           },
@@ -32,15 +29,8 @@
             "type": "string"
           },
           "id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Id"
+            "title": "Id",
+            "type": "integer"
           },
           "room": {
             "title": "Room",
@@ -60,6 +50,7 @@
           }
         },
         "required": [
+          "id",
           "class_id",
           "subject",
           "teacher_id",
@@ -68,7 +59,7 @@
           "start_time",
           "end_time"
         ],
-        "title": "Lesson",
+        "title": "LessonPublic",
         "type": "object"
       },
       "ValidationError": {
@@ -140,7 +131,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/Lesson"
+                    "$ref": "#/components/schemas/LessonPublic"
                   },
                   "title": "Response Get Timetable Api V1 Timetable  Class Id  Get",
                   "type": "array"
@@ -168,7 +159,7 @@
     },
     "/health": {
       "get": {
-        "operationId": "health_health_get",
+        "operationId": "read_health_health_get",
         "responses": {
           "200": {
             "content": {
@@ -177,7 +168,7 @@
                   "additionalProperties": {
                     "type": "string"
                   },
-                  "title": "Response Health Health Get",
+                  "title": "Response Read Health Health Get",
                   "type": "object"
                 }
               }
@@ -185,7 +176,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Health",
+        "summary": "Read Health",
         "tags": [
           "system"
         ]

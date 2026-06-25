@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "lint": "biome check .",
+    "lint": "biome check --error-on-warnings .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},

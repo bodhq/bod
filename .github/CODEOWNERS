@@ -1,0 +1,12 @@
+# CODEOWNERS určuje, kdo má pravomoc (a povinnost) kontrolovat kód v určitých částech projektu.
+# Když někdo otevře Pull Request, tito lidé budou automaticky přidáni jako Reviewers.
+
+# 1. Fallback
+*       @ejaprrr @zorkonator
+
+# 2. Specifické domény
+/apps/api/      @ejaprrr
+/apps/web/      @zorkonator
+/.github/       @ejaprrr
+/infra/         @ejaprrr
+/packages/      @ejaprrr

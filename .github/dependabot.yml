@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # Aktualizace NPM závislostí (přes pnpm workspaces v kořeni repozitáře)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "deps"
+
+  # Aktualizace Python závislostí (pyproject.toml / uv) pro backend
+  - package-ecosystem: "pip"
+    directory: "/apps/api"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "deps"
+
+  # Aktualizace verzí samotných Github Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "deps"

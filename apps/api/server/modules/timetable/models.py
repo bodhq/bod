@@ -1,3 +1,9 @@
+"""
+VRSTVA 1: DATABÁZOVÉ MODELY (SQLModel)
+Definuje výhradně strukturu tabulek v PostgreSQL. 
+Tato vrstva nesmí obsahovat byznys logiku ani validaci HTTP požadavků.
+Při startu aplikace (Auto-Init) se z těchto tříd automaticky vytvoří databázové tabulky.
+"""
 from sqlmodel import Field, SQLModel
 
 

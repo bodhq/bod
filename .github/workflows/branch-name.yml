@@ -1,0 +1,24 @@
+name: "Branch Name Check"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  check-branch:
+    name: Enforce Branch Naming Convention
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Validate Branch Name
+        uses: deepakputhraya/action-branch-name@v1.0.0
+        with:
+          # Vyžaduje prefix (feat, fix, docs, chore, refactor, test, infra) následovaný lomítkem
+          regex: '^(feat|fix|docs|chore|refactor|test|infra)\/([a-z0-9-]+)$'
+          allowed_prefixes: 'feat,fix,docs,chore,refactor,test,infra'
+          ignore: main
+          min_length: 5
+          max_length: 50

@@ -19,7 +19,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          requireScope: false
+          requireScope: true
+          scopes: |
+            api
+            web
+            e2e
+            deps
+            chore
+            docs
+            infra
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |
             Tento projekt vynucuje Conventional Commits pravidla pro jména Pull Requestů.
