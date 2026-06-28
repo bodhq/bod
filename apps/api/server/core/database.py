@@ -7,7 +7,7 @@ from server.core.config import settings
 # Musíme naimportovat všechny modely, aby je SQLModel.metadata zaregistroval
 from server.modules.timetable.models import Lesson  # noqa
 
-engine = create_engine(settings.database_url, echo=True)
+engine = create_engine(settings.database_url, echo=settings.debug)
 
 
 def init_db() -> None:

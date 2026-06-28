@@ -5,8 +5,8 @@
 *       @ejaprrr @zorkonator
 
 # 2. Specifické domény
-/apps/api/      @ejaprrr
-/apps/web/      @zorkonator
+/apps/api/      @zorkonator
+/apps/web/      @ejaprrr
 /.github/       @ejaprrr
 /infra/         @ejaprrr
 /packages/      @ejaprrr

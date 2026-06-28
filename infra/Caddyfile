@@ -2,6 +2,11 @@
 # Lokálně běží na localhost, v produkci použije reálnou doménu a vygeneruje Let's Encrypt certifikát.
 
 {$DOMAIN:localhost} {
+    # Health check endpoint (přístupný externě pro monitoring)
+    handle /health {
+        reverse_proxy api:8000
+    }
+
     # Routování veškerého API provozu na backend
     handle /api/* {
         reverse_proxy api:8000
