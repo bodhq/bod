@@ -18,7 +18,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 
 @router.get("/{class_id}", response_model=list[LessonPublic])
-async def get_timetable(class_id: int, session: SessionDep) -> list[LessonPublic]:
+def get_timetable(class_id: int, session: SessionDep) -> list[LessonPublic]:
     service = TimetableService(session)
     lessons = service.get_class_timetable(class_id)
     return [LessonPublic.model_validate(lesson) for lesson in lessons]

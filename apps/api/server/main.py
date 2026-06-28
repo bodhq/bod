@@ -3,10 +3,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from server.api.router import api_router
 from server.core.config import settings
-from server.core.database import init_db
+from server.core.database import engine, init_db
 
 
 @asynccontextmanager
@@ -34,5 +36,13 @@ app.include_router(api_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["system"])
-async def read_health() -> dict[str, str]:
+def read_health() -> dict[str, str]:
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception:
+        return JSONResponse(  # type: ignore[return-value]
+            status_code=503,
+            content={"status": "unhealthy", "detail": "Databáze není dostupná."},
+        )
     return {"status": "ok"}
