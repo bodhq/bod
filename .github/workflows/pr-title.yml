@@ -25,6 +25,7 @@ jobs:
             web
             e2e
             deps
+            deps-dev
             chore
             docs
             infra
