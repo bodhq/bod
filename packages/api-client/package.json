@@ -16,6 +16,6 @@
   "dependencies": {},
   "devDependencies": {
     "@bod/config-typescript": "workspace:*",
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.3"
   }
 }
