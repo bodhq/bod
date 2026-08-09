@@ -5,7 +5,9 @@ description = "FastAPI backend for the bod school information system."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "bcrypt>=5.0.0",
     "fastapi>=0.138.0",
+    "passlib[bcrypt]>=1.7.4",
     "psycopg[binary]>=3.3.4",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.2",
