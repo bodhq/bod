@@ -23,14 +23,17 @@ export default function LoginPage() {
       {/* Centered Content */}
       <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
         {/* Premium Login Card respecting the original design language */}
-        <div className="w-full rounded-3xl bg-(--color-background)/95 p-6 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 dark:ring-white/5 sm:rounded-[2.5rem] sm:p-12 animate-in fade-in zoom-in-95 slide-in-from-bottom-8 duration-700 ease-out fill-mode-both">
-          <div className="mb-8 sm:mb-10 flex flex-col items-center">
-            <Logo className="h-10 sm:h-12 w-auto text-(--color-foreground) mb-4 sm:mb-6 drop-shadow-sm transition-transform duration-500 hover:scale-105" />
-            <h1 className="text-2xl font-extrabold tracking-tighter text-center text-(--color-foreground) sm:text-4xl mb-2 sm:mb-3">
-              Vstupte do systému
+        <div className="w-full rounded-2xl bg-(--color-surface) p-8 sm:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] ring-1 ring-black/10 dark:ring-white/10 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out fill-mode-both">
+          {/* Subtle grid pattern overlay - PLACED BEHIND CONTENT WITH NO POINTER EVENTS */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+
+          <div className="relative z-10 mb-8 sm:mb-10 flex flex-col items-start border-b-2 border-black/10 dark:border-white/10 pb-6 text-left">
+            <Logo className="h-8 sm:h-10 w-auto text-(--color-foreground) mb-6 drop-shadow-sm" />
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-(--color-foreground) mb-2">
+              Vítejte zpět
             </h1>
-            <p className="text-sm sm:text-base text-center text-(--color-muted-foreground) max-w-[280px]">
-              Zadejte své přihlašovací údaje pro zabezpečený přístup.
+            <p className="text-sm text-(--color-muted-foreground) max-w-[300px]">
+              Přihlaste se ke svému účtu pro přístup do informačního systému.
             </p>
           </div>
 
@@ -85,7 +88,7 @@ function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10">
       {(authError || error) && (
         <Alert
           variant="destructive"
@@ -100,13 +103,13 @@ function LoginForm() {
         className="space-y-6 disabled:opacity-70 group"
       >
         <div className="space-y-2">
-          <Label
-            htmlFor={`${formId}-username`}
-            className="flex items-center gap-2 font-medium"
-          >
-            <User className="w-4 h-4 text-(--color-muted-foreground)" />
-            Uživatelské jméno
-          </Label>
+            <Label
+              htmlFor={`${formId}-username`}
+              className="flex items-center gap-2 font-medium text-sm relative z-10"
+            >
+              <User className="w-4 h-4 text-(--color-primary)" />
+              Uživatelské jméno
+            </Label>
           <Input
             id={`${formId}-username`}
             type="text"
@@ -117,7 +120,6 @@ function LoginForm() {
             }
             error={!!errors.username}
             autoComplete="username"
-            size="lg"
             {...register("username")}
           />
           {errors.username && (
@@ -135,9 +137,9 @@ function LoginForm() {
           <div className="flex items-center justify-between">
             <Label
               htmlFor={`${formId}-password`}
-              className="flex items-center gap-2 font-medium"
+              className="flex items-center gap-2 font-medium text-sm relative z-10"
             >
-              <Lock className="w-4 h-4 text-(--color-muted-foreground)" />
+              <Lock className="w-4 h-4 text-(--color-primary)" />
               Heslo
             </Label>
           </div>
@@ -151,7 +153,6 @@ function LoginForm() {
             }
             error={!!errors.password}
             autoComplete="current-password"
-            size="lg"
             {...register("password")}
           />
           {errors.password && (
@@ -167,8 +168,7 @@ function LoginForm() {
 
         <Button
           type="submit"
-          className="w-full mt-4"
-          size="lg"
+          className="w-full mt-8"
           isLoading={isSubmitting}
         >
           Přihlásit se

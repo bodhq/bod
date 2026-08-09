@@ -33,6 +33,7 @@ export function useAuth() {
       setUser(userData);
       // TODO: Při napojení na skutečný backend by měl backend posílat "HttpOnly" cookie pomocí hlavičky Set-Cookie.
       // Frontend by se o nastavování cookie vůbec neměl starat z bezpečnostních důvodů. Pro mock to ale simulujeme:
+      // biome-ignore lint/suspicious/noDocumentCookie: Mock setup
       document.cookie = "bod_session=fake_cookie; path=/";
 
       // Invalidate queries that might depend on auth
@@ -60,6 +61,7 @@ export function useAuth() {
     onSuccess: () => {
       setUser(null);
       // TODO: Stejně jako u loginu, opravdový backend smaže cookie sám instrukcí v response hlavičce.
+      // biome-ignore lint/suspicious/noDocumentCookie: Mock setup
       document.cookie =
         "bod_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       queryClient.clear(); // Smažeme celou cache při odhlášení

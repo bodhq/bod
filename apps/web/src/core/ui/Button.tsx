@@ -1,14 +1,27 @@
+"use client";
+
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/core/utils";
+import { motion, type HTMLMotionProps } from "framer-motion";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
   isLoading?: boolean;
   isPressed?: boolean;
 }
+
+const edgeColors: Record<string, string> = {
+  default: "var(--edge-primary)",
+  secondary: "var(--edge-secondary)",
+  outline: "var(--edge-outline)",
+  ghost: "transparent",
+  destructive: "var(--edge-destructive)",
+};
+
+const smooth = [0.16, 1, 0.3, 1];
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -20,33 +33,71 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       isPressed,
       children,
       disabled,
+      style,
       ...props
     },
     ref,
   ) => {
+    const isFlat = variant === "ghost";
+
     return (
-      <button
+      <motion.button
         ref={ref}
         disabled={isLoading || disabled}
-        className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-2xl font-bold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--color-primary)/20 disabled:pointer-events-none disabled:opacity-50",
-          !isPressed && "active:translate-y-[4px] active:shadow-none",
-          isPressed && "translate-y-[4px] !shadow-none brightness-95",
+        initial={false}
+        animate={isPressed ? "active" : "idle"}
+        whileHover="hover"
+        whileTap="active"
+        style={
           {
-            "bg-(--color-primary) text-(--color-primary-foreground) shadow-[0_4px_0_0_var(--color-primary-600)] hover:brightness-105":
+            "--btn-edge": edgeColors[variant],
+            ...style,
+          } as React.CSSProperties
+        }
+        variants={
+          isFlat
+            ? {
+                idle: { scale: 1 },
+                hover: { scale: 1.02 },
+                active: { scale: 0.96 },
+              }
+            : {
+                idle: {
+                  y: 0,
+                  boxShadow: "0px 5px 0px 0px var(--btn-edge)",
+                  transition: { duration: 0.35, ease: smooth },
+                },
+                hover: {
+                  y: -2,
+                  boxShadow: "0px 7px 0px 0px var(--btn-edge)",
+                  transition: { duration: 0.25, ease: smooth },
+                },
+                active: {
+                  y: 5,
+                  boxShadow: "0px 0px 0px 0px var(--btn-edge)",
+                  transition: { duration: 0.08, ease: smooth },
+                },
+              }
+        }
+        className={cn(
+          "inline-flex items-center justify-center whitespace-nowrap rounded-xl font-semibold text-sm",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-primary)",
+          "disabled:pointer-events-none disabled:opacity-50",
+          !isFlat && "mb-[5px]", // Reserve space for the shadow
+          {
+            "bg-(--color-primary) text-(--color-primary-foreground)":
               variant === "default",
-            "bg-(--color-secondary) text-(--color-secondary-foreground) shadow-[0_4px_0_0_oklch(0.85_0.005_250)] dark:shadow-[0_4px_0_0_oklch(0.18_0.015_250)] hover:brightness-95 dark:hover:brightness-110":
+            "bg-(--color-secondary) text-(--color-secondary-foreground)":
               variant === "secondary",
-            "border-2 border-(--color-border) text-(--color-foreground) hover:bg-(--color-secondary) shadow-[0_4px_0_0_var(--color-border)] dark:shadow-[0_4px_0_0_oklch(0.18_0.015_250)]":
+            "border border-(--color-border) bg-transparent":
               variant === "outline",
-            "hover:bg-(--color-secondary) text-(--color-foreground)":
-              variant === "ghost",
-            "bg-(--color-destructive) text-(--color-destructive-foreground) shadow-[0_4px_0_0_oklch(0.40_0.15_20)] hover:brightness-105":
+            "text-(--color-foreground)": variant === "ghost",
+            "bg-(--color-destructive) text-(--color-destructive-foreground)":
               variant === "destructive",
 
-            "h-12 px-6 py-2 text-base": size === "default",
-            "h-10 px-4 text-sm": size === "sm",
-            "h-14 px-8 text-lg": size === "lg",
+            "h-12 px-6": size === "default",
+            "h-10 px-4 text-[10px]": size === "sm",
+            "h-14 px-8 text-sm": size === "lg",
             "h-12 w-12": size === "icon",
           },
           className,
@@ -55,7 +106,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {children}
-      </button>
+      </motion.button>
     );
   },
 );

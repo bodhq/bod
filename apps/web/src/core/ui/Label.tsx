@@ -6,6 +6,7 @@ export interface LabelProps
 
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, ...props }, ref) => (
+    // biome-ignore lint/a11y/noLabelWithoutControl: This is a reusable label component
     <label
       ref={ref}
       className={cn(
