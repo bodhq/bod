@@ -1,12 +1,18 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useAuthStore } from "@/core/auth/store";
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="flex flex-col gap-10 pb-32 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out px-4 sm:px-8 pt-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.6 }}
+      className="flex flex-col gap-10 pb-32 max-w-5xl mx-auto px-4 sm:px-8 pt-8"
+    >
       {/* Header */}
       <header className="flex flex-col gap-2">
         <h1 className="text-4xl font-extrabold tracking-tight text-(--color-foreground)">
@@ -16,6 +22,6 @@ export default function DashboardPage() {
           Vítejte zpět v přehledu.
         </p>
       </header>
-    </div>
+    </motion.div>
   );
 }

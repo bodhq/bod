@@ -1,9 +1,9 @@
 import {
-  loginApiV1AuthLoginPost,
-  meApiV1AuthMeGet,
-  logoutApiV1AuthLogoutPost,
-  type UserPublic,
   type LoginApiV1AuthLoginPostData,
+  loginApiV1AuthLoginPost,
+  logoutApiV1AuthLogoutPost,
+  meApiV1AuthMeGet,
+  type UserPublic,
 } from "@bod/api-client";
 import { client } from "@bod/api-client/client.gen";
 
@@ -12,15 +12,21 @@ import { parseApiError } from "@/core/api/api-errors";
 // Globally configure the API client
 client.setConfig({
   // Bude používat Next.js proxy, tím odpadnou problémy s CORS a cookies!
-  baseUrl: process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : "",
+  baseUrl:
+    process.env.NODE_ENV === "production"
+      ? process.env.NEXT_PUBLIC_API_URL
+      : "",
   // Ensure cookies are included in cross-origin requests
-  fetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, { ...init, credentials: "include" }),
+  fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+    fetch(input, { ...init, credentials: "include" }),
 });
 
 // Exportujeme alias pro zbytek aplikace (aby store nevyžadoval změny po vygenerování klienta)
 export type User = UserPublic;
 
-export async function login(data: LoginApiV1AuthLoginPostData): Promise<UserPublic> {
+export async function login(
+  data: LoginApiV1AuthLoginPostData,
+): Promise<UserPublic> {
   const { data: userData, error } = await loginApiV1AuthLoginPost(data);
 
   if (error) {

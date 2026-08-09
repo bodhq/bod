@@ -1,12 +1,11 @@
 "use client";
 
+import { type HTMLMotionProps, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/core/utils";
-import { motion, type HTMLMotionProps } from "framer-motion";
 
-export interface ButtonProps
-  extends Omit<HTMLMotionProps<"button">, "ref"> {
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
   isLoading?: boolean;
@@ -21,7 +20,7 @@ const edgeColors: Record<string, string> = {
   destructive: "var(--edge-destructive)",
 };
 
-const smooth = [0.16, 1, 0.3, 1];
+const _smooth = [0.16, 1, 0.3, 1];
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -57,31 +56,40 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         variants={
           isFlat
             ? {
-                idle: { scale: 1 },
-                hover: { scale: 1.02 },
-                active: { scale: 0.96 },
+                idle: {
+                  scale: 1,
+                  transition: { type: "spring", bounce: 0, duration: 0.4 },
+                },
+                hover: {
+                  scale: 1.02,
+                  transition: { type: "spring", bounce: 0, duration: 0.3 },
+                },
+                active: {
+                  scale: 0.96,
+                  transition: { type: "spring", bounce: 0, duration: 0.15 },
+                },
               }
             : {
                 idle: {
                   y: 0,
-                  boxShadow: "0px 5px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.35, ease: smooth as any },
+                  boxShadow: "0px 4px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "spring", bounce: 0, duration: 0.4 },
                 },
                 hover: {
                   y: -2,
-                  boxShadow: "0px 7px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.25, ease: smooth as any },
+                  boxShadow: "0px 6px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "spring", bounce: 0, duration: 0.3 },
                 },
                 active: {
-                  y: 5,
-                  boxShadow: "0px 0px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.1, ease: smooth as any },
+                  y: 4,
+                  boxShadow: "0px 0px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "spring", bounce: 0, duration: 0.15 },
                 },
               }
         }
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-xl font-semibold text-sm",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-primary)",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-2xl font-bold text-sm tracking-wide",
+          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-(--color-primary)/50",
           "disabled:pointer-events-none disabled:opacity-50",
           !isFlat && "mb-[5px]", // Reserve space for the shadow
           {

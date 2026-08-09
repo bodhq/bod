@@ -34,9 +34,7 @@ export default function RootLayout({
           speed={200}
           shadow="0 0 10px var(--color-primary),0 0 5px var(--color-primary)"
         />
-        <AppProviders>
-          {children}
-        </AppProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

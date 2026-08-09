@@ -34,7 +34,7 @@ export function useAuth() {
 
       // Invalidate queries that might depend on auth
       queryClient.invalidateQueries();
-      
+
       router.push("/app");
     },
     onError: (err: Error) => {

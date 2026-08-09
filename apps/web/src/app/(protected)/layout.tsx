@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getMe } from "@/core/auth/api";
 import { AuthProvider } from "@/core/auth/components/AuthProvider";
 import { AppSidebar } from "@/core/ui/app-shell/AppSidebar";
@@ -18,10 +18,13 @@ export default async function AppLayout({
   if (sessionId) {
     try {
       user = await getMe({
-        baseUrl: process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:8000",
+        baseUrl:
+          process.env.NODE_ENV === "production"
+            ? process.env.NEXT_PUBLIC_API_URL
+            : "http://127.0.0.1:8000",
         headers: {
           Cookie: `session_id=${sessionId}`,
-        }
+        },
       });
     } catch (_error) {
       // Pokud API vrátí 401

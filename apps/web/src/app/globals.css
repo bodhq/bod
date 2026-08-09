@@ -48,18 +48,48 @@
 
 @layer base {
   :root {
-    /* Base Harmonized Neutrals (Light Mode - Zinc/Slate for premium contrast) */
-    --background: oklch(0.96 0.005 250); /* Deepest (Sidebar) */
-    --surface: oklch(0.98 0.002 250); /* Secondary layers */
-    --surface-raised: oklch(1 0 0); /* Floating main content */
-    --surface-muted: oklch(0.92 0.005 250); /* Hover states / Active rails */
-    --foreground: oklch(0.14 0.01 250);
+    /* =========================================
+       1. BRAND PALETTE (SVĚTLÝ REŽIM)
+       Absolutní True Neutral (Čistá bezbarvá šedá - Apple Style)
+       ========================================= */
+    --app-bg: #F9FAFB;
+    --app-surface: #FFFFFF;
+    --app-well: #F2F2F2;
+    --app-edge: #D9D9D9;
+    --app-text: #171717;
+    --app-text-muted: #737373;
+    --app-border: #E5E5E5;
+
+    /* Rim Lights (Light Mode) */
+    --btn-highlight: rgba(255, 255, 255, 0.6);
+    --input-highlight: rgba(255, 255, 255, 0.7);
+
+    /* =========================================
+       2. SEMANTIC MAPPING (Nedotýkat se)
+       ========================================= */
+    --background: var(--app-bg);
+    --surface: var(--app-surface);
+    --surface-raised: oklch(1 0 0);
+    --surface-muted: var(--app-well);
+    
+    --input: var(--app-well);
+    --input-edge: var(--app-edge);
+    
+    --foreground: var(--app-text);
+    --border: var(--app-border);
+
+    --secondary: var(--app-well);
+    --secondary-foreground: var(--app-text);
+    --muted: var(--app-well);
+    --muted-foreground: var(--app-text-muted);
+    --accent: var(--app-well);
+    --accent-foreground: var(--app-text);
 
     /* Edge Colors for 3D Buttons */
-    --edge-primary: var(--primary-700);
-    --edge-secondary: oklch(0.85 0.005 250);
-    --edge-outline: oklch(0.85 0.005 250);
-    --edge-destructive: oklch(0.4 0.2 20);
+    --edge-primary: #93CC00;
+    --edge-secondary: var(--app-edge);
+    --edge-outline: var(--app-edge);
+    --edge-destructive: #990000;
 
     /* Primary Palette (Neon Green) */
     --primary-50: oklch(0.98 0.05 133);
@@ -77,61 +107,63 @@
     --primary: var(--primary-400);
     --primary-foreground: oklch(0.14 0.01 250);
 
-    /* Harmonized UI Colors (Zinc) */
-    --secondary: oklch(0.96 0.005 250);
-    --secondary-foreground: oklch(0.2 0.01 250);
-
-    --muted: oklch(0.96 0.005 250);
-    --muted-foreground: oklch(0.55 0.01 250);
-
-    --accent: oklch(0.96 0.005 250);
-    --accent-foreground: oklch(0.2 0.01 250);
-
-    --destructive: oklch(0.5 0.2 20); /* Darker Red for WCAG AA on white */
+    --destructive: oklch(0.5 0.2 20); 
     --destructive-foreground: oklch(0.98 0 0);
-
-    --border: oklch(0.92 0.005 250);
-    --input: oklch(0.92 0.005 250);
     --ring: var(--primary-400);
-
     --radius: 1rem;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      /* Base Harmonized Neutrals (Dark Mode - Deep Zinc) */
-      --background: oklch(0.12 0.01 250); /* Deepest (Sidebar) */
-      --surface: oklch(0.15 0.01 250); /* Secondary layers */
-      --surface-raised: oklch(0.18 0.01 250); /* Floating main content */
-      --surface-muted: oklch(0.22 0.01 250); /* Hover states / Active rails */
-      --foreground: oklch(0.98 0.002 250);
+      /* =========================================
+         1. BRAND PALETTE (TMAVÝ REŽIM)
+         Absolutní True Neutral (OLED černá / čistá šedá)
+         ========================================= */
+      --app-bg: #0A0A0A;
+      --app-surface: #1A1A1A;
+      --app-well: #141414;
+      --app-edge: #000000;
+      --app-text: #FAFAFA;
+      --app-text-muted: #A3A3A3;
+      --app-border: #333333;
+
+      /* Rim Lights (Dark Mode) */
+      --btn-highlight: rgba(255, 255, 255, 0.1);
+      --input-highlight: rgba(255, 255, 255, 0.05);
+
+      /* =========================================
+         2. SEMANTIC MAPPING (Nedotýkat se)
+         ========================================= */
+      --background: var(--app-bg);
+      --surface: var(--app-surface);
+      --surface-raised: oklch(0.26 0.005 220);
+      --surface-muted: oklch(0.26 0.005 220);
+      
+      --input: var(--app-well);
+      --input-edge: var(--app-edge);
+      
+      --foreground: var(--app-text);
+      --border: var(--app-border);
+
+      --secondary: oklch(0.28 0.005 220);
+      --secondary-foreground: var(--app-text);
+      --muted: oklch(0.24 0.005 220);
+      --muted-foreground: var(--app-text-muted);
+      --accent: oklch(0.28 0.005 220);
+      --accent-foreground: var(--app-text);
 
       /* Edge Colors for 3D Buttons */
-      --edge-primary: var(--primary-800);
-      --edge-secondary: oklch(0.20 0.01 250);
-      --edge-outline: oklch(0.20 0.01 250);
-      --edge-destructive: oklch(0.45 0.2 20);
+      --edge-primary: #93CC00;
+      --edge-secondary: var(--app-edge);
+      --edge-outline: var(--app-border);
+      --edge-destructive: #990000;
 
       --primary: var(--primary-400);
       --primary-foreground: oklch(0.12 0.01 250);
 
-      /* Harmonized UI Colors (Zinc) */
-      --secondary: oklch(0.28 0.015 250);
-      --secondary-foreground: oklch(0.98 0.002 250);
-
-      --muted: oklch(0.2 0.015 250);
-      --muted-foreground: oklch(0.65 0.01 250);
-
-      --accent: oklch(0.2 0.015 250);
-      --accent-foreground: oklch(0.98 0.002 250);
-
       --destructive: oklch(0.65 0.2 20);
       --destructive-foreground: oklch(0.98 0 0);
-
-      --border: oklch(0.25 0.01 250);
-      --input: oklch(0.25 0.01 250);
       --ring: var(--primary-400);
-
       --radius: 1rem;
     }
   }
@@ -145,6 +177,25 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    letter-spacing: 0.01em; /* Slight positive tracking for body text */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .display {
+    letter-spacing: -0.02em; /* Negative tracking for large text */
+    line-height: 1.1; /* Tighter leading for headings */
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    * {
+      backdrop-filter: none;
+    }
   }
 
   /* Selection Styling */

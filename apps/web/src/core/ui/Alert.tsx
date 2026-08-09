@@ -9,18 +9,23 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: boolean;
 }
 
+import { motion } from "framer-motion";
+
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   (
     { className, variant = "default", icon = true, children, ...props },
     ref,
   ) => {
     return (
-      <div
-        ref={ref}
+      <motion.div
+        ref={ref as any}
         role="alert"
         aria-live="polite"
+        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         className={cn(
-          "flex items-center gap-3 rounded-xl p-4 text-sm font-medium border",
+          "flex items-center gap-3 rounded-2xl p-4 text-sm font-medium border shadow-lg shadow-black/5 dark:shadow-white/5",
           {
             "bg-(--color-secondary) text-(--color-foreground) border-(--color-border)":
               variant === "default",
@@ -31,7 +36,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           },
           className,
         )}
-        {...props}
+        {...(props as any)}
       >
         {icon && variant === "destructive" && (
           <AlertCircle className="h-5 w-5 shrink-0" />
@@ -43,7 +48,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           <Info className="h-5 w-5 shrink-0 text-(--color-muted-foreground)" />
         )}
         <div className="flex-1 leading-relaxed">{children}</div>
-      </div>
+      </motion.div>
     );
   },
 );
