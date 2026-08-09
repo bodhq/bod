@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getMe } from "@/core/auth/api"; // TODO: @bod/api-client
+import { cookies } from "next/headers";
+import { getMe } from "@/core/auth/api";
 import { AuthProvider } from "@/core/auth/components/AuthProvider";
 import { AppSidebar } from "@/core/ui/app-shell/AppSidebar";
 import { Dock } from "@/core/ui/app-shell/Dock";
@@ -11,10 +12,20 @@ export default async function AppLayout({
 }) {
   // 1. Získání uživatele na straně serveru
   let user = null;
-  try {
-    user = await getMe();
-  } catch (_error) {
-    // Pokud API vrátí 401
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get("session_id")?.value;
+
+  if (sessionId) {
+    try {
+      user = await getMe({
+        baseUrl: process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:8000",
+        headers: {
+          Cookie: `session_id=${sessionId}`,
+        }
+      });
+    } catch (_error) {
+      // Pokud API vrátí 401
+    }
   }
 
   // 2. Pokud se ověření nezdaří, okamžitý redirect (Zero Layout Shift)

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const PUBLIC_ROUTES = ["/login", "/api", "/health"];
 
 export function proxy(request: NextRequest) {
-  const sessionCookie = request.cookies.get("bod_session");
+  const sessionCookie = request.cookies.get("session_id");
   const pathname = request.nextUrl.pathname;
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>

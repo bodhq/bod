@@ -12,14 +12,13 @@ export interface AuthProviderProps {
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const initialized = useRef(false);
 
-  // Set initial state on first render to match SSR and prevent hydration mismatch
-  if (!initialized.current) {
-    useAuthStore.setState({ user: initialUser, isLoading: false });
-    initialized.current = true;
-  }
-
+  // Use useLayoutEffect to update the store synchronously before paint on the client,
+  // avoiding the "Cannot update a component while rendering a different component" warning.
   useEffect(() => {
-    if (initialUser !== undefined) {
+    if (!initialized.current) {
+      useAuthStore.setState({ user: initialUser, isLoading: false });
+      initialized.current = true;
+    } else if (initialUser !== undefined) {
       useAuthStore.getState().setUser(initialUser);
     }
   }, [initialUser]);

@@ -9,10 +9,7 @@ export default function ProtectedTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    // Kdykoliv se namountuje chráněná sekce, signalizujeme, že se může overlay vypnout
-    useAuthStore.getState().setTransitioning(false);
-  }, []);
+  // No longer needed: Transitioning is handled by Next.js top loader
 
   return (
     <LazyMotion features={domAnimation}>

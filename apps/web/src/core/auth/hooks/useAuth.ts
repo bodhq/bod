@@ -26,27 +26,16 @@ export function useAuth() {
       username: string;
       password: string;
     }) => {
-      // Mock API expects a specific structure now (Contract)
-      return await apiLogin({ body: { username, password } });
+      // Backend očekává email
+      return await apiLogin({ body: { email: username, password } } as any);
     },
     onSuccess: (userData) => {
       setUser(userData);
-      // TODO: Při napojení na skutečný backend by měl backend posílat "HttpOnly" cookie pomocí hlavičky Set-Cookie.
-      // Frontend by se o nastavování cookie vůbec neměl starat z bezpečnostních důvodů. Pro mock to ale simulujeme:
-      // biome-ignore lint/suspicious/noDocumentCookie: Mock setup
-      document.cookie = "bod_session=fake_cookie; path=/";
 
       // Invalidate queries that might depend on auth
       queryClient.invalidateQueries();
-
-      // Spustíme full-screen překryv (pro případný loading dat na serveru)
-      useAuthStore.getState().setTransitioning(true);
-
-      // Počkáme 400ms na dokončení fade-in animace opony (TransitionOverlay),
-      // aby nedošlo k probliknutí obsahu načtené aplikace
-      setTimeout(() => {
-        router.push("/app");
-      }, 400);
+      
+      router.push("/app");
     },
     onError: (err: Error) => {
       setError(err.message || "Neočekávaná chyba při přihlašování.");
@@ -60,10 +49,6 @@ export function useAuth() {
     },
     onSuccess: () => {
       setUser(null);
-      // TODO: Stejně jako u loginu, opravdový backend smaže cookie sám instrukcí v response hlavičce.
-      // biome-ignore lint/suspicious/noDocumentCookie: Mock setup
-      document.cookie =
-        "bod_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       queryClient.clear(); // Smažeme celou cache při odhlášení
       router.push("/login");
     },

@@ -12,7 +12,7 @@ import { Input } from "@/core/ui/Input";
 import { KineticBackground } from "@/core/ui/KineticBackground";
 import { Label } from "@/core/ui/Label";
 import { Logo } from "@/core/ui/Logo";
-import { type LoginFormData, loginSchema } from "@/core/validations";
+import { type LoginFormData, loginSchema } from "@/core/auth/validations";
 
 export default function LoginPage() {
   return (
@@ -74,14 +74,14 @@ function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await loginAsync(data.username, data.password);
+      await loginAsync(data.email, data.password);
     } catch {
       // Error handled in useAuth
     }
@@ -104,31 +104,31 @@ function LoginForm() {
       >
         <div className="space-y-2">
             <Label
-              htmlFor={`${formId}-username`}
+              htmlFor={`${formId}-email`}
               className="flex items-center gap-2 font-medium text-sm relative z-10"
             >
               <User className="w-4 h-4 text-(--color-primary)" />
-              Uživatelské jméno
+              E-mail
             </Label>
           <Input
-            id={`${formId}-username`}
-            type="text"
-            placeholder="admin"
-            aria-invalid={!!errors.username}
+            id={`${formId}-email`}
+            type="email"
+            placeholder="admin@bod.local"
+            aria-invalid={!!errors.email}
             aria-describedby={
-              errors.username ? `${formId}-username-error` : undefined
+              errors.email ? `${formId}-email-error` : undefined
             }
-            error={!!errors.username}
-            autoComplete="username"
-            {...register("username")}
+            error={!!errors.email}
+            autoComplete="email"
+            {...register("email")}
           />
-          {errors.username && (
+          {errors.email && (
             <p
-              id={`${formId}-username-error`}
+              id={`${formId}-email-error`}
               className="text-xs font-medium text-(--color-destructive) ml-1 animate-in fade-in slide-in-from-top-1"
               role="alert"
             >
-              {errors.username.message}
+              {errors.email.message}
             </p>
           )}
         </div>

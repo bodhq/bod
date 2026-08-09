@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { AppProviders } from "@/core/providers";
-import { TransitionOverlay } from "@/core/ui/TransitionOverlay";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
@@ -36,7 +35,6 @@ export default function RootLayout({
           shadow="0 0 10px var(--color-primary),0 0 5px var(--color-primary)"
         />
         <AppProviders>
-          <TransitionOverlay />
           {children}
         </AppProviders>
       </body>

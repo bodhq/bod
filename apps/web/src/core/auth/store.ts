@@ -10,12 +10,9 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isTransitioning: boolean;
-
   // Akce
   checkAuth: () => Promise<void>;
   setUser: (user: User | null) => void;
-  setTransitioning: (val: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -24,7 +21,6 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: true, // Na začátku vždy true, než se zeptáme API
-      isTransitioning: false, // Pro plynulé přechody mezi auth a app
 
       checkAuth: async () => {
         try {
@@ -45,9 +41,6 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) =>
         set({ user, isAuthenticated: !!user }, false, "auth/setUser"),
-
-      setTransitioning: (val) =>
-        set({ isTransitioning: val }, false, "auth/setTransitioning"),
     }),
     { name: "AuthStore" },
   ),
@@ -59,13 +52,10 @@ export const useAuthUser = () =>
 export const useAuthIsAuthenticated = () =>
   useAuthStore((state) => state.isAuthenticated);
 export const useAuthIsLoading = () => useAuthStore((state) => state.isLoading);
-export const useAuthTransition = () =>
-  useAuthStore((state) => state.isTransitioning);
 export const useAuthActions = () =>
   useAuthStore(
     useShallow((state) => ({
       checkAuth: state.checkAuth,
       setUser: state.setUser,
-      setTransitioning: state.setTransitioning,
     })),
   );

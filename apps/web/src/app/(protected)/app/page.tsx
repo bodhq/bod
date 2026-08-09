@@ -10,7 +10,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="flex flex-col gap-2">
         <h1 className="text-4xl font-extrabold tracking-tight text-(--color-foreground)">
-          Dobrý den, {user?.full_name?.split(" ")[0] || "Učiteli"} 👋
+          Dobrý den, {user?.email?.split("@")[0] || "Učiteli"} 👋
         </h1>
         <p className="text-lg font-medium text-(--color-muted-foreground)">
           Vítejte zpět v přehledu.

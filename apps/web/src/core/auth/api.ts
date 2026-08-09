@@ -1,68 +1,45 @@
-/**
- * -----------------------------------------------------------------------------
- * API CONTRACT (Pydantic / OpenAPI Schema)
- * -----------------------------------------------------------------------------
- * Tento soubor slouží jako absolutní zdroj pravdy pro Filipa (Backend).
- * Backend musí vygenerovat Pydantic modely přesně v tomto tvaru.
- */
+import {
+  loginApiV1AuthLoginPost,
+  meApiV1AuthMeGet,
+  logoutApiV1AuthLogoutPost,
+  type UserPublic,
+  type LoginApiV1AuthLoginPostData,
+} from "@bod/api-client";
+import { client } from "@bod/api-client/client.gen";
 
-export type RoleEnum = "student" | "teacher" | "admin";
+import { parseApiError } from "@/core/api/api-errors";
 
-export interface UserPublic {
-  id: number;
-  username: string;
-  full_name: string;
-  role: RoleEnum;
-}
-
-export interface BodyAuthLoginApiV1AuthLoginPost {
-  username: string;
-  password: string;
-}
-
-export interface AuthLoginPostData {
-  body: BodyAuthLoginApiV1AuthLoginPost;
-}
+// Globally configure the API client
+client.setConfig({
+  // Bude používat Next.js proxy, tím odpadnou problémy s CORS a cookies!
+  baseUrl: process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : "",
+  // Ensure cookies are included in cross-origin requests
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, { ...init, credentials: "include" }),
+});
 
 // Exportujeme alias pro zbytek aplikace (aby store nevyžadoval změny po vygenerování klienta)
 export type User = UserPublic;
 
-/**
- * MOCK IMPL:
- * Zrcadlí vygenerované metody ze @hey-api/openapi-ts.
- * Budou smazány jakmile se spustí `pnpm gen:api`.
- */
-export async function authLoginApiV1AuthLoginPost(
-  data: AuthLoginPostData,
-): Promise<UserPublic> {
-  const { username, password } = data.body;
+export async function login(data: LoginApiV1AuthLoginPostData): Promise<UserPublic> {
+  const { data: userData, error } = await loginApiV1AuthLoginPost(data);
 
-  if (username === "admin" && password === "heslo") {
-    return {
-      id: 1,
-      username: "admin",
-      full_name: "Administrátor",
-      role: "admin",
-    };
+  if (error) {
+    throw parseApiError(error);
   }
 
-  throw new Error("Špatné přihlašovací údaje");
+  if (!userData) {
+    throw new Error("Neočekávaná odpověď serveru");
+  }
+
+  return userData;
 }
 
-export async function authMeApiV1AuthMeGet(): Promise<UserPublic | null> {
-  // Vzhledem k tomu, že se sem požadavek dostane jen pokud middleware ověří cookie,
-  // můžeme v mocku bezpečně rovnou vrátit uživatele.
-  return {
-    id: 1,
-    username: "admin",
-    full_name: "Administrátor",
-    role: "admin",
-  };
+export async function getMe(options?: any): Promise<UserPublic | null> {
+  const { data, error } = await meApiV1AuthMeGet(options);
+  if (error || !data) return null;
+  return data;
 }
 
-export async function authLogoutApiV1AuthLogoutPost(): Promise<void> {}
-
-// Alias mapping for smooth transition
-export const login = authLoginApiV1AuthLoginPost;
-export const getMe = authMeApiV1AuthMeGet;
-export const logout = authLogoutApiV1AuthLogoutPost;
+export async function logout(): Promise<void> {
+  await logoutApiV1AuthLogoutPost();
+}

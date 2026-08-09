@@ -65,17 +65,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 idle: {
                   y: 0,
                   boxShadow: "0px 5px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.35, ease: smooth },
+                  transition: { duration: 0.35, ease: smooth as any },
                 },
                 hover: {
                   y: -2,
                   boxShadow: "0px 7px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.25, ease: smooth },
+                  transition: { duration: 0.25, ease: smooth as any },
                 },
                 active: {
                   y: 5,
                   boxShadow: "0px 0px 0px 0px var(--btn-edge)",
-                  transition: { duration: 0.08, ease: smooth },
+                  transition: { duration: 0.1, ease: smooth as any },
                 },
               }
         }
@@ -105,7 +105,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {children}
+        {children as any}
       </motion.button>
     );
   },

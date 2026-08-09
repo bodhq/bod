@@ -42,7 +42,7 @@ importers:
         version: 12.42.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       lucide-react:
         specifier: ^1.23.0
-        version: 1.23.0(react@19.2.4)
+        version: 1.23.0(react@19.2.7)
       next:
         specifier: 16.2.9
         version: 16.2.9(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -115,6 +115,10 @@ importers:
         version: 4.1.9(@types/node@26.1.2)(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1)(vite@8.1.0(@types/node@26.1.2)(jiti@2.7.0)(yaml@2.9.0))
 
   packages/api-client:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@bod/config-typescript':
         specifier: workspace:*
@@ -2770,7 +2774,7 @@ snapshots:
 
   lru-cache@11.5.1: {}
 
-  lucide-react@1.23.0(react@19.2.4):
+  lucide-react@1.23.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
