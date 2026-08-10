@@ -77,14 +77,14 @@ function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await loginAsync(data.email, data.password);
+      await loginAsync(data.username, data.password);
     } catch {
       // Error handled in useAuth
     }
@@ -102,33 +102,33 @@ function LoginForm() {
       >
         <div className="space-y-2">
           <Label
-            htmlFor={`${formId}-email`}
+            htmlFor={`${formId}-username`}
             className="flex items-center gap-2 relative z-10"
           >
             <User className="w-4 h-4 text-(--color-primary)" />
-            Email
+            Uživatelské jméno
           </Label>
           <Input
-            id={`${formId}-email`}
-            type="email"
-            placeholder="admin@bod.local"
-            aria-invalid={!!errors.email}
+            id={`${formId}-username`}
+            type="text"
+            placeholder="admin"
+            aria-invalid={!!errors.username}
             aria-describedby={
-              errors.email ? `${formId}-email-error` : undefined
+              errors.username ? `${formId}-username-error` : undefined
             }
-            error={!!errors.email}
-            autoComplete="email"
-            {...register("email")}
+            error={!!errors.username}
+            autoComplete="username"
+            {...register("username")}
           />
-          {errors.email && (
+          {errors.username && (
             <motion.p
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              id={`${formId}-email-error`}
+              id={`${formId}-username-error`}
               className="text-xs font-medium text-(--color-destructive) ml-1"
               role="alert"
             >
-              {errors.email.message}
+              {errors.username.message}
             </motion.p>
           )}
         </div>
@@ -166,10 +166,10 @@ function LoginForm() {
               {errors.password.message}
             </motion.p>
           )}
-          
+
           <div className="pt-1">
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="text-xs font-medium text-(--color-primary) hover:underline transition-all"
             >
               Zapomněli jste heslo?

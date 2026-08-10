@@ -3,7 +3,10 @@ import {
   loginApiV1AuthLoginPost,
   logoutApiV1AuthLogoutPost,
   meApiV1AuthMeGet,
+  getSessionsApiV1AuthSessionsGet,
+  revokeSessionApiV1AuthSessionsSessionIdDelete,
   type UserPublic,
+  type AuthSessionPublic,
 } from "@bod/api-client";
 import { client } from "@bod/api-client/client.gen";
 
@@ -25,9 +28,12 @@ client.setConfig({
 export type User = UserPublic;
 
 export async function login(
-  data: LoginApiV1AuthLoginPostData,
+  username: string,
+  password: string
 ): Promise<UserPublic> {
-  const { data: userData, error } = await loginApiV1AuthLoginPost(data);
+  const { data: userData, error } = await loginApiV1AuthLoginPost({
+    body: { username, password }
+  });
 
   if (error) {
     throw parseApiError(error);
@@ -48,4 +54,21 @@ export async function getMe(options?: any): Promise<UserPublic | null> {
 
 export async function logout(): Promise<void> {
   await logoutApiV1AuthLogoutPost();
+}
+
+export type AuthSession = AuthSessionPublic;
+
+export async function getSessions(options?: any): Promise<AuthSession[]> {
+  const { data, error } = await getSessionsApiV1AuthSessionsGet(options);
+  if (error || !data) return [];
+  return data;
+}
+
+export async function revokeSession(sessionId: string): Promise<void> {
+  const { error } = await revokeSessionApiV1AuthSessionsSessionIdDelete({
+    path: { session_id: sessionId },
+  });
+  if (error) {
+    throw parseApiError(error);
+  }
 }

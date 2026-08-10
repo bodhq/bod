@@ -12,7 +12,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         style={{
-          boxShadow: "inset 0px 4px 0px 0px var(--input-edge), inset 0px -1px 0px 0px var(--input-highlight)",
+          boxShadow:
+            "inset 0px 4px 0px 0px var(--input-edge), inset 0px -1px 0px 0px var(--input-highlight)",
         }}
         className={cn(
           "flex w-full rounded-2xl bg-(--color-input) transition-all duration-200 ease-out border border-transparent focus-within:border-(--color-primary)/50 focus-within:ring-4 focus-within:ring-(--color-primary)/20 relative overflow-hidden has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50",

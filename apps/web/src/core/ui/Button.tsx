@@ -72,17 +72,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             : {
                 idle: {
                   y: 0,
-                  boxShadow: "0px 4px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  boxShadow:
+                    "0px 4px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
                   transition: { type: "spring", bounce: 0, duration: 0.4 },
                 },
                 hover: {
                   y: -2,
-                  boxShadow: "0px 6px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  boxShadow:
+                    "0px 6px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
                   transition: { type: "spring", bounce: 0, duration: 0.3 },
                 },
                 active: {
                   y: 4,
-                  boxShadow: "0px 0px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  boxShadow:
+                    "0px 0px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
                   transition: { type: "spring", bounce: 0, duration: 0.15 },
                 },
               }

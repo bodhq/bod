@@ -7,13 +7,25 @@ export type ErrorCode =
   | "AUTH_INVALID_CREDENTIALS"
   | "AUTH_USER_BANNED"
   | "AUTH_ACCOUNT_LOCKED"
+  | "AUTH_UNAUTHENTICATED"
+  | "AUTH_LOGIN_UNAVAILABLE"
+  | "AUTH_SESSION_NOT_FOUND"
+  | "RESOURCE_NOT_FOUND"
   | "VALIDATION_ERROR"
+  | "DATABASE_UNAVAILABLE"
+  | "INTERNAL_SERVER_ERROR"
   | "UNKNOWN_ERROR";
 
 export const errorTranslations: Record<ErrorCode, string> = {
   AUTH_INVALID_CREDENTIALS: "Nesprávné přihlašovací údaje.",
   AUTH_USER_BANNED: "Tento účet byl zablokován.",
   AUTH_ACCOUNT_LOCKED: "Účet je uzamčen kvůli příliš mnoha pokusům.",
+  AUTH_UNAUTHENTICATED: "Nejste přihlášeni.",
+  AUTH_LOGIN_UNAVAILABLE: "Přihlašování je dočasně nedostupné.",
+  AUTH_SESSION_NOT_FOUND: "Relace nebyla nalezena.",
+  RESOURCE_NOT_FOUND: "Požadovaný zdroj nebyl nalezen.",
+  DATABASE_UNAVAILABLE: "Databáze je dočasně nedostupná.",
+  INTERNAL_SERVER_ERROR: "Vnitřní chyba serveru.",
   VALIDATION_ERROR: "Neplatný formát odeslaných dat.",
   UNKNOWN_ERROR: "Neočekávaná chyba při komunikaci se serverem.",
 };

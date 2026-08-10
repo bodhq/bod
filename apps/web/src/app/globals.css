@@ -52,13 +52,13 @@
        1. BRAND PALETTE (SVĚTLÝ REŽIM)
        Absolutní True Neutral (Čistá bezbarvá šedá - Apple Style)
        ========================================= */
-    --app-bg: #F9FAFB;
-    --app-surface: #FFFFFF;
-    --app-well: #F2F2F2;
-    --app-edge: #D9D9D9;
+    --app-bg: #f9fafb;
+    --app-surface: #ffffff;
+    --app-well: #f2f2f2;
+    --app-edge: #d9d9d9;
     --app-text: #171717;
     --app-text-muted: #737373;
-    --app-border: #E5E5E5;
+    --app-border: #e5e5e5;
 
     /* Rim Lights (Light Mode) */
     --btn-highlight: rgba(255, 255, 255, 0.6);
@@ -71,10 +71,10 @@
     --surface: var(--app-surface);
     --surface-raised: oklch(1 0 0);
     --surface-muted: var(--app-well);
-    
+
     --input: var(--app-well);
     --input-edge: var(--app-edge);
-    
+
     --foreground: var(--app-text);
     --border: var(--app-border);
 
@@ -86,7 +86,7 @@
     --accent-foreground: var(--app-text);
 
     /* Edge Colors for 3D Buttons */
-    --edge-primary: #93CC00;
+    --edge-primary: #93cc00;
     --edge-secondary: var(--app-edge);
     --edge-outline: var(--app-edge);
     --edge-destructive: #990000;
@@ -107,7 +107,7 @@
     --primary: var(--primary-400);
     --primary-foreground: oklch(0.14 0.01 250);
 
-    --destructive: oklch(0.5 0.2 20); 
+    --destructive: oklch(0.5 0.2 20);
     --destructive-foreground: oklch(0.98 0 0);
     --ring: var(--primary-400);
     --radius: 1rem;
@@ -119,12 +119,12 @@
          1. BRAND PALETTE (TMAVÝ REŽIM)
          Absolutní True Neutral (OLED černá / čistá šedá)
          ========================================= */
-      --app-bg: #0A0A0A;
-      --app-surface: #1A1A1A;
+      --app-bg: #0a0a0a;
+      --app-surface: #1a1a1a;
       --app-well: #141414;
       --app-edge: #000000;
-      --app-text: #FAFAFA;
-      --app-text-muted: #A3A3A3;
+      --app-text: #fafafa;
+      --app-text-muted: #a3a3a3;
       --app-border: #333333;
 
       /* Rim Lights (Dark Mode) */
@@ -138,10 +138,10 @@
       --surface: var(--app-surface);
       --surface-raised: oklch(0.26 0.005 220);
       --surface-muted: oklch(0.26 0.005 220);
-      
+
       --input: var(--app-well);
       --input-edge: var(--app-edge);
-      
+
       --foreground: var(--app-text);
       --border: var(--app-border);
 
@@ -153,7 +153,7 @@
       --accent-foreground: var(--app-text);
 
       /* Edge Colors for 3D Buttons */
-      --edge-primary: #93CC00;
+      --edge-primary: #93cc00;
       --edge-secondary: var(--app-edge);
       --edge-outline: var(--app-border);
       --edge-destructive: #990000;

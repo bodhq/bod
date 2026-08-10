@@ -26,8 +26,7 @@ export function useAuth() {
       username: string;
       password: string;
     }) => {
-      // Backend očekává email
-      return await apiLogin({ body: { email: username, password } } as any);
+      return await apiLogin(username, password);
     },
     onSuccess: (userData) => {
       setUser(userData);
