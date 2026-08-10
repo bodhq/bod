@@ -9,7 +9,7 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: boolean;
 }
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   (
@@ -17,7 +17,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     ref,
   ) => {
     return (
-      <motion.div
+      <m.div
         ref={ref as any}
         role="alert"
         aria-live="polite"
@@ -25,13 +25,13 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         className={cn(
-          "flex items-center gap-3 rounded-2xl p-4 text-sm font-medium border shadow-lg shadow-black/5 dark:shadow-white/5",
+          "flex items-center gap-3 rounded-2xl p-4 text-body-small font-medium border shadow-lg shadow-black/5 dark:shadow-black/20",
           {
             "bg-(--color-secondary) text-(--color-foreground) border-(--color-border)":
               variant === "default",
             "bg-(--color-destructive)/10 text-(--color-destructive) border-(--color-destructive)/20":
               variant === "destructive",
-            "bg-green-500/10 text-green-600 dark:text-green-500 border-green-500/20":
+            "bg-(--color-action-base)/10 text-(--color-brand-text) border-(--color-action-base)/20":
               variant === "success",
           },
           className,
@@ -48,7 +48,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           <Info className="h-5 w-5 shrink-0 text-(--color-muted-foreground)" />
         )}
         <div className="flex-1 leading-relaxed">{children}</div>
-      </motion.div>
+      </m.div>
     );
   },
 );

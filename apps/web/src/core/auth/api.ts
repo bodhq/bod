@@ -1,13 +1,14 @@
 import {
-  type LoginApiV1AuthLoginPostData,
+  getSessionsApiV1AuthSessionsGet,
   loginApiV1AuthLoginPost,
   logoutApiV1AuthLogoutPost,
   meApiV1AuthMeGet,
-  getSessionsApiV1AuthSessionsGet,
   revokeSessionApiV1AuthSessionsSessionIdDelete,
-  type UserPublic,
-  type AuthSessionPublic,
-} from "@bod/api-client";
+} from "@bod/api-client/sdk.gen";
+import type {
+  AuthSessionPublic,
+  UserPublic,
+} from "@bod/api-client/types.gen";
 import { client } from "@bod/api-client/client.gen";
 
 import { parseApiError } from "@/core/api/api-errors";

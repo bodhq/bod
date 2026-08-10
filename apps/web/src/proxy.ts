@@ -16,7 +16,13 @@ export function proxy(request: NextRequest) {
   if (!isPublicRoute && !sessionCookie) {
     response = NextResponse.redirect(new URL("/login", request.url));
   } else if (sessionCookie && pathname === "/login") {
-    response = NextResponse.redirect(new URL("/app", request.url));
+    if (request.nextUrl.searchParams.get("error") === "unauthorized") {
+      // The session cookie is invalid, delete it so the user can login again
+      response.cookies.delete("session_id");
+    } else {
+      // Valid session cookie and on login page, redirect to app
+      response = NextResponse.redirect(new URL("/app", request.url));
+    }
   }
 
   // Security Headers

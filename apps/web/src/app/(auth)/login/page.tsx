@@ -1,13 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Lock, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/core/auth/hooks/useAuth";
 import { type LoginFormData, loginSchema } from "@/core/auth/validations";
+import { Text } from "@/core/ui/Text";
 import { Alert } from "@/core/ui/Alert";
 import { Button } from "@/core/ui/Button";
 import { Input } from "@/core/ui/Input";
@@ -24,20 +25,20 @@ export default function LoginPage() {
       {/* Centered Content */}
       <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
         {/* Premium Login Card respecting the original design language */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", bounce: 0, duration: 0.6 }}
-          className="w-full rounded-[2rem] bg-(--color-surface) p-8 sm:p-12 shadow-2xl shadow-black/20 dark:shadow-black/50 border border-black/10 dark:border-white/10 relative overflow-hidden"
+          className="w-full rounded-[2rem] bg-(--color-surface-100) p-8 sm:p-12 shadow-2xl shadow-black/20 dark:shadow-black/50 border border-black/10 dark:border-white/10 relative overflow-hidden"
         >
           <div className="relative z-10 mb-8 flex flex-col items-center text-center">
-            <Logo className="h-10 sm:h-12 w-auto text-(--color-foreground) mb-6 drop-shadow-sm" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-(--color-foreground) mb-2">
+            <Logo className="h-10 sm:h-12 w-auto text-(--color-text-primary) mb-6 drop-shadow-sm" />
+            <Text variant="h1" className="mb-2">
               Vítejte zpět!
-            </h1>
-            <p className="text-sm text-(--color-muted-foreground)">
+            </Text>
+            <Text variant="muted">
               Jsme rádi, že vás znovu vidíme.
-            </p>
+            </Text>
           </div>
 
           <React.Suspense
@@ -49,7 +50,7 @@ export default function LoginPage() {
           >
             <LoginForm />
           </React.Suspense>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );
@@ -66,7 +67,7 @@ function LoginForm() {
   useEffect(() => {
     const errorParam = searchParams.get("error");
     if (errorParam === "unauthorized") {
-      setError("Pro přístup k této stránce se musíte přihlásit.");
+      setError("Vaše relace vypršela nebo byla ukončena. Přihlaste se prosím znovu.");
     }
   }, [searchParams]);
 
@@ -92,8 +93,10 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10">
-      {(authError || error) && (
-        <Alert variant="destructive">{authError || error}</Alert>
+      {(authError || error || Object.keys(errors).length > 0) && (
+        <Alert variant="destructive">
+          {authError || error || "Neplatné přihlašovací údaje."}
+        </Alert>
       )}
 
       <fieldset
@@ -105,7 +108,7 @@ function LoginForm() {
             htmlFor={`${formId}-username`}
             className="flex items-center gap-2 relative z-10"
           >
-            <User className="w-4 h-4 text-(--color-primary)" />
+            <User className="w-4 h-4 text-(--color-brand-text)" />
             Uživatelské jméno
           </Label>
           <Input
@@ -120,17 +123,6 @@ function LoginForm() {
             autoComplete="username"
             {...register("username")}
           />
-          {errors.username && (
-            <motion.p
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              id={`${formId}-username-error`}
-              className="text-xs font-medium text-(--color-destructive) ml-1"
-              role="alert"
-            >
-              {errors.username.message}
-            </motion.p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -139,7 +131,7 @@ function LoginForm() {
               htmlFor={`${formId}-password`}
               className="flex items-center gap-2 relative z-10"
             >
-              <Lock className="w-4 h-4 text-(--color-primary)" />
+              <Lock className="w-4 h-4 text-(--color-brand-text)" />
               Heslo
             </Label>
           </div>
@@ -155,22 +147,11 @@ function LoginForm() {
             autoComplete="current-password"
             {...register("password")}
           />
-          {errors.password && (
-            <motion.p
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              id={`${formId}-password-error`}
-              className="text-xs font-medium text-(--color-destructive) ml-1"
-              role="alert"
-            >
-              {errors.password.message}
-            </motion.p>
-          )}
 
           <div className="pt-1">
             <a
               href="#"
-              className="text-xs font-medium text-(--color-primary) hover:underline transition-all"
+              className="text-xs font-medium text-(--color-brand-text) hover:underline transition-all"
             >
               Zapomněli jste heslo?
             </a>

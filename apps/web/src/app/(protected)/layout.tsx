@@ -33,18 +33,18 @@ export default async function AppLayout({
 
   // 2. Pokud se ověření nezdaří, okamžitý redirect (Zero Layout Shift)
   if (!user) {
-    redirect("/login");
+    redirect("/login?error=unauthorized");
   }
 
   // 3. Render responzivního App Shellu (Sidebar na Desktopu, Dock na Mobilu)
   return (
     <AuthProvider initialUser={user}>
-      <div className="flex h-screen w-screen bg-(--color-surface) text-(--color-foreground) overflow-hidden">
+      <div className="flex h-screen w-screen bg-(--color-surface-0) text-(--color-foreground) overflow-hidden">
         {/* Desktop Sidebar (skrytý na mobilu) */}
         <AppSidebar />
 
         {/* Hlavní obsahová část s mírně světlejším povrchem než Sidebar pro Discord efekt */}
-        <main className="flex-1 h-full overflow-auto relative z-10 bg-(--color-surface-raised) rounded-tl-none md:rounded-tl-3xl md:m-2 md:ml-0 shadow-sm border border-transparent md:border-(--color-border)">
+        <main className="flex-1 h-full overflow-auto relative z-10 bg-(--color-surface-100) rounded-tl-none md:rounded-tl-3xl md:m-2 md:ml-0 shadow-sm border border-transparent md:border-(--color-border)">
           <div className="mx-auto max-w-7xl px-4 sm:px-8 py-8 pb-32 md:pb-8">
             {children}
           </div>

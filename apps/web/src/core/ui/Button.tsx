@@ -1,6 +1,6 @@
 "use client";
 
-import { type HTMLMotionProps, motion } from "framer-motion";
+import { type HTMLMotionProps, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/core/utils";
@@ -40,7 +40,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isFlat = variant === "ghost";
 
     return (
-      <motion.button
+      <m.button
         ref={ref}
         disabled={isLoading || disabled}
         initial={false}
@@ -107,7 +107,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               variant === "destructive",
 
             "h-12 px-6": size === "default",
-            "h-10 px-4 text-[10px]": size === "sm",
+            "h-10 px-4 text-xs font-medium": size === "sm",
             "h-14 px-8 text-sm": size === "lg",
             "h-12 w-12": size === "icon",
           },
@@ -117,7 +117,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {children as any}
-      </motion.button>
+      </m.button>
     );
   },
 );

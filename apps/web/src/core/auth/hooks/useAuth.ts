@@ -53,6 +53,7 @@ export function useAuth() {
     },
     onError: (err) => {
       Logger.error("Chyba při odhlašování", err);
+      alert("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
     },
   });
 

@@ -2,10 +2,26 @@ from sqlmodel import Session, select
 
 from server.core.database import engine
 from server.modules.timetable.models import Lesson
-
+from server.core.users.models import User, Role
+from server.core.security import get_password_hash
 
 def seed_db() -> None:
     with Session(engine) as session:
+        # Create Admin User if doesn't exist
+        admin = session.exec(select(User).where(User.username == "admin")).first()
+        if not admin:
+            print("Vytvářím výchozího administrátora (admin/admin)...")
+            admin_user = User(
+                username="admin", 
+                hashed_password=get_password_hash("admin"), 
+                role=Role.ADMIN
+            )
+            session.add(admin_user)
+            session.commit()
+            print("Administrátor úspěšně vytvořen.")
+        else:
+            print("Administrátor (admin) již existuje.")
+
         # Check if we already have some lessons
         lesson = session.exec(select(Lesson).limit(1)).first()
         if not lesson:
@@ -53,7 +69,7 @@ def seed_db() -> None:
             session.commit()
             print("Testovací rozvrh (6 hodin) úspěšně vytvořen.")
         else:
-            print("Databáze již obsahuje data. Seedování přeskočeno.")
+            print("Databáze již obsahuje rozvrh. Seedování přeskočeno.")
 
 
 if __name__ == "__main__":

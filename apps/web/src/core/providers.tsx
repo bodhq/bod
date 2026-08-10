@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import { QueryProvider } from "./query";
 
+import { FramerMotionProvider } from "./providers/FramerMotionProvider";
+
 /**
  * Centrální obálka pro veškerou infrastrukturní vrstvu aplikace.
  * Místo abychom do root layoutu psali deset různých providerů
@@ -12,11 +14,13 @@ import { QueryProvider } from "./query";
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
-      {/* V budoucnu zde přibudou: 
-          <ThemeProvider>
-          <ToastProvider> 
-      */}
-      {children}
+      <FramerMotionProvider>
+        {/* V budoucnu zde přibudou: 
+            <ThemeProvider>
+            <ToastProvider> 
+        */}
+        {children}
+      </FramerMotionProvider>
     </QueryProvider>
   );
 }
