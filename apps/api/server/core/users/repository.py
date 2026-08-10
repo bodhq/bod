@@ -9,9 +9,9 @@ class UserRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_by_email(self, email: str) -> User | None:
+    def get_by_username(self, username: str) -> User | None:
         return self.db.exec(
-            select(User).where(User.email == email)
+            select(User).where(User.username == username)
         ).first()
 
     def get_by_id(self, user_id: UUID) -> User | None:

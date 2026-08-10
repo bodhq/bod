@@ -22,13 +22,13 @@ def login(
     response: Response,
     auth_service: AuthServiceDep,
 ) -> UserPublic:
-    result = auth_service.login(payload.email, payload.password)
+    result = auth_service.login(payload.username, payload.password)
 
     if result is None:
         # Stejná odpověď pro neexistující e-mail i špatné heslo.
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid username or password",
         )
 
     set_session_cookie(response, result.session_token)

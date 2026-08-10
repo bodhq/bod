@@ -46,9 +46,9 @@ class AuthService:
         self.users = users
         self.sessions = sessions
 
-    def login(self, email: str, password: str) -> LoginResult | None:
-        normalized_email = email.strip().lower()
-        user = self.users.get_by_email(normalized_email)
+    def login(self, username: str, password: str) -> LoginResult | None:
+        normalized_username = username.strip().lower()
+        user = self.users.get_by_username(normalized_username)
 
         if (
             user is None

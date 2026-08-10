@@ -44,12 +44,12 @@ def client_fixture(db: Session):
 def create_user(
     db: Session,
     *,
-    email: str = "admin@bod.local",
+    username: str = "admin_bod",
     password: str = "TestovaciHeslo123",
     is_active: bool = True,
 ) -> User:
     user = User(
-        email=email,
+        username=username,
         hashed_password=get_password_hash(password),
         role=Role.ADMIN,
         is_active=is_active,
@@ -62,11 +62,11 @@ def create_user(
     return user
 
 
-def login(client: TestClient, email: str, password: str):
+def login(client: TestClient, username: str, password: str):
     return client.post(
         "/api/v1/auth/login",
         json={
-            "email": email,
+            "username": username,
             "password": password,
         },
     )
@@ -78,10 +78,10 @@ def test_login_creates_hashed_database_session(
 ) -> None:
     user = create_user(db)
 
-    response = login(client, user.email, "TestovaciHeslo123")
+    response = login(client, user.username, "TestovaciHeslo123")
 
     assert response.status_code == 200
-    assert response.json()["email"] == user.email
+    assert response.json()["username"] == user.username
 
     set_cookie = response.headers["set-cookie"].lower()
     assert "httponly" in set_cookie
@@ -102,7 +102,7 @@ def test_me_returns_logged_in_user(
 ) -> None:
     user = create_user(db)
 
-    login(client, user.email, "TestovaciHeslo123")
+    login(client, user.username, "TestovaciHeslo123")
 
     response = client.get("/api/v1/auth/me")
 
@@ -126,27 +126,39 @@ def test_login_rejects_wrong_password(
 ) -> None:
     user = create_user(db)
 
-    response = login(client, user.email, "spatne-heslo")
+    response = login(client, user.username, "spatne-heslo")
 
     assert response.status_code == 401
     assert response.json() == {
-        "detail": "Invalid email or password"
+        "detail": "Invalid username or password"
     }
 
 
-def test_login_rejects_unknown_email(
+def test_login_rejects_unknown_username(
     client: TestClient,
 ) -> None:
     response = login(
         client,
-        "neexistuje@bod.local",
+        "neexistuje_user",
         "TestovaciHeslo123",
     )
 
     assert response.status_code == 401
     assert response.json() == {
-        "detail": "Invalid email or password"
+        "detail": "Invalid username or password"
     }
+
+
+def test_login_rejects_invalid_username_format(
+    client: TestClient,
+) -> None:
+    response = login(
+        client,
+        "invalid username!",
+        "TestovaciHeslo123",
+    )
+
+    assert response.status_code == 422
 
 
 def test_inactive_user_cannot_use_existing_session(
@@ -155,7 +167,7 @@ def test_inactive_user_cannot_use_existing_session(
 ) -> None:
     user = create_user(db)
 
-    login(client, user.email, "TestovaciHeslo123")
+    login(client, user.username, "TestovaciHeslo123")
 
     user.is_active = False
     db.add(user)
@@ -173,7 +185,7 @@ def test_expired_session_is_rejected_and_deleted(
 ) -> None:
     user = create_user(db)
 
-    login(client, user.email, "TestovaciHeslo123")
+    login(client, user.username, "TestovaciHeslo123")
 
     auth_session = db.exec(select(AuthSession)).first()
     assert auth_session is not None
@@ -197,7 +209,7 @@ def test_near_expiry_session_is_refreshed(
 ) -> None:
     user = create_user(db)
 
-    login(client, user.email, "TestovaciHeslo123")
+    login(client, user.username, "TestovaciHeslo123")
 
     auth_session = db.exec(select(AuthSession)).first()
     assert auth_session is not None
@@ -232,7 +244,7 @@ def test_logout_deletes_session_and_cookie_access(
 ) -> None:
     user = create_user(db)
 
-    login(client, user.email, "TestovaciHeslo123")
+    login(client, user.username, "TestovaciHeslo123")
 
     logout_response = client.post("/api/v1/auth/logout")
 
