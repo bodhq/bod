@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from server.core.auth.models import AuthSession
 from server.core.auth.rate_limit import (
@@ -15,6 +16,7 @@ from server.core.security import (
 )
 from server.core.users.models import User
 from server.core.users.repository import UserRepository
+from sqlmodel import UUID
 
 
 def utcnow() -> datetime:
@@ -57,6 +59,7 @@ class AuthService:
         username: str,
         password: str,
         client_ip: str,
+        user_agent: str | None,
     ) -> LoginResult | None:
         normalized_username = username.strip().lower()
         self.login_limiter.assert_allowed(normalized_username, client_ip)
@@ -84,11 +87,12 @@ class AuthService:
         auth_session = AuthSession(
             user_id=user.id,
             token_hash=hash_session_token(raw_token),
+            ip_address=client_ip,
+            user_agent=user_agent,
             expires_at=utcnow() + timedelta(
                 days=settings.session_idle_days
             ),
         )
-
         self.sessions.create(auth_session)
 
         return LoginResult(
@@ -148,3 +152,24 @@ class AuthService:
 
         if auth_session is not None:
             self.sessions.delete(auth_session)
+
+    def get_user_sessions(self, user: User) -> list[AuthSession]:
+        return self.sessions.get_active_for_user(user.id, utcnow())
+
+    def revoke_user_session(
+        self,
+        user: User,
+        session_id: UUID,
+    ) -> bool:
+        auth_session = self.sessions.get_by_id_and_user_id(
+            session_id,
+            user.id,
+        )
+
+        if auth_session is None:
+            return False
+
+        self.sessions.delete(auth_session)
+        return True
+
+    
