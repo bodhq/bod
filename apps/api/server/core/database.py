@@ -2,12 +2,12 @@ from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
+from server.core.auth.models import AuthSession  # noqa
 from server.core.config import settings
+from server.core.users.models import User  # noqa
 
 # Musíme naimportovat všechny modely, aby je SQLModel.metadata zaregistroval
 from server.modules.timetable.models import Lesson  # noqa
-from server.core.auth.models import AuthSession  # noqa
-from server.core.users.models import User  # noqa
 
 engine = create_engine(settings.database_url, echo=settings.debug)
 

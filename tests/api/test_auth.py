@@ -6,11 +6,43 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
 from server.core.config import settings
+from server.core.auth.dependencies import get_login_attempt_limiter
+from server.core.auth.rate_limit import LoginAttemptLimiter
 from server.core.database import get_session
 from server.core.security import get_password_hash, hash_session_token
 from server.main import app
 from server.core.auth.models import AuthSession
 from server.core.users.models import Role, User
+
+
+class FakeRedis:
+    def __init__(self) -> None:
+        self.values: dict[str, str] = {}
+
+    def exists(self, key: str) -> int:
+        return int(key in self.values)
+
+    def incr(self, key: str) -> int:
+        value = int(self.values.get(key, "0")) + 1
+        self.values[key] = str(value)
+        return value
+
+    def expire(self, key: str, seconds: int) -> bool:
+        return True
+
+    def set(self, key: str, value: str, ex: int) -> bool:
+        self.values[key] = value
+        return True
+
+    def delete(self, *keys: str) -> int:
+        deleted_keys = 0
+
+        for key in keys:
+            if key in self.values:
+                del self.values[key]
+                deleted_keys += 1
+
+        return deleted_keys
 
 
 @pytest.fixture(name="db")
@@ -32,7 +64,10 @@ def client_fixture(db: Session):
     def get_session_override():
         yield db
 
+    login_limiter = LoginAttemptLimiter(FakeRedis())
+
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_login_attempt_limiter] = lambda: login_limiter
 
     client = TestClient(app)
     yield client
@@ -159,6 +194,52 @@ def test_login_rejects_invalid_username_format(
     )
 
     assert response.status_code == 422
+
+
+def test_login_locks_username_and_ip_after_five_failures(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user = create_user(db)
+
+    for _ in range(4):
+        response = login(client, user.username, "spatne-heslo")
+        assert response.status_code == 401
+
+    locked_response = login(client, user.username, "spatne-heslo")
+
+    assert locked_response.status_code == 429
+    assert locked_response.json() == {
+        "detail": "Too many login attempts. Try again later."
+    }
+
+    correct_password_response = login(
+        client,
+        user.username,
+        "TestovaciHeslo123",
+    )
+
+    assert correct_password_response.status_code == 429
+
+
+def test_login_limits_more_than_twenty_requests_from_one_ip(
+    client: TestClient,
+) -> None:
+    for index in range(20):
+        response = login(
+            client,
+            f"unknown_user_{index}",
+            "TestovaciHeslo123",
+        )
+        assert response.status_code == 401
+
+    limited_response = login(
+        client,
+        "unknown_user_21",
+        "TestovaciHeslo123",
+    )
+
+    assert limited_response.status_code == 429
 
 
 def test_inactive_user_cannot_use_existing_session(

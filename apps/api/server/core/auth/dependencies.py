@@ -3,21 +3,42 @@ from typing import Annotated, Literal, cast
 from fastapi import Cookie, Depends, HTTPException, Response, status
 from sqlmodel import Session
 
-from server.core.config import settings
-from server.core.database import get_session
+from server.core.auth.rate_limit import (
+    LoginAttemptLimiter,
+    LoginRateLimitUnavailable,
+)
 from server.core.auth.repository import AuthSessionRepository
 from server.core.auth.service import AuthService
+from server.core.config import settings
+from server.core.database import get_session
+from server.core.redis import get_redis_client
 from server.core.users.models import User
 from server.core.users.repository import UserRepository
-
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_auth_service(db: SessionDep) -> AuthService:
+def get_login_attempt_limiter() -> LoginAttemptLimiter:
+    try:
+        return LoginAttemptLimiter(get_redis_client())
+    except RuntimeError as error:
+        raise LoginRateLimitUnavailable from error
+
+
+LoginAttemptLimiterDep = Annotated[
+    LoginAttemptLimiter,
+    Depends(get_login_attempt_limiter),
+]
+
+
+def get_auth_service(
+    db: SessionDep,
+    login_limiter: LoginAttemptLimiterDep,
+) -> AuthService:
     return AuthService(
         users=UserRepository(db),
         sessions=AuthSessionRepository(db),
+        login_limiter=login_limiter,
     )
 
 

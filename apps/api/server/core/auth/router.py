@@ -1,17 +1,20 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, HTTPException, Request, Response, status
 
-from server.core.config import settings
 from server.core.auth.dependencies import (
     AuthServiceDep,
     CurrentUserDep,
     cookie_samesite,
     set_session_cookie,
 )
+from server.core.auth.rate_limit import (
+    LoginRateLimitExceeded,
+    LoginRateLimitUnavailable,
+)
 from server.core.auth.schemas import LoginRequest
+from server.core.config import settings
 from server.core.users.schemas import UserPublic
-
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -19,10 +22,28 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=UserPublic)
 def login(
     payload: LoginRequest,
+    request: Request,
     response: Response,
     auth_service: AuthServiceDep,
 ) -> UserPublic:
-    result = auth_service.login(payload.username, payload.password)
+    client_ip = request.client.host if request.client is not None else "unknown"
+
+    try:
+        result = auth_service.login(
+            payload.username,
+            payload.password,
+            client_ip,
+        )
+    except LoginRateLimitExceeded as error:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again later.",
+        ) from error
+    except LoginRateLimitUnavailable as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Login is temporarily unavailable.",
+        ) from error
 
     if result is None:
         # Stejná odpověď pro neexistující e-mail i špatné heslo.

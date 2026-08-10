@@ -1,28 +1,32 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
+from server.core.auth.models import AuthSession
+from server.core.auth.rate_limit import (
+    LoginAttemptLimiter,
+    LoginRateLimitExceeded,
+)
+from server.core.auth.repository import AuthSessionRepository
 from server.core.config import settings
 from server.core.security import (
     create_session_token,
     hash_session_token,
     verify_password,
 )
-from server.core.auth.models import AuthSession
-from server.core.auth.repository import AuthSessionRepository
 from server.core.users.models import User
 from server.core.users.repository import UserRepository
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def as_utc(value: datetime) -> datetime:
     # SQLite testy mohou vracet čas bez timezone.
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
+        return value.replace(tzinfo=UTC)
 
-    return value.astimezone(timezone.utc)
+    return value.astimezone(UTC)
 
 
 @dataclass(frozen=True)
@@ -42,12 +46,20 @@ class AuthService:
         self,
         users: UserRepository,
         sessions: AuthSessionRepository,
+        login_limiter: LoginAttemptLimiter,
     ) -> None:
         self.users = users
         self.sessions = sessions
+        self.login_limiter = login_limiter
 
-    def login(self, username: str, password: str) -> LoginResult | None:
+    def login(
+        self,
+        username: str,
+        password: str,
+        client_ip: str,
+    ) -> LoginResult | None:
         normalized_username = username.strip().lower()
+        self.login_limiter.assert_allowed(normalized_username, client_ip)
         user = self.users.get_by_username(normalized_username)
 
         if (
@@ -55,7 +67,17 @@ class AuthService:
             or not user.is_active
             or not verify_password(password, user.hashed_password)
         ):
+            if self.login_limiter.record_failed_attempt(
+                normalized_username,
+                client_ip,
+            ):
+                raise LoginRateLimitExceeded
             return None
+
+        self.login_limiter.reset_failed_attempts(
+            normalized_username,
+            client_ip,
+        )
 
         raw_token = create_session_token()
 

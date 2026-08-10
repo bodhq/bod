@@ -1,8 +1,7 @@
 from pathlib import Path
+
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 class Settings(BaseSettings):
@@ -12,6 +11,9 @@ class Settings(BaseSettings):
     session_cookie_name: str = "session_id"
     session_idle_days: int = 7
     session_refresh_threshold_days: int = 2
+    login_max_failures: int = 5
+    login_lock_minutes: int = 15
+    login_ip_max_requests: int = 20
 
     cookie_secure: bool = True
     cookie_samesite: str = "lax"
@@ -35,4 +37,6 @@ class Settings(BaseSettings):
             )
         return self
 
-settings = Settings()
+# `database_url` is supplied at runtime through the environment / .env file.
+# Mypy cannot infer that Pydantic Settings provides this required field.
+settings = Settings()  # type: ignore[call-arg]
