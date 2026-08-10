@@ -7,10 +7,10 @@ from server.core.security import (
     hash_session_token,
     verify_password,
 )
-from server.modules.auth.models import AuthSession
-from server.modules.auth.repository import AuthSessionRepository
-from server.modules.users.models import User
-from server.modules.users.repository import UserRepository
+from server.core.auth.models import AuthSession
+from server.core.auth.repository import AuthSessionRepository
+from server.core.users.models import User
+from server.core.users.repository import UserRepository
 
 
 def utcnow() -> datetime:

@@ -5,10 +5,10 @@ from sqlmodel import Session
 
 from server.core.config import settings
 from server.core.database import get_session
-from server.modules.auth.repository import AuthSessionRepository
-from server.modules.auth.service import AuthService
-from server.modules.users.models import User
-from server.modules.users.repository import UserRepository
+from server.core.auth.repository import AuthSessionRepository
+from server.core.auth.service import AuthService
+from server.core.users.models import User
+from server.core.users.repository import UserRepository
 
 
 SessionDep = Annotated[Session, Depends(get_session)]

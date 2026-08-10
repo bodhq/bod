@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from server.modules.auth.router import router as auth_router
+from server.core.auth.router import router as auth_router
 from server.modules.timetable.router import router as timetable_router
 
 api_router = APIRouter()

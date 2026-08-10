@@ -9,8 +9,8 @@ from server.core.config import settings
 from server.core.database import get_session
 from server.core.security import get_password_hash, hash_session_token
 from server.main import app
-from server.modules.auth.models import AuthSession
-from server.modules.users.models import Role, User
+from server.core.auth.models import AuthSession
+from server.core.users.models import Role, User
 
 
 @pytest.fixture(name="db")

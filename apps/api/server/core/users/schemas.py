@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from server.modules.users.models import Role
+from server.core.users.models import Role
 
 
 class UserPublic(BaseModel):

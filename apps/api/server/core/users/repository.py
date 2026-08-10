@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from server.modules.users.models import User
+from server.core.users.models import User
 
 
 class UserRepository:

@@ -3,14 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, Cookie, HTTPException, Response, status
 
 from server.core.config import settings
-from server.modules.auth.dependencies import (
+from server.core.auth.dependencies import (
     AuthServiceDep,
     CurrentUserDep,
     cookie_samesite,
     set_session_cookie,
 )
-from server.modules.auth.schemas import LoginRequest
-from server.modules.users.schemas import UserPublic
+from server.core.auth.schemas import LoginRequest
+from server.core.users.schemas import UserPublic
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])

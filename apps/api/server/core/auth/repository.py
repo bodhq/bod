@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from server.modules.auth.models import AuthSession
+from server.core.auth.models import AuthSession
 
 
 class AuthSessionRepository:
