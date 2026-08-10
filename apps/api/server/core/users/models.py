@@ -16,7 +16,7 @@ class User(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Pro login normalizuj na lowercase.
-    email: str = Field(index=True, unique=True)
+    username: str = Field(index=True, unique=True)
 
     # Nikdy neukládej původní heslo.
     hashed_password: str

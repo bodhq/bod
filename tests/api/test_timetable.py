@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from server.main import app
 from server.core.database import get_session
+from server.main import app
 from server.modules.timetable.models import Lesson
 
 """
@@ -77,4 +77,9 @@ def test_get_timetable_for_class_not_found(client: TestClient):
 
     # --- ASSERT ---
     assert response.status_code == 404
-    assert response.json()["detail"] == "Rozvrh nebyl nalezen."
+    assert response.json() == {
+        "error": {
+            "code": "RESOURCE_NOT_FOUND",
+            "message": "Rozvrh nebyl nalezen.",
+        }
+    }

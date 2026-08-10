@@ -1,11 +1,12 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
-from unittest.mock import patch
 
-from server.main import app
 from server.core.database import get_session
+from server.main import app
 
 
 @pytest.fixture(name="session")
