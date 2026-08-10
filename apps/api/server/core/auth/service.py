@@ -16,7 +16,6 @@ from server.core.security import (
 )
 from server.core.users.models import User
 from server.core.users.repository import UserRepository
-from sqlmodel import UUID
 
 
 def utcnow() -> datetime:

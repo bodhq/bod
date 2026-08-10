@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -6,16 +6,16 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
-from server.core.config import settings
 from server.core.auth.dependencies import get_login_attempt_limiter
-from server.core.auth.rate_limit import LoginAttemptLimiter
-from server.core.database import get_session
-from server.core.security import get_password_hash, hash_session_token
-from server.main import app
 from server.core.auth.models import AuthSession
-from server.core.users.models import Role, User
+from server.core.auth.rate_limit import LoginAttemptLimiter
 from server.core.auth.repository import AuthSessionRepository
 from server.core.auth.service import SessionCleanupService, utcnow
+from server.core.config import settings
+from server.core.database import get_session
+from server.core.security import get_password_hash, hash_session_token
+from server.core.users.models import Role, User
+from server.main import app
 
 
 class FakeRedis:
@@ -155,7 +155,12 @@ def test_me_without_cookie_returns_401(
     response = client.get("/api/v1/auth/me")
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Not authenticated"}
+    assert response.json() == {
+        "error": {
+            "code": "AUTH_UNAUTHENTICATED",
+            "message": "Authentication is required",
+        }
+    }
 
 
 def test_login_rejects_wrong_password(
@@ -168,7 +173,10 @@ def test_login_rejects_wrong_password(
 
     assert response.status_code == 401
     assert response.json() == {
-        "detail": "Invalid username or password"
+        "error": {
+            "code": "AUTH_INVALID_CREDENTIALS",
+            "message": "Invalid username or password",
+        }
     }
 
 
@@ -183,7 +191,10 @@ def test_login_rejects_unknown_username(
 
     assert response.status_code == 401
     assert response.json() == {
-        "detail": "Invalid username or password"
+        "error": {
+            "code": "AUTH_INVALID_CREDENTIALS",
+            "message": "Invalid username or password",
+        }
     }
 
 
@@ -213,7 +224,10 @@ def test_login_locks_username_and_ip_after_five_failures(
 
     assert locked_response.status_code == 429
     assert locked_response.json() == {
-        "detail": "Too many login attempts. Try again later."
+        "error": {
+            "code": "AUTH_ACCOUNT_LOCKED",
+            "message": "Too many login attempts. Try again later.",
+        }
     }
 
     correct_password_response = login(
@@ -275,7 +289,7 @@ def test_expired_session_is_rejected_and_deleted(
     assert auth_session is not None
 
     auth_session.expires_at = (
-        datetime.now(timezone.utc) - timedelta(minutes=1)
+        datetime.now(UTC) - timedelta(minutes=1)
     )
 
     db.add(auth_session)
@@ -299,7 +313,7 @@ def test_near_expiry_session_is_refreshed(
     assert auth_session is not None
 
     auth_session.expires_at = (
-        datetime.now(timezone.utc) + timedelta(days=1)
+        datetime.now(UTC) + timedelta(days=1)
     )
 
     db.add(auth_session)
@@ -315,10 +329,10 @@ def test_near_expiry_session_is_refreshed(
     expires_at = auth_session.expires_at
 
     if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
+        expires_at = expires_at.replace(tzinfo=UTC)
 
     assert expires_at > (
-        datetime.now(timezone.utc) + timedelta(days=6)
+        datetime.now(UTC) + timedelta(days=6)
     )
 
 
@@ -364,3 +378,30 @@ def test_cleanup_deletes_only_expired_sessions(db: Session) -> None:
     assert deleted_count == 1
     assert db.get(AuthSession, expired_session.id) is None
     assert db.get(AuthSession, active_session.id) is not None
+
+def test_login_is_case_insensitive(client: TestClient, db: Session) -> None:
+    user = create_user(db)
+
+    response = login(
+        client,
+        user.username.upper(),
+        "TestovaciHeslo123",
+    )
+
+    assert response.status_code == 200
+
+def test_login_returns_structured_error(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user = create_user(db)
+
+    response = login(client, user.username, "spatne-heslo")
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "AUTH_INVALID_CREDENTIALS",
+            "message": "Invalid username or password",
+        }
+    }
