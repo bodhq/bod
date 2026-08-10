@@ -173,3 +173,12 @@ class AuthService:
         return True
 
     
+class SessionCleanupService:
+    def __init__(
+        self,
+        sessions: AuthSessionRepository,
+    ) -> None:
+        self.sessions = sessions
+
+    def remove_expired_sessions(self) -> int:
+        return self.sessions.delete_expired(utcnow())

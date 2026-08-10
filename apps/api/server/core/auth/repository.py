@@ -56,3 +56,19 @@ class AuthSessionRepository:
     def delete(self, auth_session: AuthSession) -> None:
         self.db.delete(auth_session)
         self.db.commit()
+
+    def delete_expired(self, now: datetime) -> int:
+        exired_sessions = list(
+            self.db.exec(
+                select(AuthSession).where(
+                    AuthSession.expires_at <= now
+                )
+            ).all()
+        )
+
+        for auth_session in exired_sessions:
+            self.db.delete(auth_session)
+
+        self.db.commit()
+
+        return len(exired_sessions)

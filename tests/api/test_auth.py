@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,6 +14,8 @@ from server.core.security import get_password_hash, hash_session_token
 from server.main import app
 from server.core.auth.models import AuthSession
 from server.core.users.models import Role, User
+from server.core.auth.repository import AuthSessionRepository
+from server.core.auth.service import SessionCleanupService, utcnow
 
 
 class FakeRedis:
@@ -335,3 +338,29 @@ def test_logout_deletes_session_and_cookie_access(
     me_response = client.get("/api/v1/auth/me")
 
     assert me_response.status_code == 401
+
+def test_cleanup_deletes_only_expired_sessions(db: Session) -> None:
+    expired_session = AuthSession(
+        user_id=uuid4(),
+        token_hash="expired-token",
+        expires_at=utcnow() - timedelta(minutes=1),
+    )
+    active_session = AuthSession(
+        user_id=uuid4(),
+        token_hash="active-token",
+        expires_at=utcnow() + timedelta(days=1),
+    )
+
+    db.add(expired_session)
+    db.add(active_session)
+    db.commit()
+
+    cleanup_service = SessionCleanupService(
+        AuthSessionRepository(db)
+    )
+
+    deleted_count = cleanup_service.remove_expired_sessions()
+
+    assert deleted_count == 1
+    assert db.get(AuthSession, expired_session.id) is None
+    assert db.get(AuthSession, active_session.id) is not None
