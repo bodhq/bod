@@ -19,6 +19,6 @@ jobs:
           # Vyžaduje prefix (feat, fix, docs, chore, refactor, test, infra) nebo dependabot
           regex: '^((feat|fix|docs|chore|refactor|test|infra)\/([a-z0-9-]+)|dependabot\/.+)$'
           allowed_prefixes: 'feat,fix,docs,chore,refactor,test,infra,dependabot'
-          ignore: main
+          ignore: main,develop
           min_length: 5
           max_length: 50
