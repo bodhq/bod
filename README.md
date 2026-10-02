@@ -20,6 +20,7 @@
 > **bod** vzniká jako návrh moderního a modulárního školního informačního systému. Jedná se o dlouhodobý středoškolský maturitní projekt, jehož cílem je vytvořit plnohodnotnou alternativu k existujícím zastaralým řešením pro správu školních agend.
 
 ## Obsah
+
 - [Řešitelé a vedení práce](#řešitelé-a-vedení-práce)
 - [Filozofie a architektura](#filozofie-a-architektura)
 - [Rozdělení odpovědností a technologie](#rozdělení-odpovědností-a-technologie)
@@ -33,12 +34,14 @@
 ## Řešitelé a vedení práce
 
 **Řešitelé projektu:**
+
 - **Eliáš Jan Procházka** (@prochazkaelias23)
 - **Filip Nagy** (@nagyfilip23)
 
 **Vedení projektu:**
+
 - **Vedoucí práce:** @haut
-- **Oponent práce:** *(zatím neznámý)*
+- **Oponent práce:** @svitek1
 
 ---
 
@@ -49,7 +52,7 @@ Základní filozofií projektu je striktní oddělení jádra systému od jednot
 - **Jádro (Core):** Poskytuje jednotný datový model, zabezpečení (autentizaci) a sdílenou infrastrukturu.
 - **Moduly (Feature Slices):** Rozšiřují funkcionalitu systému zcela nezávisle na sobě (např. rozvrh, klasifikace, zprávy), čímž minimalizují riziko narušení existujících částí aplikace při přidávání nových funkcí.
 
-Cílem není pouze implementace funkční aplikace, ale především návrh vysoce škálovatelného systému, který reflektuje moderní přístupy k softwarové architektuře (*Domain-Driven Design*, *Vertical Slicing*, *End-to-End Type Safety*).
+Cílem není pouze implementace funkční aplikace, ale především návrh vysoce škálovatelného systému, který reflektuje moderní přístupy k softwarové architektuře (_Domain-Driven Design_, _Vertical Slicing_, _End-to-End Type Safety_).
 
 ---
 
@@ -57,11 +60,11 @@ Cílem není pouze implementace funkční aplikace, ale především návrh vyso
 
 Projekt je postaven jako asymetrická fullstack aplikace (oddělený klient a server) strukturovaná v prostředí monorepa pomocí nástroje Turborepo.
 
-| Vrstva | Vývojář | Technologie |
-| ------ | -------- | ----------- |
-| **Backend a Databáze** | Filip Nagy | FastAPI, Python 3.12, PostgreSQL, Redis, SQLModel |
-| **Frontend a UI/UX** | Eliáš Jan Procházka | Next.js 16, React 19, Tailwind CSS v4 |
-| **Infrastruktura a Nasazení** | Eliáš Jan Procházka | Docker, Ubuntu Server |
+| Vrstva                        | Vývojář             | Technologie                                       |
+| ----------------------------- | ------------------- | ------------------------------------------------- |
+| **Backend a Databáze**        | Filip Nagy          | FastAPI, Python 3.12, PostgreSQL, Redis, SQLModel |
+| **Frontend a UI/UX**          | Eliáš Jan Procházka | Next.js 16, React 19, Tailwind CSS v4             |
+| **Infrastruktura a Nasazení** | Eliáš Jan Procházka | Docker, Ubuntu Server                             |
 
 > [!TIP]
 > Systémová analýza, logická architektura a návrh datových struktur vznikají společným úsilím celého týmu.
@@ -83,8 +86,9 @@ Díky přísným konvencím a silné architektuře je dokumentace udržována v 
 Pro zajištění plynulého chodu aplikace v produkčním prostředí (školní provoz) byla navržena kontejnerová architektura. Systém je dimenzován tak, aby zvládl ranní výkonnostní špičky a náročné buildovací procesy (Server-Side Rendering kompilace).
 
 **Doporučená hardwarová specifikace (Produkce):**
+
 - **CPU:** 4 vCPU (Nezbytné pro paralelní zpracování Node.js a databázových operací)
-- **RAM:** 8 GB (Klíčové pro prevenci *Out of Memory* chyb při buildu Next.js a běhu PostgreSQL)
+- **RAM:** 8 GB (Klíčové pro prevenci _Out of Memory_ chyb při buildu Next.js a běhu PostgreSQL)
 - **Úložiště:** 60 - 80 GB SSD/NVMe (Prostor pro OS, zdrojové kódy, Docker images, aplikační data a zálohy)
 - **OS:** Ubuntu 24.04 LTS (Nebo 22.04 LTS)
 
@@ -125,7 +129,7 @@ pnpm db:dev
 pnpm dev
 ```
 
-*Databázové tabulky se během lokálního vývoje inicializují automaticky při startu backendového serveru (Auto-Init).*
+_Databázové tabulky se během lokálního vývoje inicializují automaticky při startu backendového serveru (Auto-Init)._
 
 ---
 
@@ -141,14 +145,17 @@ Běžné API testy používají dočasnou SQLite databázi. Pět integračních 
 PostgreSQL migrací je volitelných; podrobnosti jsou v [testovací příručce](docs/testing.md).
 
 ### Lokální Validace (Quality Assurance)
+
 Před každým vytvořením Pull Requestu se provádí komplexní lokální kontrola celého monorepa, která simuluje CI server:
 
 ```bash
 pnpm check
 ```
+
 Tento příkaz paralelně ověřuje formátování (Biome, Ruff), statické typy (TSC, Mypy) a spouští všechny připravené testy.
 
 ### Nasazení (Deployment Lifecycle)
+
 Produkční nasazení respektuje kontejnerovou architekturu a bezestavový (stateless) přístup:
 
 1. **CI/CD Pipeline:** Při sloučení kódu do hlavní větve `main` se spouští GitHub Actions pro konečnou verifikaci.
