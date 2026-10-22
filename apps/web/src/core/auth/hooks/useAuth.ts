@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 import { Logger } from "@/core/logger";
+import { toast } from "@/core/ui/toast";
+
 import { login as apiLogin, logout as apiLogout } from "../api";
 import { useAuthStore } from "../store";
 
@@ -19,13 +22,7 @@ export function useAuth() {
 
   // TanStack Query Mutation pro Login
   const loginMutation = useMutation({
-    mutationFn: async ({
-      username,
-      password,
-    }: {
-      username: string;
-      password: string;
-    }) => {
+    mutationFn: async ({ username, password }: { username: string; password: string }) => {
       return await apiLogin(username, password);
     },
     onSuccess: (userData) => {
@@ -37,7 +34,9 @@ export function useAuth() {
       router.push("/app");
     },
     onError: (err: Error) => {
-      setError(err.message || "Neočekávaná chyba při přihlašování.");
+      const msg = err.message || "Neočekávaná chyba při přihlašování.";
+      setError(msg);
+      toast.error(msg);
     },
   });
 
@@ -53,7 +52,7 @@ export function useAuth() {
     },
     onError: (err) => {
       Logger.error("Chyba při odhlašování", err);
-      alert("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
+      toast.error("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
     },
   });
 

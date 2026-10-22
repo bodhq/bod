@@ -1,10 +1,8 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
-// TODO: Až Filip dokončí backend a spustíš `pnpm gen:api`, smaž tuto řádku a odkomentuj import z api-clienta
-import { getMe, type User } from "./api";
 
-// import { authMeGet as getMe, type UserPublic as User } from '@bod/api-client';
+import { getMe, type User } from "./api";
 
 interface AuthState {
   user: User | null;
@@ -25,11 +23,7 @@ export const useAuthStore = create<AuthState>()(
       checkAuth: async () => {
         try {
           const user = await getMe();
-          set(
-            { user, isAuthenticated: !!user, isLoading: false },
-            false,
-            "auth/checkAuth",
-          );
+          set({ user, isAuthenticated: !!user, isLoading: false }, false, "auth/checkAuth");
         } catch {
           set(
             { user: null, isAuthenticated: false, isLoading: false },
@@ -39,18 +33,15 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      setUser: (user) =>
-        set({ user, isAuthenticated: !!user }, false, "auth/setUser"),
+      setUser: (user) => set({ user, isAuthenticated: !!user }, false, "auth/setUser"),
     }),
     { name: "AuthStore" },
   ),
 );
 
 // Atomické selektory pro prevenci zbytečných re-renderů
-export const useAuthUser = () =>
-  useAuthStore(useShallow((state) => state.user));
-export const useAuthIsAuthenticated = () =>
-  useAuthStore((state) => state.isAuthenticated);
+export const useAuthUser = () => useAuthStore(useShallow((state) => state.user));
+export const useAuthIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useAuthIsLoading = () => useAuthStore((state) => state.isLoading);
 export const useAuthActions = () =>
   useAuthStore(

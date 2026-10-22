@@ -1,5 +1,6 @@
+import type { z } from "zod";
+
 import { zLoginRequest } from "@bod/api-client/zod.gen";
-import { z } from "zod";
 
 /**
  * Centrální definice všech sdílených validačních pravidel napříč systémem.

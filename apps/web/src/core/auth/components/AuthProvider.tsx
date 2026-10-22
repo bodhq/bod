@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import type { User } from "../api";
+
+import { useLayoutEffect, useRef } from "react";
+
 import { useAuthStore } from "../store";
 
 export interface AuthProviderProps {
@@ -14,7 +16,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   // Use useLayoutEffect to update the store synchronously before paint on the client,
   // avoiding the "Cannot update a component while rendering a different component" warning.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!initialized.current) {
       useAuthStore.setState({ user: initialUser, isLoading: false });
       initialized.current = true;
