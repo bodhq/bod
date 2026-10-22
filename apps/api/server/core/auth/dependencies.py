@@ -1,8 +1,10 @@
 from typing import Annotated, Literal, cast
 
-from fastapi import Cookie, Depends, Response
+from fastapi import Cookie, Depends, Request, Response
 from sqlmodel import Session
 
+from server.core.access.repository import AccessError
+from server.core.access.services import AccessContext
 from server.core.auth.rate_limit import (
     LoginAttemptLimiter,
 )
@@ -71,14 +73,14 @@ def set_session_cookie(response: Response, token: str) -> None:
     )
 
 
-def get_current_user(
+def get_current_context(
     response: Response,
     auth_service: AuthServiceDep,
     session_token: Annotated[
         str | None,
         Cookie(alias=settings.session_cookie_name),
     ] = None,
-) -> User:
+) -> AccessContext:
     if session_token is None:
         raise UnauthenticatedException()
 
@@ -90,7 +92,31 @@ def get_current_user(
     if result.session_was_refreshed:
         set_session_cookie(response, session_token)
 
-    return result.user
+    return result.context
+
+
+CurrentContextDep = Annotated[AccessContext, Depends(get_current_context)]
+
+
+def get_current_user(context: CurrentContextDep) -> User:
+    return context.user
 
 
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
+
+
+def mutation_guard(request: Request) -> None:
+    if request.method in {"GET", "HEAD", "OPTIONS"}:
+        return
+    origin = request.headers.get("origin")
+    if origin is not None:
+        if origin not in settings.allowed_origins:
+            raise AccessError("forbidden", "Nepovolený původ požadavku.")
+    elif request.headers.get("X-Requested-With") != "bod":
+        # API klient bez Origin musí poslat vlastní hlavičku. Prohlížeč
+        # ji nemůže přidat cross-site HTML formulářem; Origin si zvolit nemůže.
+        raise AccessError("forbidden", "Chybí původ nebo X-Requested-With: bod.")
+
+
+def no_store(response: Response) -> None:
+    response.headers["Cache-Control"] = "no-store"

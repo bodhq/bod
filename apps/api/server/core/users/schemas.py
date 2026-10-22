@@ -1,13 +1,5 @@
-from uuid import UUID
-
-from pydantic import BaseModel, ConfigDict
-
-from server.core.users.models import Role
+from server.core.access.schemas import MeRead
 
 
-class UserPublic(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID
-    username: str
-    role: Role
+class UserPublic(MeRead):
+    """Vlastní profil včetně rolí a oprávnění aktuální relace."""

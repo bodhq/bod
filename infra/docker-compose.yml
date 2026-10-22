@@ -69,6 +69,9 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      MEDIA_ROOT: /var/lib/bod/media
+    volumes:
+      - school-media:/var/lib/bod/media
     depends_on:
       db:
         condition: service_healthy
@@ -102,6 +105,7 @@ networks:
     driver: bridge
 
 volumes:
+  school-media:
   postgres-data:
   caddy-data:
   caddy-config:

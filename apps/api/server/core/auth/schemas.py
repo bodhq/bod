@@ -8,7 +8,7 @@ class LoginRequest(BaseModel):
     username: str = Field(
         min_length=3,
         max_length=64,
-        pattern=r"^[a-zA-Z0-9_.]+$",
+        pattern=r"^[a-zA-Z0-9_.-]+$",
     )
     password: str = Field(min_length=1, max_length=1024)
 
@@ -19,6 +19,7 @@ class AuthSessionPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    active_role_code: str | None
     ip_address: str | None
     user_agent: str | None
     created_at: datetime

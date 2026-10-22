@@ -9,12 +9,15 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
+from server.core.access.dependencies import require_permission
 from server.core.database import get_session
 from server.core.exceptions import ErrorResponse
 from server.modules.timetable.schemas import LessonPublic
 from server.modules.timetable.services import TimetableService
 
 TIMETABLE_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
+    401: {"model": ErrorResponse, "description": "Authentication is required"},
+    403: {"model": ErrorResponse, "description": "Permission is required"},
     404: {
         "model": ErrorResponse,
         "description": "Timetable not found",
@@ -29,7 +32,10 @@ TIMETABLE_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     },
 }
 
-router = APIRouter(prefix="/timetable", tags=["timetable"])
+router = APIRouter(
+    prefix="/timetable", tags=["timetable"],
+    dependencies=[Depends(require_permission("timetable.read"))],
+)
 SessionDep = Annotated[Session, Depends(get_session)]
 
 

@@ -1,49 +1,32 @@
-import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel.pool import StaticPool
-
-from server.core.database import get_session
-from server.main import app
+from server.core.access.models import UserRole
+from server.core.security import get_password_hash
+from server.core.users.models import User
 from server.modules.timetable.models import Lesson
+from sqlmodel import Session
 
-"""
-ONBOARDING PRO VÝVOJÁŘE:
-Toto je testovací soubor využívající Pytest.
 
-Pravidlo: Testy v enterprise repozitáři dodržují AAA vzor:
-1. Arrange (Příprava dat)
-2. Act (Zavolání funkce/API)
-3. Assert (Ověření výsledku)
-
-Zde používáme In-Memory SQLite databázi (`StaticPool`), abychom nešpinili 
-skutečnou produkční nebo lokální PostgreSQL databázi během testování.
-"""
-
-# 1. ARRANGE: Příprava Testovací databáze
-@pytest.fixture(name="session")
-def session_fixture():
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+def sign_in(client: TestClient, session: Session) -> None:
+    user = User(
+        username="student",
+        hashed_password=get_password_hash("TestHeslo123456"),
+        must_change_password=False,
     )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
+    session.add(user)
+    session.commit()
+    session.add(UserRole(user_id=user.id, role_code="student"))
+    session.commit()
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": user.username, "password": "TestHeslo123456"},
+    )
+    assert response.status_code == 200
 
-# 2. ARRANGE: Override FastAPI závislostí
-@pytest.fixture(name="client")
-def client_fixture(session: Session):
-    def get_session_override():
-        return session
-
-    app.dependency_overrides[get_session] = get_session_override
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 def test_get_timetable_for_class_success(client: TestClient, session: Session):
+    sign_in(client, session)
     # --- ARRANGE ---
-    # Vytvoření testovací hodiny v naší dočasné in-memory databázi
+    # Testovací hodina v izolované SQLite databázi
     lesson = Lesson(
         class_id=1,
         subject="Matematika",
@@ -51,7 +34,7 @@ def test_get_timetable_for_class_success(client: TestClient, session: Session):
         room="A1",
         day=1,
         start_time="08:00",
-        end_time="08:45"
+        end_time="08:45",
     )
     session.add(lesson)
     session.commit()
@@ -68,7 +51,9 @@ def test_get_timetable_for_class_success(client: TestClient, session: Session):
     assert data[0]["subject"] == "Matematika"
     assert data[0]["room"] == "A1"
 
-def test_get_timetable_for_class_not_found(client: TestClient):
+
+def test_get_timetable_for_class_not_found(client: TestClient, session: Session):
+    sign_in(client, session)
     # --- ARRANGE ---
     # Nic nevytváříme, zkoušíme třídu bez rozvrhu
 
@@ -83,3 +68,7 @@ def test_get_timetable_for_class_not_found(client: TestClient):
             "message": "Rozvrh nebyl nalezen.",
         }
     }
+
+
+def test_timetable_requires_authentication(client: TestClient):
+    assert client.get("/api/v1/timetable/1").status_code == 401
