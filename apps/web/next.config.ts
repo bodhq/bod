@@ -1,5 +1,6 @@
-import "./src/core/env";
 import type { NextConfig } from "next";
+
+import "./src/core/env";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@bod/api-client"],
