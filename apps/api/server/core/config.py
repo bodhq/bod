@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     cookie_secure: bool = True
     cookie_samesite: str = "lax"
+    allowed_origins: list[str] = ["http://localhost:3000"]
+    media_root: Path = PROJECT_ROOT / "var" / "media"
 
     project_name: str = "bod API"
     version: str = "0.1.0"
@@ -35,6 +37,8 @@ class Settings(BaseSettings):
             self.database_url = self.database_url.replace(
                 "postgresql://", "postgresql+psycopg://", 1
             )
+        if not self.media_root.is_absolute():
+            self.media_root = PROJECT_ROOT / self.media_root
         return self
 
 # `database_url` is supplied at runtime through the environment / .env file.

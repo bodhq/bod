@@ -13,7 +13,9 @@ COPY apps/api/pyproject.toml apps/api/README.md ./
 RUN uv sync --frozen --no-dev --package api --no-install-project
 COPY apps/api ./
 
-RUN useradd -m -r appuser && chown -R appuser /workspace
+RUN useradd -m -r appuser \
+    && mkdir -p /var/lib/bod/media \
+    && chown -R appuser /workspace /var/lib/bod
 USER appuser
 
 EXPOSE 8000

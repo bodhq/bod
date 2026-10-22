@@ -29,6 +29,9 @@ htmlcov/
 # Backups
 backups/
 
+# Lokální média školy
+/var/media/
+
 # Environment and secrets
 .env
 .env.*

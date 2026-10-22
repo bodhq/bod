@@ -24,7 +24,7 @@ runs:
       shell: bash
 
     - name: Install API dependencies
-      run: uv sync --dev --frozen
+      run: uv sync --all-packages --all-groups --frozen
       shell: bash
 
     - name: Cache turbo build setup

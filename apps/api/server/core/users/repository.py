@@ -10,14 +10,11 @@ class UserRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_by_username(self, username: str) -> User | None:
+    def get_by_username(self, username: str, *, lock: bool = False) -> User | None:
         normalized_username = username.strip().lower()
 
-        return self.db.exec(
-            select(User).where(
-                func.lower(User.username) == normalized_username
-            )
-        ).first()
+        query = select(User).where(func.lower(User.username) == normalized_username)
+        return self.db.exec(query.with_for_update() if lock else query).first()
 
     def get_by_id(self, user_id: UUID) -> User | None:
         return self.db.get(User, user_id)

@@ -1,12 +1,17 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Cookie, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 
+from server.core.access.dependencies import AccessServiceDep, require_permission
+from server.core.access.schemas import PasswordChange, RoleSwitch
 from server.core.auth.dependencies import (
     AuthServiceDep,
+    CurrentContextDep,
     CurrentUserDep,
     cookie_samesite,
+    mutation_guard,
+    no_store,
     set_session_cookie,
 )
 from server.core.auth.rate_limit import (
@@ -66,7 +71,12 @@ SESSION_REVOKE_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     },
 }
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["auth"],
+    dependencies=[Depends(mutation_guard), Depends(no_store)],
+    responses={code: {"model": ErrorResponse} for code in (401, 403, 422, 503)},
+)
 
 
 @router.post(
@@ -100,7 +110,7 @@ def login(
 
     set_session_cookie(response, result.session_token)
 
-    return UserPublic.model_validate(result.user)
+    return UserPublic.model_validate(auth_service.access.me(result.context))
 
 
 @router.post(
@@ -133,14 +143,37 @@ def logout(
     response_model=UserPublic,
     responses=AUTH_REQUIRED_RESPONSES,
 )
-def me(current_user: CurrentUserDep) -> UserPublic:
-    return UserPublic.model_validate(current_user)
+def me(context: CurrentContextDep, service: AccessServiceDep) -> UserPublic:
+    return UserPublic.model_validate(service.me(context))
+
+
+@router.put("/active-role", response_model=UserPublic)
+def switch_role(
+    payload: RoleSwitch, context: CurrentContextDep, service: AccessServiceDep
+) -> UserPublic:
+    updated = service.switch_role(context, payload.role_code)
+    return UserPublic.model_validate(service.me(updated))
+
+
+@router.post("/change-password", response_model=UserPublic)
+def change_password(
+    payload: PasswordChange,
+    context: CurrentContextDep,
+    service: AccessServiceDep,
+    response: Response,
+) -> UserPublic:
+    token, updated = service.change_password(
+        context, payload.current_password, payload.new_password
+    )
+    set_session_cookie(response, token)
+    return UserPublic.model_validate(service.me(updated))
 
 
 @router.get(
     "/sessions",
     response_model=list[AuthSessionPublic],
     responses=AUTH_REQUIRED_RESPONSES,
+    dependencies=[Depends(require_permission("profile.self.read"))],
 )
 def get_sessions(
     current_user: CurrentUserDep,
@@ -148,15 +181,14 @@ def get_sessions(
 ) -> list[AuthSessionPublic]:
     sessions = auth_service.get_user_sessions(current_user)
 
-    return [
-        AuthSessionPublic.model_validate(session)
-        for session in sessions
-    ]
+    return [AuthSessionPublic.model_validate(session) for session in sessions]
+
 
 @router.delete(
     "/sessions/{session_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     responses=SESSION_REVOKE_ERROR_RESPONSES,
+    dependencies=[Depends(require_permission("profile.self.read"))],
 )
 def revoke_session(
     session_id: UUID,
