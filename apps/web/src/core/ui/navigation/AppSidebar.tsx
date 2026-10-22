@@ -1,9 +1,10 @@
 "use client";
 
-import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/core/auth/components/LogoutButton";
+import { useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/Button";
 import { Logo } from "@/core/ui/Logo";
 import { ThemeToggle } from "@/core/ui/ThemeToggle";
@@ -14,6 +15,7 @@ import { SidebarNav } from "./SidebarNav";
 import { useNavigationState } from "./useNavigationState";
 
 export function AppSidebar() {
+  const user = useAuthUser();
   const { activePath, navigate } = useNavigationState();
   const [isMinimized, setIsMinimized] = useState(true);
 
@@ -85,6 +87,16 @@ export function AppSidebar() {
           icon: item.icon,
         }))}
       />
+
+      {user?.permissions?.some((permission) =>
+        ["users.manage", "roles.manage", "audit.read"].includes(permission),
+      ) && (
+        <SidebarNav
+          className="mt-3 shrink-0"
+          isMinimized={isMinimized}
+          items={[{ title: "Správa přístupů", href: "/app/settings/access", icon: ShieldCheck }]}
+        />
+      )}
 
       <div className="mt-auto flex shrink-0 flex-col gap-2 border-t border-(--color-border) pt-4">
         <Button

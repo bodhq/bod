@@ -5,10 +5,11 @@ import { toast } from "@/core/ui/toast";
 import { getSessions, revokeSession } from "../api";
 import { useAuthStore } from "../store";
 
-export function useSessions() {
+export function useSessions(enabled = true) {
   return useQuery({
     queryKey: ["sessions"],
     queryFn: () => getSessions(),
+    enabled,
   });
 }
 

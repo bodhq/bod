@@ -1,8 +1,4 @@
-/**
- * Tyto kódy by měly ideálně v budoucnu pocházet přímo z @bod/api-client,
- * až je kolega na backendu přidá do OpenAPI specifikace.
- * Zatím si je připravíme ručně, abychom měli kam překlady směrovat.
- */
+/** Error translations used by API feedback across the app. */
 export type ErrorCode =
   | "AUTH_INVALID_CREDENTIALS"
   | "AUTH_USER_BANNED"
@@ -10,6 +6,12 @@ export type ErrorCode =
   | "AUTH_UNAUTHENTICATED"
   | "AUTH_LOGIN_UNAVAILABLE"
   | "AUTH_SESSION_NOT_FOUND"
+  | "AUTH_FORBIDDEN"
+  | "AUTH_PASSWORD_CHANGE_REQUIRED"
+  | "RESOURCE_CONFLICT"
+  | "MEDIA_FILE_TOO_LARGE"
+  | "MEDIA_UNSUPPORTED_TYPE"
+  | "MEDIA_UNAVAILABLE"
   | "RESOURCE_NOT_FOUND"
   | "VALIDATION_ERROR"
   | "DATABASE_UNAVAILABLE"
@@ -23,7 +25,13 @@ export const errorTranslations: Record<ErrorCode, string> = {
   AUTH_UNAUTHENTICATED: "Nejste přihlášeni.",
   AUTH_LOGIN_UNAVAILABLE: "Přihlašování je dočasně nedostupné.",
   AUTH_SESSION_NOT_FOUND: "Relace nebyla nalezena.",
+  AUTH_FORBIDDEN: "K této akci nemáte potřebné oprávnění.",
+  AUTH_PASSWORD_CHANGE_REQUIRED: "Před pokračováním si změňte heslo.",
   RESOURCE_NOT_FOUND: "Požadovaný zdroj nebyl nalezen.",
+  RESOURCE_CONFLICT: "Tato změna je v konfliktu s aktuálními daty.",
+  MEDIA_FILE_TOO_LARGE: "Soubor je příliš velký.",
+  MEDIA_UNSUPPORTED_TYPE: "Tento typ souboru není podporován.",
+  MEDIA_UNAVAILABLE: "Úložiště souborů je dočasně nedostupné.",
   DATABASE_UNAVAILABLE: "Databáze je dočasně nedostupná.",
   INTERNAL_SERVER_ERROR: "Vnitřní chyba serveru.",
   VALIDATION_ERROR: "Neplatný formát odeslaných dat.",
