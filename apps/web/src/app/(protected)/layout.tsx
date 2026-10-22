@@ -1,16 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
 import { getMe } from "@/core/auth/api";
 import { AuthProvider } from "@/core/auth/components/AuthProvider";
-import { AppSidebar } from "@/core/ui/app-shell/AppSidebar";
-import { Dock } from "@/core/ui/app-shell/Dock";
+import { AppSidebar } from "@/core/ui/navigation/AppSidebar";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // 1. Získání uživatele na straně serveru
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // Resolve the session before rendering the protected shell.
   let user = null;
   const cookieStore = await cookies();
   const sessionId = cookieStore.get("session_id")?.value;
@@ -27,33 +23,21 @@ export default async function AppLayout({
         },
       });
     } catch (_error) {
-      // Pokud API vrátí 401
+      // The redirect below handles expired or invalid sessions.
     }
   }
 
-  // 2. Pokud se ověření nezdaří, okamžitý redirect (Zero Layout Shift)
   if (!user) {
     redirect("/login?error=unauthorized");
   }
 
-  // 3. Render responzivního App Shellu (Sidebar na Desktopu, Dock na Mobilu)
   return (
     <AuthProvider initialUser={user}>
-      <div className="flex h-screen w-screen bg-(--color-surface-0) text-(--color-foreground) overflow-hidden">
-        {/* Desktop Sidebar (skrytý na mobilu) */}
+      <div className="flex h-dvh w-full overflow-hidden bg-(--color-background) text-(--color-foreground)">
         <AppSidebar />
-
-        {/* Hlavní obsahová část s mírně světlejším povrchem než Sidebar pro Discord efekt */}
-        <main className="flex-1 h-full overflow-auto relative z-10 bg-(--color-surface-100) rounded-tl-none md:rounded-tl-3xl md:m-2 md:ml-0 shadow-sm border border-transparent md:border-(--color-border)">
-          <div className="mx-auto max-w-7xl px-4 sm:px-8 py-8 pb-32 md:pb-8">
-            {children}
-          </div>
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-(--color-background)">
+          <div className="min-h-full w-full">{children}</div>
         </main>
-
-        {/* Mobilní Dock (skrytý na desktopu) */}
-        <div className="md:hidden block">
-          <Dock />
-        </div>
       </div>
     </AuthProvider>
   );
