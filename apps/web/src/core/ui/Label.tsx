@@ -1,20 +1,13 @@
 import * as React from "react";
+
 import { cn } from "@/core/utils";
 
-import { Text } from "@/core/ui/Text";
-
-export interface LabelProps
-  extends React.LabelHTMLAttributes<HTMLLabelElement> {}
-
-const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
+const Label = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
   ({ className, ...props }, ref) => (
-    // biome-ignore lint/a11y/noLabelWithoutControl: This is a reusable label component
-    <Text
-      variant="label"
-      as="label"
+    <label
       ref={ref}
       className={cn(
-        "block group-disabled:cursor-not-allowed group-disabled:opacity-70",
+        "text-[13px] font-medium text-(--color-foreground) peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
         className,
       )}
       {...props}

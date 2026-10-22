@@ -1,46 +1,51 @@
 import * as React from "react";
 import { cn } from "@/core/utils";
+import { Label } from "./Label";
 
-export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
-  size?: "default" | "sm" | "lg";
+  label?: string;
+  description?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, size = "default", ...props }, ref) => {
-    return (
+  ({ className, type, error, id, label, description, ...props }, ref) => {
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
+
+    const inputContent = (
       <div
         className={cn(
-          "flex w-full rounded-2xl bg-(--color-input) transition-all duration-200 ease-out border border-transparent focus-within:border-(--color-primary)/50 focus-within:ring-4 focus-within:ring-(--color-primary)/20 relative overflow-hidden has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 shadow-3d-input",
-          {
-            "h-14": size === "default", // Slightly taller default
-            "h-10": size === "sm",
-            "h-16": size === "lg",
-          },
-          error &&
-            "border-(--color-destructive)/50 focus-within:border-(--color-destructive) focus-within:ring-4 focus-within:ring-(--color-destructive)/20 bg-(--color-destructive)/5",
+          "input-control relative block h-10 w-full overflow-hidden rounded-[var(--radius)] border border-transparent transition-shadow duration-[180ms] ease-out",
+          "bg-[var(--input-edge)] focus-within:ring-2 focus-within:ring-(--color-ring) focus-within:ring-offset-2 ring-offset-(--color-background)",
+          error && "border-(--color-destructive) focus-within:ring-(--color-destructive)",
           className,
         )}
       >
+        <div className="input-control__face pointer-events-none absolute inset-0 h-full w-full rounded-[var(--radius)] bg-[var(--color-input-face)]" />
         <input
+          id={inputId}
           type={type}
-          aria-invalid={error ? "true" : "false"}
-          className={cn(
-            "h-full w-full bg-transparent text-(--color-foreground) outline-none border-none placeholder:text-(--color-muted-foreground) disabled:cursor-not-allowed disabled:opacity-50 font-medium",
-            {
-              "px-5 py-3 text-sm": size === "default",
-              "px-3 py-1 text-xs": size === "sm",
-              "px-6 py-4 text-base": size === "lg",
-            },
-          )}
+          className="input-control__field absolute left-0 top-[var(--input-depth-idle)] h-[calc(100%-var(--input-depth-idle))] w-full bg-transparent px-3 text-sm leading-5 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-(--color-muted-foreground) focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           ref={ref}
           {...props}
         />
       </div>
     );
+
+    if (label || description) {
+      return (
+        <div className="flex flex-col gap-1.5 w-full">
+          {label && <Label htmlFor={inputId} className="text-(--color-foreground)">{label}</Label>}
+          {inputContent}
+          {description && <p className="text-[0.8rem] text-(--color-muted-foreground)">{description}</p>}
+        </div>
+      );
+    }
+    return inputContent;
   },
 );
+
 Input.displayName = "Input";
 
 export { Input };
