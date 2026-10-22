@@ -1,8 +1,13 @@
 "use client";
 
 import { Globe, Laptop, Monitor, Smartphone, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 
+import { changePasswordApiV1AuthChangePasswordPost } from "@bod/api-client/sdk.gen";
+
+import { parseApiError } from "@/core/api/api-errors";
+import { useAuthStore, useAuthUser } from "@/core/auth/store";
 import {
   useRevokeMultipleSessions,
   useRevokeSession,
@@ -11,6 +16,7 @@ import {
 import { Button } from "@/core/ui/Button";
 import { EmptyState } from "@/core/ui/EmptyState";
 import { ErrorState } from "@/core/ui/ErrorState";
+import { Input } from "@/core/ui/Input";
 import { toast } from "@/core/ui/toast";
 
 import { SettingsPageHeading } from "../components/SettingsPageHeading";
@@ -25,7 +31,31 @@ const getDeviceIcon = (userAgent: string | null) => {
 };
 
 export default function SecuritySettingsPage() {
-  const { data: sessions, isLoading, isError, error } = useSessions();
+  const user = useAuthUser();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const changePassword = useMutation({
+    mutationFn: async () => {
+      if (newPassword !== confirmPassword) throw new Error("Nová hesla se neshodují.");
+      const { data, error } = await changePasswordApiV1AuthChangePasswordPost({
+        body: { current_password: currentPassword, new_password: newPassword },
+      });
+      if (error) throw parseApiError(error);
+      return data;
+    },
+    onSuccess: (user) => {
+      if (user) useAuthStore.getState().setUser(user);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordError(null);
+      toast.success("Heslo bylo změněno.");
+    },
+    onError: (error: Error) => setPasswordError(error.message),
+  });
+  const { data: sessions, isLoading, isError, error } = useSessions(!user?.must_change_password);
   const revokeMutation = useRevokeSession();
   const revokeMultipleMutation = useRevokeMultipleSessions();
 
@@ -76,99 +106,158 @@ export default function SecuritySettingsPage() {
       />
 
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Laptop className="h-4 w-4 text-(--color-muted-foreground)" aria-hidden="true" />
-            <h2 className="text-sm font-medium">
-              Aktivní zařízení
-            </h2>
+        <form
+          className="space-y-4 border-b border-(--color-border) pb-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setPasswordError(null);
+            changePassword.mutate();
+          }}
+        >
+          <div>
+            <h2 className="text-sm font-medium">Změnit heslo</h2>
+            <p className="mt-1 text-sm text-(--color-muted-foreground)">
+              Nové heslo musí mít alespoň 12 znaků.
+            </p>
           </div>
-
-          {sessions && sessions.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleRevokeAllOther}
-                disabled={revokeMultipleMutation.isPending || sessions.length <= 1}
-              >
-                Odhlásit ostatní
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleRevokeAll}
-                disabled={revokeMultipleMutation.isPending}
-              >
-                Odhlásit vše
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {isLoading ? (
-            <div className="flex flex-col gap-4">
-              <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
-              <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
-            </div>
-          ) : isError ? (
-            <ErrorState error={error} title="Nastala chyba při načítání relací" />
-          ) : sessions?.length === 0 ? (
-            <EmptyState
-              icon="🔒"
-              title="Žádné aktivní relace"
-              description="Momentálně nemáte žádná přihlášená zařízení."
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Současné heslo"
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              required
             />
-          ) : (
-            sessions?.map((session) => {
-              const isCurrent = session.id === currentSessionId;
-              return (
-                <div
-                  key={session.id}
-                  className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface-100) p-4 sm:flex-row sm:items-center"
-                >
-                  {isCurrent && (
-                    <div className="absolute top-0 left-0 w-1 h-full bg-(--color-primary)" />
-                  )}
-                  <div className="flex min-w-0 items-center gap-3 overflow-hidden pl-2 sm:w-auto">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-(--color-border) bg-(--color-background) text-(--color-muted-foreground)">
-                      {getDeviceIcon(session.user_agent ?? null)}
-                    </div>
-                    <div className="flex flex-col overflow-hidden gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold truncate">
-                          {session.ip_address || "Neznámá IP adresa"}
-                        </span>
-                        {isCurrent && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider text-(--color-primary) bg-(--color-primary)/10 px-2 py-0.5 rounded-full">
-                            Tohle zařízení
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs font-medium truncate max-w-[200px] sm:max-w-xs md:max-w-sm text-(--color-muted-foreground)">
-                        {session.user_agent || "Neznámý prohlížeč"}
-                      </span>
-                      <span className="mt-1 text-xs tabular-nums text-(--color-muted-foreground)">
-                        Naposledy: {new Date(session.last_seen_at).toLocaleString("cs-CZ")}
-                      </span>
-                    </div>
-                  </div>
+            <span className="hidden sm:block" />
+            <Input
+              label="Nové heslo"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              minLength={12}
+              maxLength={128}
+              required
+            />
+            <Input
+              label="Potvrzení nového hesla"
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              minLength={12}
+              maxLength={128}
+              required
+            />
+          </div>
+          {passwordError && (
+            <p className="text-sm text-(--color-destructive)" role="alert">
+              {passwordError}
+            </p>
+          )}
+          <div className="flex justify-end">
+            <Button type="submit" isLoading={changePassword.isPending}>
+              Změnit heslo
+            </Button>
+          </div>
+        </form>
+
+        {!user?.must_change_password && (
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <Laptop className="h-4 w-4 text-(--color-muted-foreground)" aria-hidden="true" />
+                <h2 className="text-sm font-medium">Aktivní zařízení</h2>
+              </div>
+
+              {sessions && sessions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={isCurrent ? "secondary" : "destructive"}
+                    variant="secondary"
                     size="sm"
-                    onClick={() => handleRevoke(session.id)}
-                    disabled={revokeMutation.isPending}
-                    className="h-9 shrink-0 self-start sm:self-auto"
+                    onClick={handleRevokeAllOther}
+                    disabled={revokeMultipleMutation.isPending || sessions.length <= 1}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Odhlásit
+                    Odhlásit ostatní
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRevokeAll}
+                    disabled={revokeMultipleMutation.isPending}
+                  >
+                    Odhlásit vše
                   </Button>
                 </div>
-              );
-            })
-          )}
-        </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {isLoading ? (
+                <div className="flex flex-col gap-4">
+                  <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
+                  <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
+                </div>
+              ) : isError ? (
+                <ErrorState error={error} title="Nastala chyba při načítání relací" />
+              ) : sessions?.length === 0 ? (
+                <EmptyState
+                  icon="🔒"
+                  title="Žádné aktivní relace"
+                  description="Momentálně nemáte žádná přihlášená zařízení."
+                />
+              ) : (
+                sessions?.map((session) => {
+                  const isCurrent = session.id === currentSessionId;
+                  return (
+                    <div
+                      key={session.id}
+                      className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface-100) p-4 sm:flex-row sm:items-center"
+                    >
+                      {isCurrent && (
+                        <div className="absolute top-0 left-0 w-1 h-full bg-(--color-primary)" />
+                      )}
+                      <div className="flex min-w-0 items-center gap-3 overflow-hidden pl-2 sm:w-auto">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-(--color-border) bg-(--color-background) text-(--color-muted-foreground)">
+                          {getDeviceIcon(session.user_agent ?? null)}
+                        </div>
+                        <div className="flex flex-col overflow-hidden gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold truncate">
+                              {session.ip_address || "Neznámá IP adresa"}
+                            </span>
+                            {isCurrent && (
+                              <span className="text-[10px] uppercase font-bold tracking-wider text-(--color-primary) bg-(--color-primary)/10 px-2 py-0.5 rounded-full">
+                                Tohle zařízení
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs font-medium truncate max-w-[200px] sm:max-w-xs md:max-w-sm text-(--color-muted-foreground)">
+                            {session.user_agent || "Neznámý prohlížeč"}
+                          </span>
+                          <span className="mt-1 text-xs tabular-nums text-(--color-muted-foreground)">
+                            Naposledy: {new Date(session.last_seen_at).toLocaleString("cs-CZ")}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant={isCurrent ? "secondary" : "destructive"}
+                        size="sm"
+                        onClick={() => handleRevoke(session.id)}
+                        disabled={revokeMutation.isPending}
+                        className="h-9 shrink-0 self-start sm:self-auto"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Odhlásit
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
