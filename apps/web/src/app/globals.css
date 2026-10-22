@@ -208,16 +208,48 @@
   :root[data-text-size="md"] { font-size: 16px; }
   :root[data-text-size="lg"] { font-size: 18px; }
 
-  :root[data-density="compact"] { --spacing: 0.18rem; --radius: 0.5rem; --depth-idle: 3px; --depth-hover: 4px; --input-depth-idle: 2px; --input-depth-focus: 4px; }
+  :root[data-density="compact"] { --spacing: 0.2rem; --radius: 0.625rem; --depth-idle: 3px; --depth-hover: 4px; --input-depth-idle: 2px; --input-depth-focus: 4px; }
   :root[data-density="standard"] { --spacing: 0.25rem; }
-  :root[data-density="relaxed"] { --spacing: 0.35rem; --radius: 1rem; --depth-idle: 7px; --depth-hover: 8px; --input-depth-idle: 6px; --input-depth-focus: 8px; }
+  :root[data-density="relaxed"] { --spacing: 0.3rem; --radius: 0.875rem; --depth-idle: 6px; --depth-hover: 7px; --input-depth-idle: 5px; --input-depth-focus: 7px; }
 
   :root[data-reduce-motion="true"] *,
   :root[data-reduce-motion="true"] ::before,
   :root[data-reduce-motion="true"] ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 
-  :root[data-high-contrast="true"] { --theme-border-subtle: var(--zinc-900); --theme-surface-200: var(--white); --edge-secondary: var(--zinc-900); }
-  :root[data-high-contrast="true"].dark { --theme-border-subtle: var(--white); --theme-surface-200: var(--zinc-950); --edge-secondary: var(--white); }
+  :root[data-high-contrast="true"] {
+    --color-text-secondary: var(--zinc-700);
+    --theme-border-subtle: var(--zinc-600);
+    --theme-border-hover: var(--zinc-700);
+    --theme-border-strong: var(--zinc-900);
+    --theme-surface-200: var(--zinc-100);
+    --theme-surface-300: var(--zinc-200);
+    --theme-surface-hover: var(--zinc-200);
+    --edge-secondary: var(--zinc-700);
+    --color-ring: var(--zinc-950);
+    --color-destructive-base: #b91c1c;
+    --color-success-base: #15803d;
+    --color-warning-base: #a16207;
+    --color-info-base: #1d4ed8;
+  }
+  :root[data-high-contrast="true"].dark {
+    --color-text-secondary: var(--zinc-200);
+    --theme-border-subtle: var(--zinc-400);
+    --theme-border-hover: var(--zinc-300);
+    --theme-border-strong: var(--white);
+    --theme-surface-200: var(--zinc-900);
+    --theme-surface-300: var(--zinc-800);
+    --theme-surface-hover: var(--zinc-800);
+    --edge-secondary: var(--zinc-400);
+    --color-ring: var(--white);
+  }
+  :root[data-high-contrast="true"] :focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 3px;
+  }
+  :root[data-high-contrast="true"] a {
+    text-decoration-thickness: max(1px, 0.08em);
+    text-underline-offset: 0.16em;
+  }
 }
 
 @layer utilities {
