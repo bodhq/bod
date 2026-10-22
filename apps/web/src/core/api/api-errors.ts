@@ -42,13 +42,14 @@ export function parseApiError(error: unknown): Error {
 
   // 1. Budoucí standard: Backend vrací { error: { code, message } }
   const structuredError = (error as any).error;
-  if (structuredError && typeof structuredError.code === "string") {
-    const code = structuredError.code as ErrorCode;
-    // Použijeme překlad z našeho slovníku, nebo fallback
+  if (structuredError && typeof structuredError === "object") {
+    const structured = structuredError as Record<string, unknown>;
+    const code = structured.code;
+    if (typeof code === "string" && code in errorTranslations) {
+      return new Error(errorTranslations[code as ErrorCode]);
+    }
     const message =
-      errorTranslations[code] ||
-      structuredError.message ||
-      errorTranslations.UNKNOWN_ERROR;
+      typeof structured.message === "string" ? structured.message : errorTranslations.UNKNOWN_ERROR;
     return new Error(message);
   }
 

@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+
 import { Plus_Jakarta_Sans } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import "./globals.css";
+
 import { AppProviders } from "@/core/providers";
+import { Toaster } from "@/core/ui/toast/Toaster";
+
+import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
@@ -21,7 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="cs" className={`h-full antialiased ${jakarta.variable}`}>
+    <html
+      lang="cs"
+      className={`h-full antialiased ${jakarta.className} ${jakarta.variable}`}
+      suppressHydrationWarning
+    >
       <body className="flex min-h-full flex-col">
         <NextTopLoader
           color="var(--color-primary)"
@@ -32,9 +40,11 @@ export default function RootLayout({
           showSpinner={false}
           easing="ease"
           speed={200}
-          shadow="0 0 10px var(--color-primary),0 0 5px var(--color-primary)"
         />
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          {children}
+          <Toaster />
+        </AppProviders>
       </body>
     </html>
   );

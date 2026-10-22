@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+
 import { Button, type ButtonProps } from "@/core/ui/Button";
+
 import { useAuth } from "../hooks/useAuth";
 
 export const LogoutButton = React.forwardRef<HTMLButtonElement, ButtonProps>(

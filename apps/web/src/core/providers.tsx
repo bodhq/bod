@@ -1,9 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { QueryProvider } from "./query";
 
+import { AppearanceProvider } from "./providers/AppearanceProvider";
 import { FramerMotionProvider } from "./providers/FramerMotionProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
+import { QueryProvider } from "./query";
 
 /**
  * Centrální obálka pro veškerou infrastrukturní vrstvu aplikace.
@@ -15,11 +17,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <FramerMotionProvider>
-        {/* V budoucnu zde přibudou: 
-            <ThemeProvider>
-            <ToastProvider> 
-        */}
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppearanceProvider>{children}</AppearanceProvider>
+        </ThemeProvider>
       </FramerMotionProvider>
     </QueryProvider>
   );

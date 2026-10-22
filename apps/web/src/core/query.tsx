@@ -1,12 +1,9 @@
 "use client";
 
-import {
-  MutationCache,
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
 import type { ReactNode } from "react";
+
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { useAuthStore } from "@/core/auth/store";
 
 // Globální handler pro 401 Unauthorized
@@ -16,10 +13,7 @@ const handleAuthError = (error: any) => {
   // Zde zachytíme 401 a globálně odhlásíme uživatele
   if (error?.status === 401 || error?.response?.status === 401) {
     useAuthStore.getState().setUser(null);
-    if (
-      typeof window !== "undefined" &&
-      window.location.pathname !== "/login"
-    ) {
+    if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login";
     }
   }
@@ -64,7 +58,5 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   // Inicializujeme a získáme klienta přesně podle doporučených best-practices pro Next.js App Router
   const queryClient = getQueryClient();
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
