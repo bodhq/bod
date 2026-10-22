@@ -14,7 +14,6 @@ import {
   useSessions,
 } from "@/core/auth/hooks/useSessions";
 import { Button } from "@/core/ui/Button";
-import { EmptyState } from "@/core/ui/EmptyState";
 import { ErrorState } from "@/core/ui/ErrorState";
 import { Input } from "@/core/ui/Input";
 import { toast } from "@/core/ui/toast";
@@ -55,7 +54,13 @@ export default function SecuritySettingsPage() {
     },
     onError: (error: Error) => setPasswordError(error.message),
   });
-  const { data: sessions, isLoading, isError, error } = useSessions(!user?.must_change_password);
+  const {
+    data: sessions,
+    isLoading,
+    isError,
+    error,
+    refetch: refetchSessions,
+  } = useSessions(!user?.must_change_password);
   const revokeMutation = useRevokeSession();
   const revokeMultipleMutation = useRevokeMultipleSessions();
 
@@ -202,10 +207,14 @@ export default function SecuritySettingsPage() {
               ) : isError ? (
                 <ErrorState error={error} title="Nastala chyba při načítání relací" />
               ) : sessions?.length === 0 ? (
-                <EmptyState
-                  icon="🔒"
-                  title="Žádné aktivní relace"
-                  description="Momentálně nemáte žádná přihlášená zařízení."
+                <ErrorState
+                  title="Aktuální relaci se nepodařilo načíst"
+                  message="Jste přihlášeni, ale server nevrátil žádnou aktivní relaci. Zkuste seznam načíst znovu."
+                  action={
+                    <Button variant="outline" size="sm" onClick={() => refetchSessions()}>
+                      Načíst znovu
+                    </Button>
+                  }
                 />
               ) : (
                 sessions?.map((session) => {

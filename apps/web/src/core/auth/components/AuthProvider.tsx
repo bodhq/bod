@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { useAuthStore } from "../store";
+import { useAuthStore, useAuthUser } from "../store";
 
 export interface AuthProviderProps {
   children: React.ReactNode;
@@ -17,6 +17,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const initialized = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
+  const user = useAuthUser();
 
   // Use useLayoutEffect to update the store synchronously before paint on the client,
   // avoiding the "Cannot update a component while rendering a different component" warning.
@@ -30,10 +31,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   }, [initialUser]);
 
   useEffect(() => {
-    if (initialUser?.must_change_password && pathname !== "/app/settings/security") {
+    if (user?.must_change_password && pathname !== "/app/settings/security") {
       router.replace("/app/settings/security");
     }
-  }, [initialUser?.must_change_password, pathname, router]);
+  }, [user?.must_change_password, pathname, router]);
 
   return <>{children}</>;
 }

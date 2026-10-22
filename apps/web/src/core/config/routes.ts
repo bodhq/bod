@@ -5,5 +5,4 @@ export const ROUTES = {
   SETTINGS_PROFILE: "/app/settings/profile",
   SETTINGS_SECURITY: "/app/settings/security",
   SETTINGS_APPEARANCE: "/app/settings/appearance",
-  SETTINGS_NOTIFICATIONS: "/app/settings/notifications",
 } as const;

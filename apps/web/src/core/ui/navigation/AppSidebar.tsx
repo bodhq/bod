@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { LogoutButton } from "@/core/auth/components/LogoutButton";
@@ -81,22 +81,16 @@ export function AppSidebar() {
       <SidebarNav
         className="min-h-0 flex-1 overflow-y-auto pt-2"
         isMinimized={isMinimized}
-        items={NAV_ITEMS.filter((item) => item.name !== "Nastavení").map((item) => ({
-          title: item.name,
-          href: item.href,
-          icon: item.icon,
-        }))}
+        items={
+          user?.must_change_password
+            ? []
+            : NAV_ITEMS.filter((item) => item.name !== "Nastavení").map((item) => ({
+                title: item.name,
+                href: item.href,
+                icon: item.icon,
+              }))
+        }
       />
-
-      {user?.permissions?.some((permission) =>
-        ["users.manage", "roles.manage", "audit.read"].includes(permission),
-      ) && (
-        <SidebarNav
-          className="mt-3 shrink-0"
-          isMinimized={isMinimized}
-          items={[{ title: "Správa přístupů", href: "/app/settings/access", icon: ShieldCheck }]}
-        />
-      )}
 
       <div className="mt-auto flex shrink-0 flex-col gap-2 border-t border-(--color-border) pt-4">
         <Button

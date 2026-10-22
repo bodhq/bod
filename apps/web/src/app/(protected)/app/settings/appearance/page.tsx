@@ -49,7 +49,7 @@ export default function AppearanceSettingsPage() {
     <section className="w-full max-w-2xl">
       <SettingsPageHeading
         title="Vzhled aplikace"
-        description="Upravte motiv, barvy a čitelnost aplikace."
+        description="Upravte motiv, barvy, hustotu a přístupnost aplikace."
       />
 
       <div className="divide-y divide-(--color-border)">
@@ -117,7 +117,7 @@ export default function AppearanceSettingsPage() {
             <SettingsToggleRow
               id={`${formId}-contrast`}
               label="Vysoký kontrast"
-              description="Zvýrazní hranice prvků a text."
+              description="Zvýrazní text, hranice prvků a indikátory fokusu."
               checked={highContrast}
               onChange={setHighContrast}
             />

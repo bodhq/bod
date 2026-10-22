@@ -52,8 +52,14 @@ export async function logout(): Promise<void> {
 export type AuthSession = AuthSessionPublic;
 
 export async function getSessions(options?: any): Promise<AuthSession[]> {
-  const { data, error } = await getSessionsApiV1AuthSessionsGet(options);
-  if (error || !data) return [];
+  const result = await getSessionsApiV1AuthSessionsGet(options);
+  const { data, error } = result;
+  if (error) {
+    const apiError = parseApiError(error);
+    Object.assign(apiError, { status: result.response?.status });
+    throw apiError;
+  }
+  if (!data) throw new Error("Server nevrátil seznam aktivních relací.");
   return data;
 }
 
