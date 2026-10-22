@@ -1,104 +1,175 @@
 "use client";
 
-import { ChevronLeft, Globe, Monitor, Smartphone, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSessions, revokeSession } from "@/core/auth/api";
-import { Text } from "@/core/ui/Text";
-import * as React from "react";
+import { Globe, Laptop, Monitor, Smartphone, Trash2 } from "lucide-react";
+import { useMemo } from "react";
 
-// Pomocná funkce pro určení ikony
+import {
+  useRevokeMultipleSessions,
+  useRevokeSession,
+  useSessions,
+} from "@/core/auth/hooks/useSessions";
+import { Button } from "@/core/ui/Button";
+import { EmptyState } from "@/core/ui/EmptyState";
+import { ErrorState } from "@/core/ui/ErrorState";
+import { toast } from "@/core/ui/toast";
+
+import { SettingsPageHeading } from "../components/SettingsPageHeading";
+
 const getDeviceIcon = (userAgent: string | null) => {
   if (!userAgent) return <Globe className="w-5 h-5" />;
-  if (userAgent.toLowerCase().includes("mobile") || userAgent.toLowerCase().includes("android") || userAgent.toLowerCase().includes("iphone")) {
-      return <Smartphone className="w-5 h-5" />;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
+    return <Smartphone className="w-5 h-5" />;
   }
   return <Monitor className="w-5 h-5" />;
 };
 
 export default function SecuritySettingsPage() {
-  const queryClient = useQueryClient();
+  const { data: sessions, isLoading, isError, error } = useSessions();
+  const revokeMutation = useRevokeSession();
+  const revokeMultipleMutation = useRevokeMultipleSessions();
 
-  const { data: sessions, isLoading, isError, error } = useQuery({
-    queryKey: ["sessions"],
-    queryFn: () => getSessions(),
-  });
+  const currentSessionId = useMemo(() => {
+    if (!sessions || sessions.length === 0) return null;
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const matching = sessions.filter((s) => s.user_agent === ua);
+    const listToUse = matching.length > 0 ? matching : [...sessions];
+    return listToUse.sort(
+      (a, b) => new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime(),
+    )[0]?.id;
+  }, [sessions]);
 
-  const revokeMutation = useMutation({
-    mutationFn: (sessionId: string) => revokeSession(sessionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
-    },
-    onError: (error) => {
-      console.error("Failed to revoke session:", error);
-      alert("Nepodařilo se odhlásit zařízení.");
+  const handleRevoke = (sessionId: string) => {
+    if (sessionId === currentSessionId) {
+      toast.confirm(
+        "Opravdu se chcete odhlásit z aktuálního zařízení? Budete přesměrováni na přihlašovací obrazovku.",
+        () => revokeMutation.mutateAsync(sessionId),
+        { variant: "error", confirmText: "Odhlásit" },
+      );
+    } else {
+      revokeMutation.mutate(sessionId);
     }
-  });
+  };
+
+  const handleRevokeAllOther = () => {
+    if (!sessions || !currentSessionId) return;
+    const others = sessions.filter((s) => s.id !== currentSessionId).map((s) => s.id);
+    if (others.length === 0) return;
+    revokeMultipleMutation.mutate(others);
+  };
+
+  const handleRevokeAll = () => {
+    if (!sessions) return;
+    const all = sessions.map((s) => s.id);
+    toast.confirm(
+      "Opravdu se chcete odhlásit ze všech zařízení včetně aktuálního? Budete odhlášeni a přesměrováni.",
+      () => revokeMultipleMutation.mutateAsync(all),
+      { variant: "error", confirmText: "Odhlásit vše" },
+    );
+  };
 
   return (
-    <div className="flex flex-col gap-8 pb-32 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out px-4 sm:px-8 pt-8">
-      {/* Apple-style Header */}
-      <header className="flex flex-col gap-3">
-        <Link href="/app/settings" className="flex items-center text-body-small font-semibold text-(--color-primary) hover:underline w-fit">
-          <ChevronLeft className="w-4 h-4 mr-0.5" /> Zpět na nastavení
-        </Link>
-        <div className="flex flex-col gap-1">
-            <Text variant="h1">Zabezpečení a relace</Text>
-            <Text variant="muted-lg">
-            Spravujte zařízení, ze kterých jste aktuálně přihlášeni.
-            </Text>
-        </div>
-      </header>
+    <section className="w-full max-w-3xl">
+      <SettingsPageHeading
+        title="Zabezpečení a relace"
+        description="Spravujte zařízení, na kterých jste přihlášeni."
+      />
 
-      {/* Content - Premium Login Card Style */}
-      <div className="w-full rounded-3xl sm:rounded-[2rem] bg-(--color-surface-100) p-6 sm:p-10 shadow-xl shadow-black/5 dark:shadow-black/20 border border-black/10 dark:border-white/10 relative overflow-hidden flex flex-col gap-6">
-        <Text variant="h2">Aktivní zařízení</Text>
-        
-        {isLoading ? (
-          <div className="animate-pulse flex flex-col gap-4">
-            <div className="h-24 bg-(--color-surface-200) rounded-2xl w-full border border-(--color-border-subtle)" />
-            <div className="h-24 bg-(--color-surface-200) rounded-2xl w-full border border-(--color-border-subtle)" />
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Laptop className="h-4 w-4 text-(--color-muted-foreground)" aria-hidden="true" />
+            <h2 className="text-sm font-medium">
+              Aktivní zařízení
+            </h2>
           </div>
-        ) : isError ? (
-          <Text variant="body" className="text-(--color-destructive)">Nastala chyba při načítání relací: {(error as Error)?.message}</Text>
-        ) : sessions?.length === 0 ? (
-          <Text variant="muted">Žádné aktivní relace.</Text>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {sessions?.map((session) => (
-              <div 
-                key={session.id} 
-                className="flex items-center justify-between p-4 sm:p-6 rounded-2xl bg-(--color-surface-200) border border-(--color-border-subtle) hover:border-(--color-border-strong) transition-colors"
+
+          {sessions && sessions.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleRevokeAllOther}
+                disabled={revokeMultipleMutation.isPending || sessions.length <= 1}
               >
-                <div className="flex items-center gap-4 overflow-hidden">
-                    <div className="p-3 bg-(--color-surface-100) ring-1 ring-black/5 dark:ring-white/5 rounded-xl flex items-center justify-center shadow-sm shrink-0 text-(--color-muted-foreground)">
-                        {getDeviceIcon(session.user_agent ?? null)}
-                    </div>
-                    <div className="flex flex-col overflow-hidden">
-                        <Text variant="body-large" className="font-bold truncate">
-                            {session.ip_address || "Neznámá IP adresa"}
-                        </Text>
-                        <Text variant="muted" className="truncate max-w-[180px] sm:max-w-xs md:max-w-md">
-                            {session.user_agent || "Neznámý prohlížeč"}
-                        </Text>
-                        <Text variant="caption" className="mt-1.5 bg-(--color-surface-0) w-fit px-2.5 py-0.5 rounded-full ring-1 ring-black/10 dark:ring-white/10 shadow-sm">
-                            Aktivní: {new Date(session.last_seen_at).toLocaleString('cs-CZ')}
-                        </Text>
-                    </div>
-                </div>
-                <button
-                    onClick={() => revokeMutation.mutate(session.id)}
-                    disabled={revokeMutation.isPending}
-                    className="p-3 ml-2 text-(--color-destructive) hover:bg-(--color-destructive)/10 rounded-xl transition-colors disabled:opacity-50 flex-shrink-0"
-                    title="Odhlásit z tohoto zařízení"
+                Odhlásit ostatní
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleRevokeAll}
+                disabled={revokeMultipleMutation.isPending}
+              >
+                Odhlásit vše
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {isLoading ? (
+            <div className="flex flex-col gap-4">
+              <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
+              <div className="h-20 bg-(--color-surface-200) w-full rounded-xl animate-pulse border border-(--color-border-subtle)" />
+            </div>
+          ) : isError ? (
+            <ErrorState error={error} title="Nastala chyba při načítání relací" />
+          ) : sessions?.length === 0 ? (
+            <EmptyState
+              icon="🔒"
+              title="Žádné aktivní relace"
+              description="Momentálně nemáte žádná přihlášená zařízení."
+            />
+          ) : (
+            sessions?.map((session) => {
+              const isCurrent = session.id === currentSessionId;
+              return (
+                <div
+                  key={session.id}
+                  className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface-100) p-4 sm:flex-row sm:items-center"
                 >
-                    <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  {isCurrent && (
+                    <div className="absolute top-0 left-0 w-1 h-full bg-(--color-primary)" />
+                  )}
+                  <div className="flex min-w-0 items-center gap-3 overflow-hidden pl-2 sm:w-auto">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-(--color-border) bg-(--color-background) text-(--color-muted-foreground)">
+                      {getDeviceIcon(session.user_agent ?? null)}
+                    </div>
+                    <div className="flex flex-col overflow-hidden gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold truncate">
+                          {session.ip_address || "Neznámá IP adresa"}
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-(--color-primary) bg-(--color-primary)/10 px-2 py-0.5 rounded-full">
+                            Tohle zařízení
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium truncate max-w-[200px] sm:max-w-xs md:max-w-sm text-(--color-muted-foreground)">
+                        {session.user_agent || "Neznámý prohlížeč"}
+                      </span>
+                      <span className="mt-1 text-xs tabular-nums text-(--color-muted-foreground)">
+                        Naposledy: {new Date(session.last_seen_at).toLocaleString("cs-CZ")}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant={isCurrent ? "secondary" : "destructive"}
+                    size="sm"
+                    onClick={() => handleRevoke(session.id)}
+                    disabled={revokeMutation.isPending}
+                    className="h-9 shrink-0 self-start sm:self-auto"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Odhlásit
+                  </Button>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
