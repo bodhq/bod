@@ -1,0 +1,24 @@
+name: Mirror to GitLab
+
+on:
+  push:
+  delete:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror repository
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Clone the repository as a mirror (includes all branches and tags 1:1)
+          git clone --mirror "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" mirror.git
+          cd mirror.git
+          
+          # Add the GitLab remote using the token for authentication
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.spseplzen.cz/studentske-projekty/projekty-2026-2027/mtp1/navrh-a-implementace-modularniho-skolniho-informacniho-systemu.git"
+          
+          # Push everything to GitLab (branches, tags, and deletions)
+          git push --mirror gitlab
