@@ -58,6 +58,7 @@ Hlavní dokumentace projektu:
 
 - 🏗️ [**Architektura a API Kontrakt** (docs/architecture.md)](docs/architecture.md) – Hlavní technická specifikace vrstvené architektury a autogenerování API.
 - 🧪 [**Testování (Testing Guidelines)** (docs/testing.md)](docs/testing.md) – Metodika pro unit a E2E testování (Pytest, Vitest, Playwright).
+- 📊 [**Sprint reviews** (docs/sprint-reviews/README.md)](docs/sprint-reviews/README.md) – Průběžný přehled práce, týmového úsilí a navazujících úkolů pro Eliáše a Filipa.
 - [**Účty, role a oprávnění**](docs/access.md) – Pravidla přístupu, API, migrace a vytvoření prvního správce.
 - [**Vysvětlení implementace s kódem**](docs/access-implementation.md) a [**návrh generování účtů žáků a rodičů**](docs/account-generation.md).
 - 🤝 [**Pravidla a Workflow** (CONTRIBUTING.md)](CONTRIBUTING.md) – GitHub procesy a standardy pro psaní PR.
