@@ -1,22 +1,79 @@
 from datetime import datetime
-from typing import Any, Self
+from typing import Annotated, Any, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    StrictBool,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
+from pydantic.json_schema import SkipJsonSchema
 
-USERNAME_PATTERN = r"^[a-z0-9][a-z0-9._-]{2,63}$"
-CODE_PATTERN = r"^[a-z][a-z0-9._-]{1,63}$"
+from server.core.validation import (
+    PermissionCode,
+    PhoneNumber,
+    ProfileName,
+    RoleCode,
+    Username,
+)
 
 
-class ProfilePatch(BaseModel):
+def unique_codes(values: list[str]) -> list[str]:
+    if len(values) != len(set(values)):
+        raise ValueError("Kódy se nesmějí opakovat.")
+    return values
+
+
+RoleCodes = Annotated[
+    list[RoleCode],
+    Field(max_length=20, json_schema_extra={"uniqueItems": True}),
+    AfterValidator(unique_codes),
+]
+PermissionCodes = Annotated[
+    list[PermissionCode],
+    Field(max_length=100, json_schema_extra={"uniqueItems": True}),
+    AfterValidator(unique_codes),
+]
+ADMIN_ROLE_RULE: dict[str, Any] = {
+    "allOf": [
+        {
+            "if": {
+                "required": ["role_codes"],
+                "properties": {"role_codes": {"contains": {"const": "admin"}}},
+            },
+            "then": {"properties": {"role_codes": {"maxItems": 1}}},
+        }
+    ]
+}
+
+
+def omit_default(schema: dict[str, Any]) -> None:
+    # Vynechané řídicí pole PATCH znamená beze změny; explicitní null je chyba.
+    schema.pop("default", None)
+
+
+class InputModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    first_name: str | None = Field(default=None, max_length=100)
-    last_name: str | None = Field(default=None, max_length=100)
-    display_name: str | None = Field(default=None, max_length=100)
-    email: str | None = Field(
-        default=None, max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+
+class ProfileFields(InputModel):
+    first_name: ProfileName | None = Field(
+        default=None, description="Jméno; null vymaže údaj."
     )
-    phone: str | None = Field(default=None, max_length=32)
+    last_name: ProfileName | None = Field(
+        default=None, description="Příjmení; null vymaže údaj."
+    )
+    display_name: ProfileName | None = Field(
+        default=None, description="Zobrazované jméno."
+    )
+    email: Annotated[EmailStr, Field(max_length=254)] | None = None
+    phone: PhoneNumber | None = Field(default=None, examples=["+420 123 456 789"])
 
     @field_validator(
         "first_name", "last_name", "display_name", "email", "phone", mode="before"
@@ -26,25 +83,47 @@ class ProfilePatch(BaseModel):
         return (value.strip() or None) if isinstance(value, str) else value
 
 
-class UserCreate(ProfilePatch):
-    username: str | None = Field(default=None, pattern=USERNAME_PATTERN)
-    role_codes: list[str] = Field(default_factory=list, max_length=20)
+class ProfilePatch(ProfileFields):
+    model_config = ConfigDict(extra="forbid", json_schema_extra={"minProperties": 1})
 
-    @field_validator("username", mode="before")
-    @classmethod
-    def normalize_username(cls, value: object) -> object:
-        return value.strip().lower() if isinstance(value, str) else value
+    @model_validator(mode="after")
+    def require_change(self) -> Self:
+        if not self.model_fields_set:
+            raise ValueError("Pošli alespoň jedno pole k úpravě.")
+        return self
+
+
+class UserCreate(ProfileFields):
+    model_config = ConfigDict(extra="forbid", json_schema_extra=ADMIN_ROLE_RULE)
+    username: Username | None = Field(
+        default=None,
+        description="Normalizuje se na malá písmena. "
+        "Vynechání nebo null vygeneruje jméno.",
+    )
+    role_codes: RoleCodes = Field(
+        default_factory=list, description="Přidělené role. Admin musí být samostatně."
+    )
 
 
 class UserPatch(ProfilePatch):
-    username: str | None = Field(default=None, pattern=USERNAME_PATTERN)
-    is_active: bool | None = None
-    role_codes: list[str] | None = Field(default=None, max_length=20)
-
-    @field_validator("username", mode="before")
-    @classmethod
-    def normalize_username(cls, value: object) -> object:
-        return value.strip().lower() if isinstance(value, str) else value
+    model_config = ConfigDict(
+        extra="forbid", json_schema_extra={"minProperties": 1, **ADMIN_ROLE_RULE}
+    )
+    username: Username | SkipJsonSchema[None] = Field(
+        default=None,
+        json_schema_extra=omit_default,
+        description="Vynechání ponechá jméno; null není povolené.",
+    )
+    is_active: StrictBool | SkipJsonSchema[None] = Field(
+        default=None,
+        json_schema_extra=omit_default,
+        description="Pouze JSON true/false; null není povolené.",
+    )
+    role_codes: RoleCodes | SkipJsonSchema[None] = Field(
+        default=None,
+        json_schema_extra=omit_default,
+        description="Nahradí všechny role; [] odebere všechny. Null není povolené.",
+    )
 
     @model_validator(mode="after")
     def reject_null_control_fields(self) -> Self:
@@ -81,31 +160,50 @@ class IssuedAccount(BaseModel):
     temporary_password: str
 
 
-class BatchCreate(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class BatchCreate(InputModel):
     users: list[UserCreate] = Field(min_length=1, max_length=100)
 
 
-class PasswordChange(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    current_password: str = Field(min_length=1, max_length=1024)
-    new_password: str = Field(min_length=12, max_length=128)
+class PasswordChange(InputModel):
+    current_password: str = Field(
+        min_length=1,
+        max_length=1024,
+        repr=False,
+        json_schema_extra={"format": "password", "writeOnly": True},
+    )
+    new_password: str = Field(
+        min_length=12,
+        max_length=128,
+        pattern=r"\S",
+        repr=False,
+        json_schema_extra={"format": "password", "writeOnly": True},
+        description="12–128 znaků, alespoň jeden nebílý znak. "
+        "Musí se lišit od současného hesla. Hesla se neořezávají.",
+    )
 
 
-class RoleSwitch(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    role_code: str = Field(pattern=CODE_PATTERN)
+class RoleSwitch(InputModel):
+    role_code: RoleCode
 
 
-class RoleWrite(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    name: str = Field(min_length=1, max_length=100)
-    description: str | None = None
-    permission_codes: list[str] = Field(default_factory=list, max_length=100)
+class RoleWrite(InputModel):
+    name: Annotated[ProfileName, StringConstraints(strip_whitespace=True)]
+    description: str | None = Field(
+        default=None, max_length=4000, pattern=r"^[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]*$"
+    )
+    permission_codes: PermissionCodes = Field(
+        default_factory=list,
+        description="Existující kódy z katalogu oprávnění; seznam nahradí celou sadu.",
+    )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def normalize_description(cls, value: object) -> object:
+        return (value.strip() or None) if isinstance(value, str) else value
 
 
 class RoleCreate(RoleWrite):
-    code: str = Field(pattern=CODE_PATTERN)
+    code: RoleCode
 
 
 class RoleRead(RoleWrite):

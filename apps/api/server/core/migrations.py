@@ -27,6 +27,7 @@ def migrate(engine: Engine) -> None:
             (VERSION, _migrate_access),
             ("20261022_02_user_avatars", _migrate_avatars),
             ("20261022_03_avatar_urls", _migrate_avatar_urls),
+            ("20261023_04_audit_actor_delete", _migrate_audit_actor_delete),
         ):
             applied = connection.execute(
                 text("SELECT 1 FROM schema_migrations WHERE version = :version"),
@@ -184,3 +185,24 @@ def _migrate_access(connection: Connection) -> None:
                     "REFERENCES user_roles(user_id, role_code)"
                 )
             )
+
+
+def _migrate_audit_actor_delete(connection: Connection) -> None:
+    # Auditní historie zůstává i po odstranění účtu, který změnu provedl.
+    for foreign_key in inspect(connection).get_foreign_keys("audit_events"):
+        if foreign_key["constrained_columns"] != ["actor_user_id"]:
+            continue
+        if foreign_key.get("options", {}).get("ondelete") == "SET NULL":
+            return
+        name = foreign_key["name"]
+        if name is not None:
+            quoted = connection.dialect.identifier_preparer.quote(name)
+            connection.execute(
+                text(f"ALTER TABLE audit_events DROP CONSTRAINT {quoted}")
+            )
+    connection.execute(
+        text(
+            "ALTER TABLE audit_events ADD CONSTRAINT fk_audit_events_actor_user "
+            "FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL"
+        )
+    )

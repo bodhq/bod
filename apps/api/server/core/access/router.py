@@ -1,8 +1,8 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, ConfigDict, Field
 
 from server.core.access.dependencies import (
     AccessServiceDep,
@@ -14,6 +14,7 @@ from server.core.access.dependencies import (
 from server.core.audit.models import AuditEvent
 from server.core.auth.dependencies import mutation_guard, no_store
 from server.core.exceptions import ErrorResponse
+from server.core.validation import RoleCode
 
 from .models import Permission
 from .schemas import (
@@ -57,13 +58,14 @@ def update_profile(
 
 
 class Pagination(BaseModel):
-    offset: int = Field(default=0, ge=0)
+    model_config = ConfigDict(extra="forbid")
+    offset: int = Field(default=0, ge=0, le=2_147_483_647)
     limit: int = Field(default=50, ge=1, le=100)
 
 
 @admin_router.get("/users", response_model=list[UserRead])
 def users(
-    context: UsersManager, service: ServiceDep, page: Annotated[Pagination, Depends()]
+    context: UsersManager, service: ServiceDep, page: Annotated[Pagination, Query()]
 ) -> list[UserRead]:
     return service.list_users(context, page.offset, page.limit)
 
@@ -127,18 +129,18 @@ def create_role(
 
 @admin_router.put("/roles/{code}", response_model=RoleRead)
 def update_role(
-    code: str, payload: RoleWrite, context: RolesManager, service: ServiceDep
+    code: RoleCode, payload: RoleWrite, context: RolesManager, service: ServiceDep
 ) -> dict[str, object]:
     return service.write_role(context, code, payload)
 
 
 @admin_router.delete("/roles/{code}", status_code=204)
-def delete_role(code: str, context: RolesManager, service: ServiceDep) -> None:
+def delete_role(code: RoleCode, context: RolesManager, service: ServiceDep) -> None:
     service.delete_role(context, code)
 
 
 @admin_router.get("/audit", response_model=list[AuditEventRead])
 def audit(
-    context: Auditor, service: ServiceDep, page: Annotated[Pagination, Depends()]
+    context: Auditor, service: ServiceDep, page: Annotated[Pagination, Query()]
 ) -> list[AuditEvent]:
     return service.read_audit(context, page.offset, page.limit)

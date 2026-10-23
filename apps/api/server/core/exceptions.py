@@ -4,6 +4,7 @@ from enum import StrEnum
 from typing import cast
 
 from fastapi import Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -30,9 +31,16 @@ class ErrorCode(StrEnum):
     INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
 
 
+class ValidationIssue(BaseModel):
+    location: list[str | int]
+    message: str
+    type: str
+
+
 class ErrorDetail(BaseModel):
     code: ErrorCode
     message: str
+    details: list[ValidationIssue] | None = None
 
 
 class ErrorResponse(BaseModel):
@@ -111,17 +119,19 @@ def error_response(
     status_code: int,
     code: ErrorCode,
     message: str,
+    details: list[ValidationIssue] | None = None,
 ) -> JSONResponse:
     body = ErrorResponse(
         error=ErrorDetail(
             code=code,
             message=message,
+            details=details,
         )
     )
 
     return JSONResponse(
         status_code=status_code,
-        content=body.model_dump(mode="json"),
+        content=body.model_dump(mode="json", exclude_none=True),
         headers={"Cache-Control": "no-store"},
     )
 
@@ -143,10 +153,21 @@ async def validation_exception_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
+    validation_error = cast(RequestValidationError, exc)
+    # Záměrně neposíláme input, ctx ani tělo požadavku: mohou obsahovat hesla.
+    details = [
+        ValidationIssue(
+            location=list(issue["loc"]),
+            message=issue["msg"],
+            type=issue["type"],
+        )
+        for issue in validation_error.errors()
+    ]
     return error_response(
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         ErrorCode.VALIDATION_ERROR,
         "Request validation failed",
+        details=details,
     )
 
 
