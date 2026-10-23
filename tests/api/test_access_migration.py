@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from server.core.access.models import RolePermission, UserRole
@@ -139,3 +139,58 @@ def test_restarting_does_not_restore_removed_role_permissions(db_engine):
     with Session(db_engine) as db:
         AccessService(AccessRepository(db)).bootstrap()
         assert db.get(RolePermission, ("teacher", "profile.self.update")) is None
+
+
+@pytest.mark.postgres
+def test_audit_actor_delete_migration_preserves_history_and_allows_account_deletion(
+    admin, db_engine
+):
+    from conftest import HEADERS
+    from fastapi.testclient import TestClient
+    from server.core.audit.models import AuditEvent
+    from server.main import app
+    from test_access import complete_password, issue, sign_in
+
+    issued = issue(admin)
+    user_id = UUID(issued["user"]["id"])
+    # Nasimuluj původní FK bez ON DELETE, nikoli nové schéma z fixture.
+    with db_engine.begin() as connection:
+        for fk in inspect(connection).get_foreign_keys("audit_events"):
+            if fk["constrained_columns"] == ["actor_user_id"]:
+                name = connection.dialect.identifier_preparer.quote(fk["name"])
+                connection.execute(
+                    text(f"ALTER TABLE audit_events DROP CONSTRAINT {name}")
+                )
+        connection.execute(
+            text(
+                "ALTER TABLE audit_events ADD CONSTRAINT old_audit_actor_fk "
+                "FOREIGN KEY (actor_user_id) REFERENCES users(id)"
+            )
+        )
+        connection.execute(
+            text(
+                "DELETE FROM schema_migrations "
+                "WHERE version = '20261023_04_audit_actor_delete'"
+            )
+        )
+    with TestClient(app, headers=HEADERS) as user:
+        sign_in(user, issued)
+        complete_password(user, issued)
+    with Session(db_engine) as db:
+        event = db.exec(
+            select(AuditEvent).where(AuditEvent.actor_user_id == user_id)
+        ).one()
+        event_id = event.id
+    migrate(db_engine)
+    migrate(db_engine)
+    foreign_keys = inspect(db_engine).get_foreign_keys("audit_events")
+    assert any(
+        fk["constrained_columns"] == ["actor_user_id"]
+        and fk["options"].get("ondelete") == "SET NULL"
+        for fk in foreign_keys
+    )
+    response = admin.delete(f"/api/v1/admin/users/{user_id}")
+    assert response.status_code == 204, response.text
+    with Session(db_engine) as db:
+        event = db.get(AuditEvent, event_id)
+        assert event is not None and event.actor_user_id is None

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from uuid import UUID
 
 from server.core.access.repository import AccessError
@@ -6,6 +7,12 @@ from server.core.access.services import AccessContext, AccessService
 from server.core.exceptions import NotFoundException
 from server.core.users.avatar_storage import normalize_avatar
 from server.core.users.models import utcnow
+
+
+@dataclass(frozen=True)
+class AvatarImage:
+    data: bytes
+    media_type: str
 
 
 class AvatarService:
@@ -20,7 +27,7 @@ class AvatarService:
 
     def read(
         self, actor: AccessContext, user_id: UUID, filename: str | None = None
-    ) -> bytes:
+    ) -> AvatarImage:
         permission = self.permission(actor, user_id, write=False)
         self.access.require(actor, permission)
         # Zámek účtu chrání čtení souboru před souběžnou výměnou/smazáním.
@@ -30,7 +37,10 @@ class AvatarService:
         key = self.storage.key_from_url(user_id, user.avatar_url)
         if filename is not None and filename != key:
             raise NotFoundException("Profilová fotka již není aktuální.")
-        return self.storage.read(key)
+        return AvatarImage(
+            data=self.storage.read(key),
+            media_type="image/webp" if key.endswith(".webp") else "image/png",
+        )
 
     def update(self, actor: AccessContext, user_id: UUID, data: bytes) -> UserRead:
         permission = self.permission(actor, user_id, write=True)
@@ -94,3 +104,37 @@ class AvatarService:
         removed = sum(self.storage.delete(key) for key in orphans)
         self.access.repo.commit()
         return removed
+
+    def convert_legacy(self) -> int:
+        """Převede původní PNG; soubory se mažou až po potvrzení nové URL."""
+        converted = 0
+        for user_id, url in self.access.repo.avatar_references():
+            if not url.endswith(".png"):
+                continue
+            self.access.repo.lock_management()
+            user = self.access.repo.user(user_id, lock=True)
+            old_url = user.avatar_url
+            if old_url is None or not old_url.endswith(".png"):
+                self.access.repo.commit()
+                continue
+            old_key = self.storage.key_from_url(user_id, old_url)
+            data = normalize_avatar(self.storage.read(old_key))
+            new_key = self.storage.write(data)
+            try:
+                user.avatar_url = self.storage.url_for(user_id, new_key)
+                user.updated_at = utcnow()
+                self.access.repo.audit(
+                    None,
+                    "avatar.converted",
+                    "users",
+                    str(user_id),
+                    before={"avatar_url": old_url},
+                    after={"avatar_url": user.avatar_url},
+                )
+                self.access.repo.commit()
+            except AccessError:
+                self.storage.delete(new_key)
+                raise
+            self.storage.delete(old_key)
+            converted += 1
+        return converted

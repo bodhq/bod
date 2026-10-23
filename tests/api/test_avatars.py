@@ -35,7 +35,7 @@ def picture(format="PNG", size=(1000, 600)):
 
 
 def photo_files():
-    return list((settings.media_root / "avatars").glob("*.png"))
+    return list((settings.media_root / "avatars").glob("*.webp"))
 
 
 @pytest.mark.parametrize(
@@ -43,6 +43,7 @@ def photo_files():
     [
         ("PNG", "image/png"),
         ("JPEG", "image/jpeg"),
+        ("JPEG", "image/jpg"),
         ("WEBP", "image/webp"),
     ],
 )
@@ -64,7 +65,7 @@ def test_upload_normalizes_image_and_stores_only_url(
         user = db.get(User, UUID(me["id"]))
         assert user.avatar_url == avatar_url
         key = LocalAvatarStorage.key_from_url(user.id, user.avatar_url)
-        assert len(key) == 36 and key.endswith(".png")
+        assert len(key) == 37 and key.endswith(".webp")
         assert not Path(key).is_absolute()
     assert "avatar_key" not in {
         column["name"] for column in inspect(db_engine).get_columns("users")
@@ -72,12 +73,12 @@ def test_upload_normalizes_image_and_stores_only_url(
     assert photo_files() == [settings.media_root / "avatars" / key]
     response = admin.get(response.json()["avatar_url"])
     assert response.status_code == 200
-    assert response.headers["content-type"] == "image/png"
+    assert response.headers["content-type"] == "image/webp"
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["x-content-type-options"] == "nosniff"
     with Image.open(BytesIO(response.content)) as image:
         assert image.size == (512, 307)
-        assert image.format == "PNG"
+        assert image.format == "WEBP"
     assert admin.get("/api/v1/auth/me").json()["avatar_url"] is not None
 
 
@@ -443,7 +444,9 @@ def legacy_avatar_column(engine, user_id, key):
 def test_migration_replaces_key_with_working_url_without_moving_file(admin, db_engine):
     me = admin.get("/api/v1/auth/me").json()
     storage = LocalAvatarStorage(settings.media_root)
-    key = storage.write(normalize_avatar(picture()))
+    key = f"{uuid4().hex}.png"
+    storage.directory.mkdir(parents=True, exist_ok=True)
+    storage.path(key).write_bytes(picture())
     before = storage.read(key)
     legacy_avatar_column(db_engine, me["id"], key)
     migrate(db_engine)
@@ -451,7 +454,7 @@ def test_migration_replaces_key_with_working_url_without_moving_file(admin, db_e
     url = storage.url_for(UUID(me["id"]), key)
     assert admin.get("/api/v1/auth/me").json()["avatar_url"] == url
     assert admin.get(url).content == before
-    assert photo_files() == [storage.path(key)]
+    assert list(storage.directory.iterdir()) == [storage.path(key)]
     assert "avatar_key" not in {
         c["name"] for c in inspect(db_engine).get_columns("users")
     }
@@ -493,3 +496,131 @@ def test_storage_urls_are_bound_to_user_and_local_api(tmp_path):
             storage.key_from_url(owner, url)
     with pytest.raises(AvatarStorageUnavailable):
         storage.url_for(owner, "../../outside.png")
+
+
+def test_webp_uses_quality_85_and_preserves_transparency(monkeypatch):
+    source = BytesIO()
+    Image.new("RGBA", (40, 30), (20, 40, 60, 100)).save(source, format="PNG")
+    original_save = Image.Image.save
+    options = []
+
+    def capture_save(image, output, format=None, **kwargs):
+        options.append((format, kwargs.copy()))
+        return original_save(image, output, format=format, **kwargs)
+
+    monkeypatch.setattr(Image.Image, "save", capture_save)
+    data = normalize_avatar(source.getvalue())
+    assert options[0][0] == "WEBP"
+    assert options[0][1]["quality"] == 85
+    with Image.open(BytesIO(data)) as image:
+        assert image.format == "WEBP"
+        assert image.getpixel((0, 0))[3] == 100
+        assert not image.getexif()
+
+
+def test_existing_png_is_readable_and_replaced_by_webp(admin, db_engine):
+    me = admin.get("/api/v1/auth/me").json()
+    storage = LocalAvatarStorage(settings.media_root)
+    key = f"{uuid4().hex}.png"
+    storage.directory.mkdir(parents=True, exist_ok=True)
+    storage.path(key).write_bytes(picture())
+    url = storage.url_for(UUID(me["id"]), key)
+    with Session(db_engine) as db:
+        db.get(User, UUID(me["id"])).avatar_url = url
+        db.commit()
+    response = admin.get(url)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+    assert (
+        admin.get(f"/api/v1/users/{me['id']}/avatar").headers["content-type"]
+        == "image/png"
+    )
+    # Úklid nesmí smazat stále používanou starou fotku.
+    with Session(db_engine) as db:
+        assert AvatarService(AccessService(AccessRepository(db))).clean_orphans() == 0
+    response = admin.put(
+        "/api/v1/users/me/avatar",
+        content=picture("JPEG"),
+        headers={"Content-Type": "image/jpg"},
+    )
+    assert response.status_code == 200
+    assert response.json()["avatar_url"].endswith(".webp")
+    assert not storage.path(key).exists()
+    assert admin.get(url).status_code == 404
+
+
+def test_legacy_conversion_updates_url_preserves_metadata_and_is_idempotent(
+    admin, db_engine
+):
+    me = admin.get("/api/v1/auth/me").json()
+    storage = LocalAvatarStorage(settings.media_root)
+    key = f"{uuid4().hex}.png"
+    storage.directory.mkdir(parents=True, exist_ok=True)
+    storage.path(key).write_bytes(picture())
+    old_url = storage.url_for(UUID(me["id"]), key)
+    with Session(db_engine) as db:
+        db.get(User, UUID(me["id"])).avatar_url = old_url
+        db.commit()
+        service = AvatarService(AccessService(AccessRepository(db)))
+        assert service.convert_legacy() == 1
+        assert service.convert_legacy() == 0
+    result = admin.get("/api/v1/auth/me").json()
+    assert result["id"] == me["id"]
+    assert result["roles"] == me["roles"]
+    assert result["avatar_url"].endswith(".webp")
+    response = admin.get(result["avatar_url"])
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/webp"
+    assert not storage.path(key).exists()
+    assert admin.get(old_url).status_code == 404
+
+
+def test_legacy_conversion_conflict_keeps_original_png_and_url(
+    admin, db_engine, monkeypatch
+):
+    me = admin.get("/api/v1/auth/me").json()
+    storage = LocalAvatarStorage(settings.media_root)
+    key = f"{uuid4().hex}.png"
+    storage.directory.mkdir(parents=True, exist_ok=True)
+    storage.path(key).write_bytes(picture())
+    url = storage.url_for(UUID(me["id"]), key)
+    with Session(db_engine) as db:
+        db.get(User, UUID(me["id"])).avatar_url = url
+        db.commit()
+
+        def conflict(repo):
+            repo.db.rollback()
+            raise AccessError("conflict", "Simulovaný konflikt převodu")
+
+        with monkeypatch.context() as patch:
+            patch.setattr(AccessRepository, "commit", conflict)
+            service = AvatarService(AccessService(AccessRepository(db)))
+            with pytest.raises(AccessError):
+                service.convert_legacy()
+    assert storage.keys() == [key]
+    assert admin.get("/api/v1/auth/me").json()["avatar_url"] == url
+    assert admin.get(url).status_code == 200
+
+
+def test_conversion_cli_reports_unavailable_database_without_starting_conversion(
+    monkeypatch, capsys
+):
+    import server.scripts.convert_avatars as script
+    from sqlalchemy.exc import OperationalError
+
+    def unavailable():
+        raise OperationalError("connect", {}, ConnectionError("connection refused"))
+
+    def unexpected_conversion(self):
+        pytest.fail("Konverze se nesmí spustit bez dostupné databáze.")
+
+    monkeypatch.setattr(script, "init_db", unavailable)
+    monkeypatch.setattr(AvatarService, "convert_legacy", unexpected_conversion)
+    with pytest.raises(SystemExit) as result:
+        script.main()
+    assert result.value.code == 1
+    output = capsys.readouterr()
+    assert "DATABASE_URL" in output.err
+    assert "docker compose" in output.err
+    assert "Traceback" not in output.err
+    assert output.out == ""

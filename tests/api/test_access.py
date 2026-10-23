@@ -473,7 +473,10 @@ def test_session_role_must_belong_to_that_user_in_database(admin, db_engine):
 def test_temporary_password_cannot_be_used_for_normal_actions(client, root_credentials):
     sign_in(client, root_credentials.model_dump(mode="json"))
     assert client.get("/api/v1/auth/me").status_code == 200
-    assert client.get("/api/v1/auth/sessions").status_code == 403
+    sessions = client.get("/api/v1/auth/sessions")
+    assert sessions.status_code == 200
+    assert len(sessions.json()) == 1
+    assert client.get("/api/v1/admin/users").status_code == 403
     assert (
         client.put("/api/v1/auth/active-role", json={"role_code": "admin"}).status_code
         == 403
@@ -559,3 +562,33 @@ def test_existing_browser_can_login_with_allowed_origin_without_custom_header(
     )
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_admin_can_delete_user_after_password_change_preserving_audit(admin, db_engine):
+    issued = issue(admin)
+    user_id = UUID(issued["user"]["id"])
+    with TestClient(app, headers=HEADERS) as user:
+        sign_in(user, issued)
+        complete_password(user, issued)
+        assert (
+            user.patch("/api/v1/users/me", json={"first_name": "Změněné"}).status_code
+            == 200
+        )
+        with Session(db_engine) as db:
+            events = list(
+                db.exec(
+                    select(AuditEvent).where(AuditEvent.actor_user_id == user_id)
+                ).all()
+            )
+            event_ids = {event.id for event in events}
+            assert len(event_ids) >= 2
+        response = admin.delete(f"/api/v1/admin/users/{user_id}")
+        assert response.status_code == 204, response.text
+        assert user.get("/api/v1/auth/me").status_code == 401
+    with Session(db_engine) as db:
+        assert db.get(User, user_id) is None
+        for event_id in event_ids:
+            event = db.get(AuditEvent, event_id)
+            assert event is not None
+            assert event.actor_user_id is None
+            assert event.entity_id == str(user_id)

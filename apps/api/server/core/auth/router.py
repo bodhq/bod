@@ -1,14 +1,15 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Cookie, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Header, Request, Response, status
 
-from server.core.access.dependencies import AccessServiceDep, require_permission
+from server.core.access.dependencies import AccessServiceDep
 from server.core.access.schemas import PasswordChange, RoleSwitch
 from server.core.auth.dependencies import (
     AuthServiceDep,
     CurrentContextDep,
     CurrentUserDep,
+    SessionCookie,
     cookie_samesite,
     mutation_guard,
     no_store,
@@ -89,9 +90,11 @@ def login(
     request: Request,
     response: Response,
     auth_service: AuthServiceDep,
+    user_agent: Annotated[
+        str | None, Header(max_length=512, description="Identifikace klienta relace.")
+    ] = None,
 ) -> UserPublic:
     client_ip = request.client.host if request.client is not None else "unknown"
-    user_agent = request.headers.get("user-agent")
 
     try:
         result = auth_service.login(
@@ -123,10 +126,7 @@ def login(
 def logout(
     response: Response,
     auth_service: AuthServiceDep,
-    session_token: Annotated[
-        str | None,
-        Cookie(alias=settings.session_cookie_name),
-    ] = None,
+    session_token: SessionCookie = None,
 ) -> None:
     auth_service.logout(session_token)
 
@@ -173,7 +173,8 @@ def change_password(
     "/sessions",
     response_model=list[AuthSessionPublic],
     responses=AUTH_REQUIRED_RESPONSES,
-    dependencies=[Depends(require_permission("profile.self.read"))],
+    description="Vlastní aktivní přihlašovací relace. Dostupné i před změnou "
+    "dočasného hesla a bez vybrané aktivní role; vyžaduje přihlášení.",
 )
 def get_sessions(
     current_user: CurrentUserDep,
@@ -188,7 +189,8 @@ def get_sessions(
     "/sessions/{session_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     responses=SESSION_REVOKE_ERROR_RESPONSES,
-    dependencies=[Depends(require_permission("profile.self.read"))],
+    description="Zruší pouze vlastní relaci. Dostupné bez aktivní role "
+    "i před změnou dočasného hesla; cizí relaci nelze zrušit.",
 )
 def revoke_session(
     session_id: UUID,

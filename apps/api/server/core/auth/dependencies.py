@@ -1,6 +1,6 @@
 from typing import Annotated, Literal, cast
 
-from fastapi import Cookie, Depends, Request, Response
+from fastapi import Cookie, Depends, Header, Request, Response
 from sqlmodel import Session
 
 from server.core.access.repository import AccessError
@@ -21,6 +21,16 @@ from server.core.users.models import User
 from server.core.users.repository import UserRepository
 
 SessionDep = Annotated[Session, Depends(get_session)]
+SessionCookie = Annotated[
+    str | None,
+    Cookie(
+        alias=settings.session_cookie_name,
+        min_length=1,
+        max_length=128,
+        pattern=r"^[A-Za-z0-9_-]+$",
+        description="Neprůhledný session token vydaný přihlášením; nejde o JWT.",
+    ),
+]
 
 
 def get_login_attempt_limiter() -> LoginAttemptLimiter:
@@ -76,10 +86,7 @@ def set_session_cookie(response: Response, token: str) -> None:
 def get_current_context(
     response: Response,
     auth_service: AuthServiceDep,
-    session_token: Annotated[
-        str | None,
-        Cookie(alias=settings.session_cookie_name),
-    ] = None,
+    session_token: SessionCookie = None,
 ) -> AccessContext:
     if session_token is None:
         raise UnauthenticatedException()
@@ -105,14 +112,32 @@ def get_current_user(context: CurrentContextDep) -> User:
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
-def mutation_guard(request: Request) -> None:
+def mutation_guard(
+    request: Request,
+    origin: Annotated[
+        str | None,
+        Header(
+            max_length=2048,
+            description="U měnících požadavků musí původ patřit do ALLOWED_ORIGINS. "
+            "Bez Origin je nutné X-Requested-With: bod.",
+        ),
+    ] = None,
+    requested_with: Annotated[
+        str | None,
+        Header(
+            alias="X-Requested-With",
+            max_length=64,
+            description="U měnících požadavků bez Origin musí mít hodnotu bod.",
+            examples=["bod"],
+        ),
+    ] = None,
+) -> None:
     if request.method in {"GET", "HEAD", "OPTIONS"}:
         return
-    origin = request.headers.get("origin")
     if origin is not None:
         if origin not in settings.allowed_origins:
             raise AccessError("forbidden", "Nepovolený původ požadavku.")
-    elif request.headers.get("X-Requested-With") != "bod":
+    elif requested_with != "bod":
         # API klient bez Origin musí poslat vlastní hlavičku. Prohlížeč
         # ji nemůže přidat cross-site HTML formulářem; Origin si zvolit nemůže.
         raise AccessError("forbidden", "Chybí původ nebo X-Requested-With: bod.")

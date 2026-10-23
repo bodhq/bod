@@ -213,6 +213,20 @@
           "code": {
             "$ref": "#/components/schemas/ErrorCode"
           },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ValidationIssue"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
           "message": {
             "title": "Message",
             "type": "string"
@@ -303,17 +317,20 @@
         "type": "object"
       },
       "LoginRequest": {
+        "additionalProperties": false,
         "properties": {
           "password": {
+            "format": "password",
             "maxLength": 1024,
             "minLength": 1,
             "title": "Password",
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
           },
           "username": {
             "maxLength": 64,
             "minLength": 3,
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
             "title": "Username",
             "type": "string"
           }
@@ -329,16 +346,22 @@
         "additionalProperties": false,
         "properties": {
           "current_password": {
+            "format": "password",
             "maxLength": 1024,
             "minLength": 1,
             "title": "Current Password",
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
           },
           "new_password": {
+            "description": "12\u2013128 znak\u016f, alespo\u0148 jeden neb\u00edl\u00fd znak. Mus\u00ed se li\u0161it od sou\u010dasn\u00e9ho hesla. Hesla se neo\u0159ez\u00e1vaj\u00ed.",
+            "format": "password",
             "maxLength": 128,
             "minLength": 12,
+            "pattern": "\\S",
             "title": "New Password",
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
           }
         },
         "required": [
@@ -368,24 +391,28 @@
       },
       "ProfilePatch": {
         "additionalProperties": false,
+        "minProperties": 1,
         "properties": {
           "display_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
             "title": "Display Name"
           },
           "email": {
             "anyOf": [
               {
+                "format": "email",
                 "maxLength": 254,
-                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
                 "type": "string"
               },
               {
@@ -398,35 +425,46 @@
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
             "title": "First Name"
           },
           "last_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
             "title": "Last Name"
           },
           "phone": {
             "anyOf": [
               {
                 "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
+            ],
+            "examples": [
+              "+420 123 456 789"
             ],
             "title": "Phone"
           }
@@ -438,6 +476,8 @@
         "additionalProperties": false,
         "properties": {
           "code": {
+            "maxLength": 64,
+            "minLength": 2,
             "pattern": "^[a-z][a-z0-9._-]{1,63}$",
             "title": "Code",
             "type": "string"
@@ -445,6 +485,8 @@
           "description": {
             "anyOf": [
               {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
@@ -456,16 +498,22 @@
           "name": {
             "maxLength": 100,
             "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
             "title": "Name",
             "type": "string"
           },
           "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
             "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
               "type": "string"
             },
             "maxItems": 100,
             "title": "Permission Codes",
-            "type": "array"
+            "type": "array",
+            "uniqueItems": true
           }
         },
         "required": [
@@ -485,6 +533,8 @@
           "description": {
             "anyOf": [
               {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
@@ -496,16 +546,22 @@
           "name": {
             "maxLength": 100,
             "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
             "title": "Name",
             "type": "string"
           },
           "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
             "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
               "type": "string"
             },
             "maxItems": 100,
             "title": "Permission Codes",
-            "type": "array"
+            "type": "array",
+            "uniqueItems": true
           }
         },
         "required": [
@@ -519,6 +575,8 @@
         "additionalProperties": false,
         "properties": {
           "role_code": {
+            "maxLength": 64,
+            "minLength": 2,
             "pattern": "^[a-z][a-z0-9._-]{1,63}$",
             "title": "Role Code",
             "type": "string"
@@ -536,6 +594,8 @@
           "description": {
             "anyOf": [
               {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
@@ -547,16 +607,22 @@
           "name": {
             "maxLength": 100,
             "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
             "title": "Name",
             "type": "string"
           },
           "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
             "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
               "type": "string"
             },
             "maxItems": 100,
             "title": "Permission Codes",
-            "type": "array"
+            "type": "array",
+            "uniqueItems": true
           }
         },
         "required": [
@@ -567,24 +633,50 @@
       },
       "UserCreate": {
         "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "role_codes": {
+                  "contains": {
+                    "const": "admin"
+                  }
+                }
+              },
+              "required": [
+                "role_codes"
+              ]
+            },
+            "then": {
+              "properties": {
+                "role_codes": {
+                  "maxItems": 1
+                }
+              }
+            }
+          }
+        ],
         "properties": {
           "display_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
             "title": "Display Name"
           },
           "email": {
             "anyOf": [
               {
+                "format": "email",
                 "maxLength": 254,
-                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
                 "type": "string"
               },
               {
@@ -597,49 +689,67 @@
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
             "title": "First Name"
           },
           "last_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
             "title": "Last Name"
           },
           "phone": {
             "anyOf": [
               {
                 "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "examples": [
+              "+420 123 456 789"
+            ],
             "title": "Phone"
           },
           "role_codes": {
+            "description": "P\u0159id\u011blen\u00e9 role. Admin mus\u00ed b\u00fdt samostatn\u011b.",
             "items": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
               "type": "string"
             },
             "maxItems": 20,
             "title": "Role Codes",
-            "type": "array"
+            "type": "array",
+            "uniqueItems": true
           },
           "username": {
             "anyOf": [
               {
+                "maxLength": 64,
+                "minLength": 3,
                 "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
                 "type": "string"
               },
@@ -647,6 +757,7 @@
                 "type": "null"
               }
             ],
+            "description": "Normalizuje se na mal\u00e1 p\u00edsmena. Vynech\u00e1n\u00ed nebo null vygeneruje jm\u00e9no.",
             "title": "Username"
           }
         },
@@ -655,24 +766,51 @@
       },
       "UserPatch": {
         "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "role_codes": {
+                  "contains": {
+                    "const": "admin"
+                  }
+                }
+              },
+              "required": [
+                "role_codes"
+              ]
+            },
+            "then": {
+              "properties": {
+                "role_codes": {
+                  "maxItems": 1
+                }
+              }
+            }
+          }
+        ],
+        "minProperties": 1,
         "properties": {
           "display_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
             "title": "Display Name"
           },
           "email": {
             "anyOf": [
               {
+                "format": "email",
                 "maxLength": 254,
-                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
                 "type": "string"
               },
               {
@@ -685,75 +823,74 @@
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
             "title": "First Name"
           },
           "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Active"
+            "description": "Pouze JSON true/false; null nen\u00ed povolen\u00e9.",
+            "title": "Is Active",
+            "type": "boolean"
           },
           "last_name": {
             "anyOf": [
               {
                 "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
             "title": "Last Name"
           },
           "phone": {
             "anyOf": [
               {
                 "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
                 "type": "string"
               },
               {
                 "type": "null"
               }
+            ],
+            "examples": [
+              "+420 123 456 789"
             ],
             "title": "Phone"
           },
           "role_codes": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "maxItems": 20,
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Role Codes"
+            "description": "Nahrad\u00ed v\u0161echny role; [] odebere v\u0161echny. Null nen\u00ed povolen\u00e9.",
+            "items": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Role Codes",
+            "type": "array",
+            "uniqueItems": true
           },
           "username": {
-            "anyOf": [
-              {
-                "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Username"
+            "description": "Vynech\u00e1n\u00ed ponech\u00e1 jm\u00e9no; null nen\u00ed povolen\u00e9.",
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+            "title": "Username",
+            "type": "string"
           }
         },
         "title": "UserPatch",
@@ -1015,6 +1152,39 @@
         ],
         "title": "UserRead",
         "type": "object"
+      },
+      "ValidationIssue": {
+        "properties": {
+          "location": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "message",
+          "type"
+        ],
+        "title": "ValidationIssue",
+        "type": "object"
       }
     }
   },
@@ -1035,6 +1205,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 2147483647,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -1053,18 +1224,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1156,18 +1373,64 @@
         "operationId": "permissions_api_v1_admin_permissions_get",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1259,18 +1522,64 @@
         "operationId": "roles_api_v1_admin_roles_get",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1360,18 +1669,64 @@
         "operationId": "create_role_api_v1_admin_roles_post",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1473,23 +1828,72 @@
             "name": "code",
             "required": true,
             "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
               "title": "Code",
               "type": "string"
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1572,23 +1976,72 @@
             "name": "code",
             "required": true,
             "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
               "title": "Code",
               "type": "string"
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1691,6 +2144,7 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 2147483647,
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
@@ -1709,18 +2163,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1810,18 +2310,64 @@
         "operationId": "create_user_api_v1_admin_users_post",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -1919,18 +2465,64 @@
         "operationId": "generate_users_api_v1_admin_users_generate_post",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2042,18 +2634,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2142,18 +2780,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2249,18 +2933,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2368,18 +3098,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2467,18 +3243,64 @@
         "operationId": "switch_role_api_v1_auth_active_role_put",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2556,18 +3378,64 @@
         "operationId": "change_password_api_v1_auth_change_password_post",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2643,6 +3511,68 @@
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
+        "parameters": [
+          {
+            "description": "Identifikace klienta relace.",
+            "in": "header",
+            "name": "user-agent",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 512,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifikace klienta relace.",
+              "title": "User-Agent"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2726,18 +3656,64 @@
         "operationId": "logout_api_v1_auth_logout_post",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2798,18 +3774,64 @@
         "operationId": "me_api_v1_auth_me_get",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2874,21 +3896,68 @@
     },
     "/api/v1/auth/sessions": {
       "get": {
+        "description": "Vlastn\u00ed aktivn\u00ed p\u0159ihla\u0161ovac\u00ed relace. Dostupn\u00e9 i p\u0159ed zm\u011bnou do\u010dasn\u00e9ho hesla a bez vybran\u00e9 aktivn\u00ed role; vy\u017eaduje p\u0159ihl\u00e1\u0161en\u00ed.",
         "operationId": "get_sessions_api_v1_auth_sessions_get",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -2957,6 +4026,7 @@
     },
     "/api/v1/auth/sessions/{session_id}": {
       "delete": {
+        "description": "Zru\u0161\u00ed pouze vlastn\u00ed relaci. Dostupn\u00e9 bez aktivn\u00ed role i p\u0159ed zm\u011bnou do\u010dasn\u00e9ho hesla; ciz\u00ed relaci nelze zru\u0161it.",
         "operationId": "revoke_session_api_v1_auth_sessions__session_id__delete",
         "parameters": [
           {
@@ -2970,18 +4040,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3056,23 +4172,30 @@
             "name": "class_id",
             "required": true,
             "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
               "title": "Class Id",
               "type": "integer"
             }
           },
           {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3154,18 +4277,64 @@
         "operationId": "update_profile_api_v1_users_me_patch",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3263,18 +4432,64 @@
         "operationId": "delete_my_avatar_api_v1_users_me_avatar_delete",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3373,18 +4588,64 @@
         "operationId": "upload_my_avatar_api_v1_users_me_avatar_put",
         "parameters": [
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3394,22 +4655,49 @@
             "image/jpeg": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/jpg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             },
             "image/png": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             },
             "image/webp": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             }
           },
+          "description": "Syrov\u00e9 bin\u00e1rn\u00ed t\u011blo JPG/JPEG, PNG nebo WebP; ne form-data ani base64. 1\u20135242880 bajt\u016f, nejv\u00fd\u0161e 16000000 pixel\u016f. Pouze neanimovan\u00fd obr\u00e1zek; server odstran\u00ed metadata a zmen\u0161\u00ed jej do 512 \u00d7 512 px a ulo\u017e\u00ed jako WebP s kvalitou 85. JPG i JPEG pou\u017e\u00edvaj\u00ed image/jpeg; podporovan\u00fd je tak\u00e9 alias image/jpg. Velikost se ov\u011b\u0159uje b\u011bhem \u010dten\u00ed streamu.",
           "required": true
         },
         "responses": {
@@ -3525,18 +4813,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3645,18 +4979,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3669,9 +5049,15 @@
                   "format": "binary",
                   "type": "string"
                 }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
               }
             },
-            "description": "Successful Response"
+            "description": "WebP profilovka; p\u016fvodn\u00ed PNG z\u016fst\u00e1vaj\u00ed dostupn\u00e9 do v\u00fdm\u011bny."
           },
           "401": {
             "content": {
@@ -3773,18 +5159,64 @@
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3794,22 +5226,49 @@
             "image/jpeg": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/jpg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             },
             "image/png": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             },
             "image/webp": {
               "schema": {
                 "format": "binary",
-                "type": "string"
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
               }
             }
           },
+          "description": "Syrov\u00e9 bin\u00e1rn\u00ed t\u011blo JPG/JPEG, PNG nebo WebP; ne form-data ani base64. 1\u20135242880 bajt\u016f, nejv\u00fd\u0161e 16000000 pixel\u016f. Pouze neanimovan\u00fd obr\u00e1zek; server odstran\u00ed metadata a zmen\u0161\u00ed jej do 512 \u00d7 512 px a ulo\u017e\u00ed jako WebP s kvalitou 85. JPG i JPEG pou\u017e\u00edvaj\u00ed image/jpeg; podporovan\u00fd je tak\u00e9 alias image/jpg. Velikost se ov\u011b\u0159uje b\u011bhem \u010dten\u00ed streamu.",
           "required": true
         },
         "responses": {
@@ -3929,23 +5388,72 @@
             "name": "filename",
             "required": true,
             "schema": {
+              "maxLength": 37,
+              "minLength": 36,
+              "pattern": "^[0-9a-f]{32}\\.(?:webp|png)$",
               "title": "Filename",
               "type": "string"
             }
           },
           {
-            "in": "cookie",
-            "name": "session_id",
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
             "required": false,
             "schema": {
               "anyOf": [
                 {
+                  "maxLength": 2048,
                   "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
               "title": "Session Id"
             }
           }
@@ -3958,9 +5466,15 @@
                   "format": "binary",
                   "type": "string"
                 }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
               }
             },
-            "description": "Successful Response"
+            "description": "WebP profilovka; p\u016fvodn\u00ed PNG z\u016fst\u00e1vaj\u00ed dostupn\u00e9 do v\u00fdm\u011bny."
           },
           "401": {
             "content": {
