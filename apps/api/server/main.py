@@ -2,13 +2,22 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
 from server.api.router import api_router
 from server.core.config import settings
 from server.core.database import engine, init_db
+from server.core.exceptions import (
+    AppException,
+    app_exception_handler,
+    database_exception_handler,
+    unexpected_exception_handler,
+    validation_exception_handler,
+)
 
 
 @asynccontextmanager
@@ -24,9 +33,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(
+    RequestValidationError,
+    validation_exception_handler,
+)
+app.add_exception_handler(
+    OperationalError,
+    database_exception_handler,
+)
+app.add_exception_handler(Exception, unexpected_exception_handler)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

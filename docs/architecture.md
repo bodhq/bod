@@ -27,7 +27,7 @@ Systém implementuje asymetrickou architekturu distribuovanou v prostředí mono
 - **FastAPI** a **Python 3.12** pro vysokovýkonné asynchronní API služby.
 - **SQLModel** pro unifikovanou definici objektově-relačního mapování (ORM) a validačních schémat.
 - **PostgreSQL 16** jako primární databázový systém.
-- **Redis** jako vrstva pro caching a výkonnou správu relací (Sliding Sessions).
+- **Redis** pro omezení pokusů o přihlášení. Relace s posuvnou expirací jsou v PostgreSQL.
 
 ### Infrastruktura a Kvalita
 - Nástroje **uv** a **pnpm** pro správu prostředí a závislostí.
@@ -85,6 +85,6 @@ Klientská aplikace komunikuje se serverovou vrstvou výhradně prostřednictví
 
 ## 5. Inicializace databáze a Lifecycle
 
-V prostředí lokálního vývoje nevyužívá systém migrační skripty. Místo toho se spoléháme na proces **Auto-Init**.
+API při startu spouští transakční, verzovanou migraci v `server/core/migrations.py`. Vytvoří chybějící tabulky a jednorázově převede původní `users.role` na vazby rolí. Provedenou verzi eviduje v `schema_migrations`; opakovaný start data nepřevádí znovu. `SQLModel.metadata.create_all` vytváří chybějící tabulky, samo však neumí upravovat sloupce existujících tabulek.
 
-Při spuštění `pnpm dev` backend analyzuje definované `SQLModel` třídy a porovná je s tabulkami v databázi PostgreSQL. Chybějící struktury (tabulky, relace) jsou automaticky vytvořeny za chodu, což dramaticky zrychluje vývojovou iteraci. Pro produkční prostředí a údržbu je nicméně uvažováno o nasazení plnohodnotného migračního nástroje (Alembic).
+Sdílené jádro obsahuje `users` (identita a osobní údaje), `auth` (přihlášení a relace), `access` (role, oprávnění a správa účtů) a `audit` (historie změn). Podrobná pravidla, API a inicializace prvního správce jsou v [Účty, role a oprávnění](access.md).

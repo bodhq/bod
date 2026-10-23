@@ -1,0 +1,96 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { Logger } from "@/core/logger";
+import { toast } from "@/core/ui/toast";
+
+import { login as apiLogin, logout as apiLogout } from "../api";
+import { useAuthStore } from "../store";
+
+/**
+ * VRSTVA 2: LOGIKA (Hooks)
+ * Tento hook abstrahuje veškerou asynchronní logiku od UI komponent.
+ * UI komponenta nesmí vědět, jak probíhá login, jen zavolá `login(email, password)`.
+ */
+export function useAuth() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated, isLoading, setUser } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+      setUser: state.setUser,
+    })),
+  );
+
+  const [error, setError] = useState<string | null>(null);
+
+  // TanStack Query Mutation pro Login
+  const loginMutation = useMutation({
+    mutationFn: async ({ username, password }: { username: string; password: string }) => {
+      return await apiLogin(username, password);
+    },
+    onSuccess: (userData) => {
+      setUser(userData);
+
+      // Invalidate queries that might depend on auth
+      queryClient.invalidateQueries();
+
+      router.push("/app");
+    },
+    onError: (err: Error) => {
+      const msg = err.message || "Neočekávaná chyba při přihlašování.";
+      setError(msg);
+      toast.error(msg);
+    },
+  });
+
+  // TanStack Query Mutation pro Logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await apiLogout();
+    },
+    onSuccess: () => {
+      setUser(null);
+      queryClient.clear(); // Smažeme celou cache při odhlášení
+      router.push("/login");
+    },
+    onError: (err) => {
+      Logger.error("Chyba při odhlašování", err);
+      toast.error("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
+    },
+  });
+
+  const login = (username: string, pass: string) => {
+    setError(null);
+    loginMutation.mutate({ username, password: pass });
+  };
+
+  const logout = () => {
+    logoutMutation.mutate();
+  };
+
+  const loginAsync = async (username: string, pass: string) => {
+    setError(null);
+    return loginMutation.mutateAsync({ username, password: pass });
+  };
+
+  const logoutAsync = async () => {
+    return logoutMutation.mutateAsync();
+  };
+
+  return {
+    user,
+    isAuthenticated,
+    isLoading, // Globální načítání při startu aplikace (nyní přes server komponenty)
+    isPending: loginMutation.isPending || logoutMutation.isPending,
+    error,
+    login,
+    loginAsync,
+    logout,
+    logoutAsync,
+  };
+}

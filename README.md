@@ -88,13 +88,14 @@ Pro zajištění plynulého chodu aplikace v produkčním prostředí (školní 
 - **Úložiště:** 60 - 80 GB SSD/NVMe (Prostor pro OS, zdrojové kódy, Docker images, aplikační data a zálohy)
 - **OS:** Ubuntu 24.04 LTS (Nebo 22.04 LTS)
 
-**Minimální hardwarová specifikace (Vývoj a testování):**
-- **CPU:** 2 vCPU
-- **RAM:** 4 GB (Absolutní funkční minimum pro úspěšnou kompilaci Next.js a běh databáze)
-- **Úložiště:** 40 GB SSD
-- **OS:** Ubuntu 24.04 LTS
+Hlavní dokumentace projektu:
 
-Celý systém bude distribuován a provozován v izolovaných kontejnerech (např. pomocí `docker-compose`), což zajistí striktní oddělení databáze od aplikačních vrstev a usnadní procesy údržby či případné migrace.
+- 🏗️ [**Architektura a API Kontrakt** (docs/architecture.md)](docs/architecture.md) – Hlavní technická specifikace vrstvené architektury a autogenerování API.
+- 🧪 [**Testování (Testing Guidelines)** (docs/testing.md)](docs/testing.md) – Metodika pro unit a E2E testování (Pytest, Vitest, Playwright).
+- 📊 [**Sprint reviews** (docs/sprint-reviews/README.md)](docs/sprint-reviews/README.md) – Průběžný přehled práce, týmového úsilí a navazujících úkolů pro Eliáše a Filipa.
+- [**Účty, role a oprávnění**](docs/access.md) – Pravidla přístupu, API, migrace a vytvoření prvního správce.
+- [**Vysvětlení implementace s kódem**](docs/access-implementation.md) a [**návrh generování účtů žáků a rodičů**](docs/account-generation.md).
+- 🤝 [**Pravidla a Workflow** (CONTRIBUTING.md)](CONTRIBUTING.md) – GitHub procesy a standardy pro psaní PR.
 
 ---
 
@@ -108,13 +109,17 @@ Aplikace vyžaduje lokálně nainstalované prostředí `Node.js` (>=20), `pnpm`
 ```bash
 # 1. Instalace Node závislostí a inicializace Python prostředí
 pnpm install
-uv sync --dev
+uv sync --all-packages --all-groups --frozen
 
 # 2. Příprava konfigurace
 cp .env.example .env
 
 # 3. Spuštění infrastruktury (PostgreSQL + Redis v Dockeru)
 pnpm db:dev
+
+# Pro lokální HTTP nastavte v .env COOKIE_SECURE=false.
+# První správce (vypíše náhodné dočasné heslo):
+# cd apps/api && uv run python -m server.scripts.bootstrap_admin
 
 # 4. Spuštění aplikačních serverů (Frontend: 3000, Backend: 8000)
 pnpm dev
@@ -126,8 +131,17 @@ pnpm dev
 
 ## Životní cyklus a deployment
 
-### Lokální validace (Quality Assurance)
-Před každým vytvořením návrhu na sloučení (Pull Request) se provádí komplexní lokální kontrola celého repozitáře, která simuluje CI procesy:
+### API testy bez Dockeru
+
+```sh
+uv run pytest
+```
+
+Běžné API testy používají dočasnou SQLite databázi. Pět integračních testů
+PostgreSQL migrací je volitelných; podrobnosti jsou v [testovací příručce](docs/testing.md).
+
+### Lokální Validace (Quality Assurance)
+Před každým vytvořením Pull Requestu se provádí komplexní lokální kontrola celého monorepa, která simuluje CI server:
 
 ```bash
 pnpm check
@@ -137,6 +151,6 @@ Tento příkaz paralelně ověřuje formátování (Biome, Ruff), statické typy
 ### Nasazení (Deployment Lifecycle)
 Produkční nasazení respektuje kontejnerovou architekturu a bezestavový (stateless) přístup:
 
-1. **CI/CD Pipeline:** Při sloučení kódu do hlavní větve `main` se automatizovaně spouští validační procesy (GitLab CI / GitHub Actions).
-2. **Kontejnerizace:** Backend i frontend jsou odděleně zabaleny do vysoce optimalizovaných Docker obrazů (images).
-3. **Infrastruktura:** Produkční prostředí vyžaduje spravovanou instanci PostgreSQL pro trvalá data a Redis pro bezpečné ukládání relací. Samotné běhové servery aplikací jsou plně horizontálně škálovatelné.
+1. **CI/CD Pipeline:** Při sloučení kódu do hlavní větve `main` se spouští GitHub Actions pro konečnou verifikaci.
+2. **Kontejnerizace:** Backend i Frontend jsou odděleně zabaleny do vysoce optimalizovaných Docker obrazů (images).
+3. **Infrastruktura:** PostgreSQL ukládá trvalá data a přihlašovací relace, Redis omezuje pokusy o přihlášení. Samotné běhové servery aplikací jsou plně horizontálně škálovatelné.

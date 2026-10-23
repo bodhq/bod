@@ -29,20 +29,105 @@ pnpm check
 
 ## 1. Backend: FastAPI (Pytest)
 
+Ruční průchod účty, rolemi a oprávněními popisuje [návod pro Postman](postman.md)
+s připravenou importovatelnou kolekcí. Nevyžaduje spuštění webové aplikace.
+Pravidla vstupů, chybové odpovědi a export kontraktu popisuje
+[validace API a OpenAPI](validation.md).
+
 Na backendu je testování zaměřeno na ověřování výstupů Byznys Logiky (Services) a HTTP Kontraktů (Routers). Cílové pokrytí (Code Coverage) je stanoveno na 80 % (`cov-fail-under=80`).
 
-- **Umístění testů:** `apps/api/tests/`
-- **Spuštění modulu:** `cd apps/api && uv run pytest`
+- **Umístění testů:** `tests/api/`
+- **Spuštění modulu:** `uv run pytest` z kořene projektu, případně `cd apps/api && uv run pytest ../../tests/api`
 
 ### Metodika testování
-Používáme standardní vzor **AAA (Arrange - Act - Assert)** nad dočasnou In-Memory SQLite databází:
 
-1. **Arrange (Příprava):** Seedování potřebných mockovaných záznamů do DB.
-2. **Act (Zavolání):** Vykonání logiky skrz API router nebo zavolání Service metody.
-3. **Assert (Ověření):** Validace, že výstup odpovídá očekávání (status kód, JSON data).
+Běžné API testy používají **SQLite v dočasném souboru pro každý test**.
+Docker, PostgreSQL server ani Redis nejsou pro tento běh potřeba. Databáze
+se vytvoří automaticky v pytest tmp adresáři, profilové fotky také směřují
+do tmp adresáře. HTTP požadavky používají vlastní transakce a připojení.
 
-> [!IMPORTANT]
-> Nikdy nespouštějte testy proti produkční nebo vývojové PostgreSQL databázi. Pytest fixtures automaticky izolují testy do bezpečné paměťové SQLite. Příklad správného nastavení testu naleznete v `tests/api/test_timetable.py`.
+```sh
+uv sync --all-packages --all-groups --frozen
+uv run pytest
+```
+
+Používáme vzor **AAA (Arrange - Act - Assert)**:
+
+1. **Arrange:** vytvoření potřebných záznamů v izolované SQLite databázi.
+2. **Act:** volání API nebo služby.
+3. **Assert:** ověření odpovědi a uložených dat.
+
+`tests/api/conftest.py` přepíše nastavení testovacího připojení bez ohledu
+na DATABASE_URL v `.env`. Provozní databázi nepoužívá. Redis limiter je
+nahrazen lokálním testovacím objektem.
+
+`tests/api/sqlite_support.py` řeší rozdíly databází pouze uvnitř testů:
+
+- zapíná cizí klíče (`PRAGMA foreign_keys=ON`), včetně složené vazby aktivní role,
+- mapuje SQL typ JSONB na SQLite JSON a doplňuje funkci btrim,
+- doplňuje UTC k časům načteným SQLite driverem,
+- nahrazuje správní advisory lock lokálním zámkem drženým do konce transakce.
+
+Tímto během se ověřuje funkční chování API a pravidla souběžných změn.
+PostgreSQL advisory locky, row locky a PostgreSQL migrační SQL tímto během
+ověřené nejsou. Provozní implementace ani migrace se kvůli SQLite nemění.
+
+### Volitelné PostgreSQL migrace
+
+Šest testů migrací má značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
+nejde o povinnou závislost běžných testů. Pokud je chceš ověřit proti
+PostgreSQL, spusť například:
+
+```sh
+TEST_POSTGRES_URL=postgresql+psycopg://bod:bod@localhost:5433/bod \
+  uv run pytest -m postgres --no-cov
+```
+
+Tyto testy mají na určeném PostgreSQL serveru vlastní dočasné schéma
+`bod_test_<uuid>`, které se po testu odstraní. Používej lokální nebo testovací
+server; role musí smět vytvářet schémata. Pro úplný běh včetně pokrytí stačí
+stejnou proměnnou nastavit při `uv run pytest` bez filtru značky.
+
+CI používá pro běžnou sadu SQLite a nepotřebuje PostgreSQL service.
+
+### Importy ve VS Code / Pylance
+
+Otevři jako workspace kořen `bod`, aby se načetl `pyrightconfig.json`.
+V paletě příkazů vyber **Python: Select Interpreter** a nastav
+`<kořen projektu>/.venv/bin/python`. Po změně konfigurace spusť
+**Python: Restart Language Server**. Konfigurace obsahuje cesty `apps/api`
+a `tests/api`, takže importy `server.*` z testů vedou na skutečný backend.
+
+Ověření instalace z kořene projektu:
+
+```sh
+uv run python -c 'import server; print(server.__file__)'
+```
+
+Pokud tento příkaz na macOS hlásí chybějící modul i po `uv sync`, zkontroluj
+`ls -lO .venv/lib/python*/site-packages/*api*.pth`. Python přeskakuje `.pth`
+s příznakem `hidden`; tento příznak lze odstranit příkazem:
+
+```sh
+chflags nohidden .venv/lib/python*/site-packages/_editable_impl_api.pth
+```
+
+### Převod profilovek a dostupnost databáze
+
+SQLite je určeno pro automatické testy. Údržbový příkaz
+`python -m server.scripts.convert_avatars` pracuje s databází z `.env`
+a vyžaduje dostupný PostgreSQL. `Connection refused` na portu 5433 znamená,
+že server na nastavené adrese nepřijímá připojení.
+
+Spusť Docker Desktop a z kořene projektu:
+
+```sh
+docker compose -f infra/docker-compose.dev.yml up -d --wait db redis
+cd apps/api
+uv run python -m server.scripts.convert_avatars
+```
+
+Při nedostupné databázi příkaz skončí s kódem 1 a vypíše stručný postup.
 
 ---
 

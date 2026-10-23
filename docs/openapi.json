@@ -1,17 +1,271 @@
 {
   "components": {
     "schemas": {
-      "HTTPValidationError": {
+      "AuditEventRead": {
         "properties": {
-          "detail": {
+          "actor_role_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Role Code"
+          },
+          "actor_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor User Id"
+          },
+          "after_data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Data"
+          },
+          "before_data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Data"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "event_code": {
+            "title": "Event Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "operation": {
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "actor_user_id",
+          "actor_role_code",
+          "operation",
+          "event_code",
+          "entity_type",
+          "entity_id",
+          "before_data",
+          "after_data",
+          "created_at"
+        ],
+        "title": "AuditEventRead",
+        "type": "object"
+      },
+      "AuthSessionPublic": {
+        "description": "Bezpe\u010dn\u00e1 data relace, kter\u00e1 sm\u00ed vid\u011bt p\u0159ihl\u00e1\u0161en\u00fd u\u017eivatel.",
+        "properties": {
+          "active_role_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Role Code"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "required": [
+          "id",
+          "active_role_code",
+          "ip_address",
+          "user_agent",
+          "created_at",
+          "last_seen_at",
+          "expires_at"
+        ],
+        "title": "AuthSessionPublic",
+        "type": "object"
+      },
+      "BatchCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "users": {
             "items": {
-              "$ref": "#/components/schemas/ValidationError"
+              "$ref": "#/components/schemas/UserCreate"
             },
-            "title": "Detail",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Users",
             "type": "array"
           }
         },
-        "title": "HTTPValidationError",
+        "required": [
+          "users"
+        ],
+        "title": "BatchCreate",
+        "type": "object"
+      },
+      "ErrorCode": {
+        "enum": [
+          "AUTH_INVALID_CREDENTIALS",
+          "AUTH_UNAUTHENTICATED",
+          "AUTH_ACCOUNT_LOCKED",
+          "AUTH_LOGIN_UNAVAILABLE",
+          "AUTH_SESSION_NOT_FOUND",
+          "AUTH_FORBIDDEN",
+          "AUTH_PASSWORD_CHANGE_REQUIRED",
+          "RESOURCE_NOT_FOUND",
+          "RESOURCE_CONFLICT",
+          "VALIDATION_ERROR",
+          "DATABASE_UNAVAILABLE",
+          "MEDIA_FILE_TOO_LARGE",
+          "MEDIA_UNSUPPORTED_TYPE",
+          "MEDIA_UNAVAILABLE",
+          "INTERNAL_SERVER_ERROR"
+        ],
+        "title": "ErrorCode",
+        "type": "string"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ValidationIssue"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "IssuedAccount": {
+        "properties": {
+          "temporary_password": {
+            "title": "Temporary Password",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserRead"
+          }
+        },
+        "required": [
+          "user",
+          "temporary_password"
+        ],
+        "title": "IssuedAccount",
         "type": "object"
       },
       "LessonPublic": {
@@ -62,16 +316,846 @@
         "title": "LessonPublic",
         "type": "object"
       },
-      "ValidationError": {
+      "LoginRequest": {
+        "additionalProperties": false,
         "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
+          "password": {
+            "format": "password",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string",
+            "writeOnly": true
           },
-          "input": {
-            "title": "Input"
+          "username": {
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "PasswordChange": {
+        "additionalProperties": false,
+        "properties": {
+          "current_password": {
+            "format": "password",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Current Password",
+            "type": "string",
+            "writeOnly": true
           },
-          "loc": {
+          "new_password": {
+            "description": "12\u2013128 znak\u016f, alespo\u0148 jeden neb\u00edl\u00fd znak. Mus\u00ed se li\u0161it od sou\u010dasn\u00e9ho hesla. Hesla se neo\u0159ez\u00e1vaj\u00ed.",
+            "format": "password",
+            "maxLength": 128,
+            "minLength": 12,
+            "pattern": "\\S",
+            "title": "New Password",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "PasswordChange",
+        "type": "object"
+      },
+      "PermissionRead": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description"
+        ],
+        "title": "PermissionRead",
+        "type": "object"
+      },
+      "ProfilePatch": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "+420 123 456 789"
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "ProfilePatch",
+        "type": "object"
+      },
+      "RoleCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 64,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
+            "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Permission Codes",
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ],
+        "title": "RoleCreate",
+        "type": "object"
+      },
+      "RoleRead": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
+            "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Permission Codes",
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ],
+        "title": "RoleRead",
+        "type": "object"
+      },
+      "RoleSwitch": {
+        "additionalProperties": false,
+        "properties": {
+          "role_code": {
+            "maxLength": 64,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+            "title": "Role Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_code"
+        ],
+        "title": "RoleSwitch",
+        "type": "object"
+      },
+      "RoleWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "pattern": "^[^\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "permission_codes": {
+            "description": "Existuj\u00edc\u00ed k\u00f3dy z katalogu opr\u00e1vn\u011bn\u00ed; seznam nahrad\u00ed celou sadu.",
+            "items": {
+              "maxLength": 100,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,99}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Permission Codes",
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "RoleWrite",
+        "type": "object"
+      },
+      "UserCreate": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "role_codes": {
+                  "contains": {
+                    "const": "admin"
+                  }
+                }
+              },
+              "required": [
+                "role_codes"
+              ]
+            },
+            "then": {
+              "properties": {
+                "role_codes": {
+                  "maxItems": 1
+                }
+              }
+            }
+          }
+        ],
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "+420 123 456 789"
+            ],
+            "title": "Phone"
+          },
+          "role_codes": {
+            "description": "P\u0159id\u011blen\u00e9 role. Admin mus\u00ed b\u00fdt samostatn\u011b.",
+            "items": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Role Codes",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 3,
+                "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Normalizuje se na mal\u00e1 p\u00edsmena. Vynech\u00e1n\u00ed nebo null vygeneruje jm\u00e9no.",
+            "title": "Username"
+          }
+        },
+        "title": "UserCreate",
+        "type": "object"
+      },
+      "UserPatch": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "role_codes": {
+                  "contains": {
+                    "const": "admin"
+                  }
+                }
+              },
+              "required": [
+                "role_codes"
+              ]
+            },
+            "then": {
+              "properties": {
+                "role_codes": {
+                  "maxItems": 1
+                }
+              }
+            }
+          }
+        ],
+        "minProperties": 1,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Zobrazovan\u00e9 jm\u00e9no.",
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Jm\u00e9no; null vyma\u017ee \u00fadaj.",
+            "title": "First Name"
+          },
+          "is_active": {
+            "description": "Pouze JSON true/false; null nen\u00ed povolen\u00e9.",
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f]*[^\\s\\x00-\\x1f\\x7f][^\\x00-\\x1f\\x7f]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "P\u0159\u00edjmen\u00ed; null vyma\u017ee \u00fadaj.",
+            "title": "Last Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 1,
+                "pattern": "^\\+?[0-9](?:[0-9 ()-]*[0-9])?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "+420 123 456 789"
+            ],
+            "title": "Phone"
+          },
+          "role_codes": {
+            "description": "Nahrad\u00ed v\u0161echny role; [] odebere v\u0161echny. Null nen\u00ed povolen\u00e9.",
+            "items": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Role Codes",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "username": {
+            "description": "Vynech\u00e1n\u00ed ponech\u00e1 jm\u00e9no; null nen\u00ed povolen\u00e9.",
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "title": "UserPatch",
+        "type": "object"
+      },
+      "UserPublic": {
+        "description": "Vlastn\u00ed profil v\u010detn\u011b rol\u00ed a opr\u00e1vn\u011bn\u00ed aktu\u00e1ln\u00ed relace.",
+        "properties": {
+          "active_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Role"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "must_change_password": {
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "is_active",
+          "must_change_password",
+          "first_name",
+          "last_name",
+          "display_name",
+          "email",
+          "phone",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "UserPublic",
+        "type": "object"
+      },
+      "UserRead": {
+        "properties": {
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "must_change_password": {
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "is_active",
+          "must_change_password",
+          "first_name",
+          "last_name",
+          "display_name",
+          "email",
+          "phone",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "UserRead",
+        "type": "object"
+      },
+      "ValidationIssue": {
+        "properties": {
+          "location": {
             "items": {
               "anyOf": [
                 {
@@ -85,21 +1169,21 @@
             "title": "Location",
             "type": "array"
           },
-          "msg": {
+          "message": {
             "title": "Message",
             "type": "string"
           },
           "type": {
-            "title": "Error Type",
+            "title": "Type",
             "type": "string"
           }
         },
         "required": [
-          "loc",
-          "msg",
+          "location",
+          "message",
           "type"
         ],
-        "title": "ValidationError",
+        "title": "ValidationIssue",
         "type": "object"
       }
     }
@@ -111,6 +1195,2974 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/audit": {
+      "get": {
+        "operationId": "audit_api_v1_admin_audit_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventRead"
+                  },
+                  "title": "Response Audit Api V1 Admin Audit Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Audit",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/permissions": {
+      "get": {
+        "operationId": "permissions_api_v1_admin_permissions_get",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionRead"
+                  },
+                  "title": "Response Permissions Api V1 Admin Permissions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Permissions",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/roles": {
+      "get": {
+        "operationId": "roles_api_v1_admin_roles_get",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleRead"
+                  },
+                  "title": "Response Roles Api V1 Admin Roles Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Roles",
+        "tags": [
+          "administration"
+        ]
+      },
+      "post": {
+        "operationId": "create_role_api_v1_admin_roles_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Role",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/roles/{code}": {
+      "delete": {
+        "operationId": "delete_role_api_v1_admin_roles__code__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Role",
+        "tags": [
+          "administration"
+        ]
+      },
+      "put": {
+        "operationId": "update_role_api_v1_admin_roles__code__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9._-]{1,63}$",
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Update Role",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "users_api_v1_admin_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserRead"
+                  },
+                  "title": "Response Users Api V1 Admin Users Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Users",
+        "tags": [
+          "administration"
+        ]
+      },
+      "post": {
+        "operationId": "create_user_api_v1_admin_users_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedAccount"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create User",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/users/generate": {
+      "post": {
+        "operationId": "generate_users_api_v1_admin_users_generate_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IssuedAccount"
+                  },
+                  "title": "Response Generate Users Api V1 Admin Users Generate Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Generate Users",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}": {
+      "delete": {
+        "operationId": "delete_user_api_v1_admin_users__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete User",
+        "tags": [
+          "administration"
+        ]
+      },
+      "get": {
+        "operationId": "user_api_v1_admin_users__user_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "User",
+        "tags": [
+          "administration"
+        ]
+      },
+      "patch": {
+        "operationId": "update_user_api_v1_admin_users__user_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Update User",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}/reset-password": {
+      "post": {
+        "operationId": "reset_password_api_v1_admin_users__user_id__reset_password_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedAccount"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Reset Password",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/auth/active-role": {
+      "put": {
+        "operationId": "switch_role_api_v1_auth_active_role_put",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleSwitch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Switch Role",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "operationId": "change_password_api_v1_auth_change_password_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Change Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "login_api_v1_auth_login_post",
+        "parameters": [
+          {
+            "description": "Identifikace klienta relace.",
+            "in": "header",
+            "name": "user-agent",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 512,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifikace klienta relace.",
+              "title": "User-Agent"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request body"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Login is temporarily locked"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Login or database is temporarily unavailable"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout_api_v1_auth_logout_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service or database is temporarily unavailable"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "me_api_v1_auth_me_get",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication is required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service or database is temporarily unavailable"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "description": "Vlastn\u00ed aktivn\u00ed p\u0159ihla\u0161ovac\u00ed relace. Dostupn\u00e9 i p\u0159ed zm\u011bnou do\u010dasn\u00e9ho hesla a bez vybran\u00e9 aktivn\u00ed role; vy\u017eaduje p\u0159ihl\u00e1\u0161en\u00ed.",
+        "operationId": "get_sessions_api_v1_auth_sessions_get",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuthSessionPublic"
+                  },
+                  "title": "Response Get Sessions Api V1 Auth Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication is required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service or database is temporarily unavailable"
+          }
+        },
+        "summary": "Get Sessions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{session_id}": {
+      "delete": {
+        "description": "Zru\u0161\u00ed pouze vlastn\u00ed relaci. Dostupn\u00e9 bez aktivn\u00ed role i p\u0159ed zm\u011bnou do\u010dasn\u00e9ho hesla; ciz\u00ed relaci nelze zru\u0161it.",
+        "operationId": "revoke_session_api_v1_auth_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication is required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The requested session does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid session ID"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service or database is temporarily unavailable"
+          }
+        },
+        "summary": "Revoke Session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/timetable/{class_id}": {
       "get": {
         "operationId": "get_timetable_api_v1_timetable__class_id__get",
@@ -120,8 +4172,31 @@
             "name": "class_id",
             "required": true,
             "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
               "title": "Class Id",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
             }
           }
         ],
@@ -140,20 +4215,1351 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication is required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Permission is required"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Timetable not found"
+          },
           "422": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Invalid class ID"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Database is temporarily unavailable"
           }
         },
         "summary": "Get Timetable",
         "tags": [
           "timetable"
+        ]
+      }
+    },
+    "/api/v1/users/me": {
+      "patch": {
+        "operationId": "update_profile_api_v1_users_me_patch",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Update Profile",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/me/avatar": {
+      "delete": {
+        "operationId": "delete_my_avatar_api_v1_users_me_avatar_delete",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete My Avatar",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "operationId": "upload_my_avatar_api_v1_users_me_avatar_put",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/jpg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            }
+          },
+          "description": "Syrov\u00e9 bin\u00e1rn\u00ed t\u011blo JPG/JPEG, PNG nebo WebP; ne form-data ani base64. 1\u20135242880 bajt\u016f, nejv\u00fd\u0161e 16000000 pixel\u016f. Pouze neanimovan\u00fd obr\u00e1zek; server odstran\u00ed metadata a zmen\u0161\u00ed jej do 512 \u00d7 512 px a ulo\u017e\u00ed jako WebP s kvalitou 85. JPG i JPEG pou\u017e\u00edvaj\u00ed image/jpeg; podporovan\u00fd je tak\u00e9 alias image/jpg. Velikost se ov\u011b\u0159uje b\u011bhem \u010dten\u00ed streamu.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Upload My Avatar",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}/avatar": {
+      "delete": {
+        "operationId": "delete_avatar_api_v1_users__user_id__avatar_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Avatar",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "operationId": "get_avatar_api_v1_users__user_id__avatar_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "WebP profilovka; p\u016fvodn\u00ed PNG z\u016fst\u00e1vaj\u00ed dostupn\u00e9 do v\u00fdm\u011bny."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Avatar",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "operationId": "upload_avatar_api_v1_users__user_id__avatar_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/jpg": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-animated": false,
+                "x-maxPixels": 16000000,
+                "x-maxSizeBytes": 5242880,
+                "x-outputFormat": "webp",
+                "x-outputQuality": 85
+              }
+            }
+          },
+          "description": "Syrov\u00e9 bin\u00e1rn\u00ed t\u011blo JPG/JPEG, PNG nebo WebP; ne form-data ani base64. 1\u20135242880 bajt\u016f, nejv\u00fd\u0161e 16000000 pixel\u016f. Pouze neanimovan\u00fd obr\u00e1zek; server odstran\u00ed metadata a zmen\u0161\u00ed jej do 512 \u00d7 512 px a ulo\u017e\u00ed jako WebP s kvalitou 85. JPG i JPEG pou\u017e\u00edvaj\u00ed image/jpeg; podporovan\u00fd je tak\u00e9 alias image/jpg. Velikost se ov\u011b\u0159uje b\u011bhem \u010dten\u00ed streamu.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Upload Avatar",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}/avatar/{filename}": {
+      "get": {
+        "operationId": "get_avatar_file_api_v1_users__user_id__avatar__filename__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "filename",
+            "required": true,
+            "schema": {
+              "maxLength": 37,
+              "minLength": 36,
+              "pattern": "^[0-9a-f]{32}\\.(?:webp|png)$",
+              "title": "Filename",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "WebP profilovka; p\u016fvodn\u00ed PNG z\u016fst\u00e1vaj\u00ed dostupn\u00e9 do v\u00fdm\u011bny."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Avatar File",
+        "tags": [
+          "users"
         ]
       }
     },
