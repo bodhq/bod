@@ -42,4 +42,3 @@
 ### Společné poznámky a rizika
 
 - [Závislosti mezi frontendem a backendem, společná rozhodnutí, rizika nebo věci k vyjasnění.]
-

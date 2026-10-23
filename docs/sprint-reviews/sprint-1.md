@@ -45,4 +45,3 @@ V dalších sprintech se zaměříme na rozvrh a související části systému:
 ### Společné poznámky a rizika
 
 - Sprint podle předaného seznamu uzavřel 10 issues: 5 přiřazených Eliášovi, 4 Filipovi a 1 bez uvedeného řešitele.
-
