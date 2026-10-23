@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-import "./src/core/env";
+import { env } from "./src/core/env";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@bod/api-client"],
@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://127.0.0.1:8000/api/:path*",
+        destination: `${env.API_INTERNAL_URL}/api/:path*`,
       },
     ];
   },

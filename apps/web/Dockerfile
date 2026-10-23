@@ -8,6 +8,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /workspace
 
+ARG API_INTERNAL_URL=http://api:8000
+ENV API_INTERNAL_URL=${API_INTERNAL_URL}
+
 RUN corepack enable
 
 # Závislosti (layer cache — přeinstaluje se jen při změně package souborů)
