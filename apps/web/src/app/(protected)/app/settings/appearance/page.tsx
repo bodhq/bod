@@ -9,18 +9,18 @@ import { Button } from "@/core/ui/Button";
 import { cn } from "@/core/utils";
 
 import { SettingsGroup } from "../components/SettingsGroup";
-import { SettingsToggleRow } from "../components/SettingsToggleRow";
 import { SettingsPageHeading } from "../components/SettingsPageHeading";
+import { SettingsToggleRow } from "../components/SettingsToggleRow";
 
 const ACCENT_COLORS = [
-  { id: "lime", bg: "bg-[#b9ff08]", border: "border-[#9acd00]" },
-  { id: "cyan", bg: "bg-[#00f0ff]", border: "border-[#00b8cc]" },
-  { id: "purple", bg: "bg-[#d847ff]", border: "border-[#af24d1]" },
-  { id: "pink", bg: "bg-[#ff2a70]", border: "border-[#d11553]" },
-  { id: "orange", bg: "bg-[#ff8800]", border: "border-[#cc6600]" },
-  { id: "mint", bg: "bg-[#00ff88]", border: "border-[#00cc6a]" },
-  { id: "yellow", bg: "bg-[#ffe600]", border: "border-[#ccb800]" },
-  { id: "neutral", bg: "bg-zinc-900 dark:bg-white", border: "border-zinc-800 dark:border-zinc-200" },
+  { id: "lime", label: "Limetková" },
+  { id: "cyan", label: "Azurová" },
+  { id: "purple", label: "Fialová" },
+  { id: "pink", label: "Růžová" },
+  { id: "orange", label: "Oranžová" },
+  { id: "mint", label: "Mátová" },
+  { id: "yellow", label: "Žlutá" },
+  { id: "neutral", label: "Neutrální" },
 ];
 
 const THEME_OPTIONS = [
@@ -60,6 +60,7 @@ export default function AppearanceSettingsPage() {
                 key={value}
                 variant={theme === value ? "default" : "secondary"}
                 onClick={() => setTheme(value)}
+                aria-pressed={theme === value}
                 className="h-auto min-h-16 flex-1 [&>.button-content]:flex-col [&>.button-content]:gap-2"
               >
                 <Icon size={18} aria-hidden="true" />
@@ -76,13 +77,17 @@ export default function AppearanceSettingsPage() {
                 key={color.id}
                 type="button"
                 onClick={() => setAccentColor(color.id)}
-                aria-label={`Vybrat barvu: ${color.id}`}
+                aria-label={`Vybrat barvu: ${color.label}`}
                 aria-pressed={accentColor === color.id}
+                style={{
+                  backgroundColor: `var(--swatch-${color.id})`,
+                  borderColor: `var(--swatch-border-${color.id})`,
+                }}
                 className={cn(
                   "h-9 w-9 rounded-full border-2 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-ring) focus-visible:ring-offset-2",
-                  color.bg,
-                  color.border,
-                  accentColor === color.id ? "scale-110 ring-2 ring-(--color-ring) ring-offset-2" : "hover:scale-105",
+                  accentColor === color.id
+                    ? "scale-110 ring-2 ring-(--color-ring) ring-offset-2"
+                    : "hover:scale-105",
                 )}
               />
             ))}
@@ -91,7 +96,11 @@ export default function AppearanceSettingsPage() {
 
         <SettingsGroup icon={<Type />} title="Velikost textu">
           <PreferenceChoices
-            options={[["sm", "Menší"], ["md", "Výchozí"], ["lg", "Větší"]]}
+            options={[
+              ["sm", "Menší"],
+              ["md", "Výchozí"],
+              ["lg", "Větší"],
+            ]}
             value={textSize}
             onChange={setTextSize}
           />
@@ -99,7 +108,11 @@ export default function AppearanceSettingsPage() {
 
         <SettingsGroup icon={<ZoomIn />} title="Hustota prvků">
           <PreferenceChoices
-            options={[["compact", "Kompaktní"], ["standard", "Standardní"], ["relaxed", "Prostorné"]]}
+            options={[
+              ["compact", "Kompaktní"],
+              ["standard", "Standardní"],
+              ["relaxed", "Prostorné"],
+            ]}
             value={density}
             onChange={setDensity}
           />
@@ -110,7 +123,7 @@ export default function AppearanceSettingsPage() {
             <SettingsToggleRow
               id={`${formId}-motion`}
               label="Omezit animace"
-              description="Vypne animace rozhraní."
+              description="Omezí pohybové animace rozhraní."
               checked={reduceMotion}
               onChange={setReduceMotion}
             />
@@ -154,4 +167,3 @@ function PreferenceChoices({
     </div>
   );
 }
-

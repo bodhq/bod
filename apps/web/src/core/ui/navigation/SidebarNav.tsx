@@ -19,9 +19,16 @@ export interface SidebarNavProps {
   isMinimized?: boolean;
   className?: string;
   ariaLabel?: string;
+  onNavigate?: () => void;
 }
 
-export function SidebarNav({ items, isMinimized = false, className, ariaLabel }: SidebarNavProps) {
+export function SidebarNav({
+  items,
+  isMinimized = false,
+  className,
+  ariaLabel,
+  onNavigate,
+}: SidebarNavProps) {
   const { activePath, navigate } = useNavigationState();
 
   return (
@@ -38,26 +45,29 @@ export function SidebarNav({ items, isMinimized = false, className, ariaLabel }:
           <Button
             key={item.href}
             variant={active ? "default" : "secondary"}
-            onClick={() => navigate(item.href)}
+            onClick={() => {
+              navigate(item.href);
+              onNavigate?.();
+            }}
             title={isMinimized ? item.title : undefined}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative h-10 w-full justify-start overflow-visible px-2 sm:px-3 [&>.button-content]:justify-start [&>.button-content]:gap-0",
+              "relative h-10 w-full justify-start overflow-visible px-2 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] sm:px-3 [&>.button-content]:justify-start [&>.button-content]:gap-0",
             )}
           >
             <item.icon
               className={cn(
-                "absolute left-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 transition-[left,translate] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "absolute left-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 transition-[left,translate] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
                 isMinimized && "left-1/2 -translate-x-1/2",
               )}
               strokeWidth={active ? 2.5 : 2}
             />
             <span
               className={cn(
-                "min-w-0 truncate transition-[max-width,margin,opacity] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "min-w-0 truncate transition-[max-width,margin,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
                 isMinimized
-                  ? "ml-0 max-w-0 opacity-0 duration-150"
-                  : "ml-[26px] max-w-[150px] opacity-100 delay-100 duration-[220ms]",
+                  ? "ml-0 max-w-0 opacity-0"
+                  : "ml-[26px] max-w-[150px] opacity-100 delay-75",
               )}
             >
               {item.title}

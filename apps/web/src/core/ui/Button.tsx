@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { cn } from "@/core/utils";
 
-export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref" | "children"> {
   variant?:
     | "default"
     | "secondary"
@@ -21,6 +21,7 @@ export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   size?: "default" | "sm" | "lg" | "icon";
   isLoading?: boolean;
   isPressed?: boolean;
+  children?: React.ReactNode;
 }
 
 const edgeColors: Record<NonNullable<ButtonProps["variant"]>, string> = {
@@ -40,7 +41,8 @@ const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
   default: "bg-(--color-primary) text-(--color-primary-foreground)",
   secondary: "bg-(--color-secondary) text-(--color-secondary-foreground)",
   destructive: "bg-(--color-destructive) text-(--color-destructive-foreground)",
-  outline: "border border-(--color-border) bg-transparent text-(--color-foreground) hover:bg-(--color-surface-200)",
+  outline:
+    "border border-(--color-border) bg-transparent text-(--color-foreground) hover:bg-(--color-surface-200)",
   ghost: "bg-transparent text-(--color-foreground) hover:bg-(--color-surface-200)",
   muted: "bg-transparent text-(--color-muted-foreground) hover:text-(--color-foreground)",
   link: "bg-transparent text-(--color-primary) underline-offset-4 hover:underline",
@@ -55,6 +57,8 @@ const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
   lg: "min-h-12 px-8 py-3 text-base",
   icon: "h-9 w-9 min-h-0 p-0",
 };
+
+const motionEase = [0.16, 1, 0.3, 1] as const;
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -87,25 +91,34 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         variants={
           isFlat
             ? {
-                idle: { scale: 1, transition: { type: "spring", bounce: 0, duration: 0.4 } },
-                hover: { scale: 1.02, transition: { type: "spring", bounce: 0, duration: 0.3 } },
-                active: { scale: 0.96, transition: { type: "spring", bounce: 0, duration: 0.15 } },
+                idle: { scale: 1, transition: { type: "tween", ease: motionEase, duration: 0.38 } },
+                hover: {
+                  scale: 1.015,
+                  transition: { type: "tween", ease: motionEase, duration: 0.3 },
+                },
+                active: {
+                  scale: 0.97,
+                  transition: { type: "tween", ease: motionEase, duration: 0.18 },
+                },
               }
             : {
                 idle: {
                   y: 0,
-                  boxShadow: "0px 4px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
-                  transition: { type: "spring", bounce: 0, duration: 0.4 },
+                  boxShadow:
+                    "0px 4px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "tween", ease: motionEase, duration: 0.38 },
                 },
                 hover: {
                   y: -2,
-                  boxShadow: "0px 6px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
-                  transition: { type: "spring", bounce: 0, duration: 0.3 },
+                  boxShadow:
+                    "0px 6px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "tween", ease: motionEase, duration: 0.3 },
                 },
                 active: {
                   y: 4,
-                  boxShadow: "0px 0px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
-                  transition: { type: "spring", bounce: 0, duration: 0.15 },
+                  boxShadow:
+                    "0px 0px 0px 0px var(--btn-edge), inset 0px 1px 0px 0px var(--btn-highlight)",
+                  transition: { type: "tween", ease: motionEase, duration: 0.18 },
                 },
               }
         }

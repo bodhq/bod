@@ -29,7 +29,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label="Přepnout motiv"
       className={className}
     >
-      {isDark ? <Moon className="h-[1.1rem] w-[1.1rem]" /> : <Sun className="h-[1.1rem] w-[1.1rem]" />}
+      {isDark ? (
+        <Moon className="h-[1.1rem] w-[1.1rem]" />
+      ) : (
+        <Sun className="h-[1.1rem] w-[1.1rem]" />
+      )}
     </Button>
   );
 }

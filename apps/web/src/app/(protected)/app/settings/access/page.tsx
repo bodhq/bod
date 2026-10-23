@@ -1,7 +1,13 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import type {
+  AuditEventRead,
+  IssuedAccount,
+  PermissionRead,
+  RoleRead,
+  UserPatch,
+  UserRead,
+} from "@bod/api-client/types.gen";
 
 import {
   auditApiV1AdminAuditGet,
@@ -17,17 +23,11 @@ import {
   updateUserApiV1AdminUsersUserIdPatch,
   usersApiV1AdminUsersGet,
 } from "@bod/api-client/sdk.gen";
-import type {
-  AuditEventRead,
-  IssuedAccount,
-  PermissionRead,
-  RoleRead,
-  UserPatch,
-  UserRead,
-} from "@bod/api-client/types.gen";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { useAuthUser } from "@/core/auth/store";
 import { parseApiError } from "@/core/api/api-errors";
+import { useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/Button";
 import { Input } from "@/core/ui/Input";
 import { toast } from "@/core/ui/toast";
@@ -254,19 +254,19 @@ export default function AccessSettingsPage() {
         title="Správa přístupů"
         description="Spravujte účty, role a historii změn."
       />
-      <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Správa přístupů">
+      <fieldset className="mb-6 flex flex-wrap gap-2 border-0 p-0">
+        <legend className="sr-only">Sekce správy přístupů</legend>
         {visibleSections.map((item) => (
           <Button
             key={item.id}
-            role="tab"
-            aria-selected={activeSection === item.id}
+            aria-pressed={activeSection === item.id}
             variant={activeSection === item.id ? "default" : "outline"}
             onClick={() => setSection(item.id)}
           >
             {item.title}
           </Button>
         ))}
-      </div>
+      </fieldset>
 
       {activeSection === "accounts" && canManageUsers && (
         <div className="space-y-5">

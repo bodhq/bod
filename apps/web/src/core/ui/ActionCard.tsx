@@ -1,8 +1,10 @@
 "use client";
 
 import type * as React from "react";
+
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+
 import { cn } from "@/core/utils";
 
 export interface ActionCardProps {
@@ -15,7 +17,15 @@ export interface ActionCardProps {
   rightAction?: React.ReactNode;
 }
 
-export function ActionCard({ href, title, description, icon, className, onClick, rightAction }: ActionCardProps) {
+export function ActionCard({
+  href,
+  title,
+  description,
+  icon,
+  className,
+  onClick,
+  rightAction,
+}: ActionCardProps) {
   const content = (
     <div
       className={cn(
@@ -25,14 +35,30 @@ export function ActionCard({ href, title, description, icon, className, onClick,
       )}
     >
       <div className="flex items-center gap-4 flex-1 min-w-0">
-        {icon && <div className="flex items-center justify-center shrink-0 w-10 h-10 rounded-[calc(var(--radius)-8px)] bg-(--color-surface-200) text-(--color-foreground)">{icon}</div>}
+        {icon && (
+          <div className="flex items-center justify-center shrink-0 w-10 h-10 rounded-[calc(var(--radius)-8px)] bg-(--color-surface-200) text-(--color-foreground)">
+            {icon}
+          </div>
+        )}
         <div className="flex flex-col min-w-0">
-          <span className="text-sm sm:text-base font-bold text-(--color-foreground) truncate text-left">{title}</span>
-          {description && <span className="text-xs font-medium text-(--color-muted-foreground) truncate mt-0.5 text-left">{description}</span>}
+          <span className="text-sm sm:text-base font-bold text-(--color-foreground) truncate text-left">
+            {title}
+          </span>
+          {description && (
+            <span className="text-xs font-medium text-(--color-muted-foreground) truncate mt-0.5 text-left">
+              {description}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-center shrink-0 ml-3">
-        {rightAction || <ChevronRight size={18} strokeWidth={2.5} className="text-(--color-muted-foreground) group-hover/btn:text-(--color-foreground) group-hover/btn:translate-x-0.5 transition-all" />}
+        {rightAction || (
+          <ChevronRight
+            size={18}
+            strokeWidth={2.5}
+            className="text-(--color-muted-foreground) group-hover/btn:text-(--color-foreground) group-hover/btn:translate-x-0.5 transition-all"
+          />
+        )}
       </div>
     </div>
   );
@@ -41,6 +67,15 @@ export function ActionCard({ href, title, description, icon, className, onClick,
     className,
   );
 
-  if (href) return <Link href={href} className={cn("block outline-none", containerClasses)} tabIndex={0}>{content}</Link>;
-  return <button type="button" onClick={onClick} className={cn("text-left", containerClasses)}>{content}</button>;
+  if (href)
+    return (
+      <Link href={href} className={cn("block outline-none", containerClasses)} tabIndex={0}>
+        {content}
+      </Link>
+    );
+  return (
+    <button type="button" onClick={onClick} className={cn("text-left", containerClasses)}>
+      {content}
+    </button>
+  );
 }

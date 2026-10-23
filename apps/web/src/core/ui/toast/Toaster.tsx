@@ -34,6 +34,8 @@ function ActionButton({ action, toastId }: { action: ToastAction; toastId: strin
       setLoading(true);
       try {
         await action.onClick();
+      } catch {
+        // The action owns its error feedback; keep the confirmation available for retry.
       } finally {
         setLoading(false);
       }
@@ -63,7 +65,12 @@ export function Toaster() {
   const { toasts, removeToast } = useToastStore();
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
+    <section
+      className="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4"
+      aria-label="Oznámení"
+      aria-live="polite"
+      aria-relevant="additions text"
+    >
       <div className="relative w-full max-w-sm flex flex-col items-center">
         <AnimatePresence>
           {toasts.map((toast, index) => {
@@ -76,6 +83,7 @@ export function Toaster() {
                 animate={toastAnimate(stackIndex)}
                 exit={TOAST_VARIANTS.exit}
                 transition={SPRING_SNAPPY}
+                role={toast.variant === "error" ? "alert" : "status"}
                 style={{ position: "absolute", top: 0 }}
                 className={cn(
                   "pointer-events-auto flex items-center gap-3 w-full rounded-2xl border px-4 py-3",
@@ -95,6 +103,7 @@ export function Toaster() {
                   <button
                     type="button"
                     onClick={() => removeToast(toast.id)}
+                    aria-label="Zavřít oznámení"
                     className="shrink-0 h-7 w-7 flex items-center justify-center rounded-full text-current opacity-40 hover:opacity-100 transition-opacity"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -107,7 +116,7 @@ export function Toaster() {
           })}
         </AnimatePresence>
       </div>
-    </div>
+    </section>
   );
 }
 

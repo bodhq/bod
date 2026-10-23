@@ -38,6 +38,26 @@ export const errorTranslations: Record<ErrorCode, string> = {
   UNKNOWN_ERROR: "Neočekávaná chyba při komunikaci se serverem.",
 };
 
+type ParsedApiError = Error & { code?: string; status?: number };
+
+function makeApiError(message: string, source: unknown, code?: string): ParsedApiError {
+  const value = source && typeof source === "object" ? (source as Record<string, unknown>) : {};
+  const response =
+    value.response && typeof value.response === "object"
+      ? (value.response as Record<string, unknown>)
+      : undefined;
+  const status =
+    typeof value.status === "number"
+      ? value.status
+      : typeof response?.status === "number"
+        ? response.status
+        : undefined;
+  return Object.assign(new Error(message), {
+    ...(code ? { code } : {}),
+    ...(status ? { status } : {}),
+  });
+}
+
 /**
  * Centrální parser pro všechny chyby vrácené z @bod/api-client.
  * Zajišťuje standardizovaný formát chyb napříč celou aplikací.
@@ -45,42 +65,76 @@ export const errorTranslations: Record<ErrorCode, string> = {
 export function parseApiError(error: unknown): Error {
   // Ochrana před podivnými objekty
   if (!error || typeof error !== "object") {
-    return new Error(errorTranslations.UNKNOWN_ERROR);
+    return makeApiError(errorTranslations.UNKNOWN_ERROR, error);
   }
 
-  // 1. Budoucí standard: Backend vrací { error: { code, message } }
-  const structuredError = (error as any).error;
+  const payload = error as Record<string, unknown>;
+
+  // Backend contract: { error: { code, message } }
+  const structuredError = payload.error;
   if (structuredError && typeof structuredError === "object") {
     const structured = structuredError as Record<string, unknown>;
     const code = structured.code;
-    if (typeof code === "string" && code in errorTranslations) {
-      return new Error(errorTranslations[code as ErrorCode]);
+    const message = structured.message;
+    if (typeof message === "string" && message.trim()) {
+      const details = Array.isArray(structured.details)
+        ? structured.details.flatMap((detail) => {
+            if (!detail || typeof detail !== "object") return [];
+            const issue = detail as Record<string, unknown>;
+            if (typeof issue.message !== "string" || !issue.message.trim()) return [];
+            const location = Array.isArray(issue.location)
+              ? issue.location.filter(
+                  (part): part is string | number =>
+                    typeof part === "string" || typeof part === "number",
+                )
+              : [];
+            const field = location
+              .filter((part) => !["body", "query", "path", "header"].includes(String(part)))
+              .join(".");
+            return [field ? `${field}: ${issue.message}` : issue.message];
+          })
+        : [];
+      const fullMessage = details.length ? `${message} — ${details.join("; ")}` : message;
+      return makeApiError(fullMessage, error, typeof code === "string" ? code : undefined);
     }
-    const message =
-      typeof structured.message === "string" ? structured.message : errorTranslations.UNKNOWN_ERROR;
-    return new Error(message);
+    if (typeof code === "string" && code in errorTranslations) {
+      return makeApiError(errorTranslations[code as ErrorCode], error, code);
+    }
+    return makeApiError(
+      errorTranslations.UNKNOWN_ERROR,
+      error,
+      typeof code === "string" ? code : undefined,
+    );
   }
 
   // 2. Současný (legacy) FastAPI formát: { detail: "..." }
-  const detail = (error as any).detail;
+  const detail = payload.detail;
   if (typeof detail === "string") {
-    // Prozatímní mapování, než backend přejde na striktní kódy (jen ukázka, pokud je potřeba)
+    // Compatibility mapping for older backend responses.
     if (
       detail.includes("Invalid email or password") ||
       detail.includes("Invalid username or password")
     ) {
-      return new Error(errorTranslations.AUTH_INVALID_CREDENTIALS);
+      return makeApiError(
+        errorTranslations.AUTH_INVALID_CREDENTIALS,
+        error,
+        "AUTH_INVALID_CREDENTIALS",
+      );
     }
     // Pokud nemáme mapování, vrátíme surový anglický text od FastAPI
-    return new Error(detail);
+    return makeApiError(detail, error);
   }
 
   // 3. Pydantic formát pro validační chyby (422 Unprocessable Entity): { detail: [{ loc: [...], msg: "..." }] }
   if (Array.isArray(detail)) {
-    // Zde bychom ideálně napojili `zod-i18n-map` pro přesný překlad
-    return new Error(errorTranslations.VALIDATION_ERROR);
+    const firstMessage = detail.find(
+      (item): item is { msg: string } =>
+        typeof item === "object" && item !== null && "msg" in item && typeof item.msg === "string",
+    )?.msg;
+    if (firstMessage) return makeApiError(firstMessage, error, "VALIDATION_ERROR");
+    return makeApiError(errorTranslations.VALIDATION_ERROR, error, "VALIDATION_ERROR");
   }
 
   // Fallback
-  return new Error(errorTranslations.UNKNOWN_ERROR);
+  return makeApiError(errorTranslations.UNKNOWN_ERROR, error);
 }

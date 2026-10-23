@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { Logger } from "@/core/logger";
 import { toast } from "@/core/ui/toast";
@@ -16,7 +17,14 @@ import { useAuthStore } from "../store";
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated, isLoading, setUser } = useAuthStore();
+  const { user, isAuthenticated, isLoading, setUser } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+      setUser: state.setUser,
+    })),
+  );
 
   const [error, setError] = useState<string | null>(null);
 

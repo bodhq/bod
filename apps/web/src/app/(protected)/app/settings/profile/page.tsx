@@ -1,8 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Camera, LoaderCircle, Trash2, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import type { ProfilePatch, UserPublic } from "@bod/api-client/types.gen";
 
 import {
   deleteMyAvatarApiV1UsersMeAvatarDelete,
@@ -10,10 +8,12 @@ import {
   updateProfileApiV1UsersMePatch,
   uploadMyAvatarApiV1UsersMeAvatarPut,
 } from "@bod/api-client/sdk.gen";
-import type { ProfilePatch, UserPublic } from "@bod/api-client/types.gen";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Camera, LoaderCircle, Trash2, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { useAuthStore, useAuthUser } from "@/core/auth/store";
 import { parseApiError } from "@/core/api/api-errors";
+import { useAuthStore, useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/Button";
 import { Input } from "@/core/ui/Input";
 import { toast } from "@/core/ui/toast";
@@ -137,7 +137,7 @@ export default function ProfileSettingsPage() {
         <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-(--color-border) bg-(--color-background) text-(--color-muted-foreground)">
           {user?.avatar_url && !avatarError ? (
             // Avatar URL is served by the same API origin and can change after each upload.
-            // biome-ignore lint/a11y/useAltText: The adjacent controls label the current avatar.
+            // biome-ignore lint/performance/noImgElement: Avatar URLs are short-lived API paths that should bypass image optimization.
             <img
               src={user.avatar_url}
               alt="Profilová fotografie"

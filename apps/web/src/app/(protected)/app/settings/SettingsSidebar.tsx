@@ -3,7 +3,7 @@
 import { Palette, ShieldCheck, User } from "lucide-react";
 
 import { useAuthUser } from "@/core/auth/store";
-import { SidebarNav, type NavItem } from "@/core/ui/navigation/SidebarNav";
+import { type NavItem, SidebarNav } from "@/core/ui/navigation/SidebarNav";
 
 const SETTINGS_NAV_ITEMS: NavItem[] = [
   { title: "Osobní údaje", icon: User, href: "/app/settings/profile" },

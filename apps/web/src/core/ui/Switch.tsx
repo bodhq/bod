@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+
 import { cn } from "@/core/utils";
 
-export interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> {
+export interface SwitchProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }

@@ -34,14 +34,12 @@ export function PageLayout({
       {(title || subtitle || headerActions) && (
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            {title && (
-              <h1 className="text-2xl font-semibold tracking-tight">
-                {title}
-              </h1>
-            )}
+            {title && <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>}
             {subtitle && <p className="text-sm text-(--color-muted-foreground) mt-1">{subtitle}</p>}
           </div>
-          {headerActions && <div className="flex w-full items-center gap-2 sm:w-auto">{headerActions}</div>}
+          {headerActions && (
+            <div className="flex w-full items-center gap-2 sm:w-auto">{headerActions}</div>
+          )}
         </header>
       )}
 
@@ -60,7 +58,10 @@ export function PageLayout({
         </div>
       ) : (
         <div
-          className={cn("w-full rounded-2xl border border-(--color-border) bg-(--color-surface-100) p-5 sm:p-7 lg:p-8", contentClassName)}
+          className={cn(
+            "w-full rounded-2xl border border-(--color-border) bg-(--color-surface-100) p-5 sm:p-7 lg:p-8",
+            contentClassName,
+          )}
         >
           {children}
         </div>

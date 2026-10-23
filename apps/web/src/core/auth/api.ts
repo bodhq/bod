@@ -11,13 +11,29 @@ import {
 
 import { parseApiError } from "@/core/api/api-errors";
 
+interface ApiRequestOptions {
+  baseUrl?: string;
+  headers?: HeadersInit;
+}
+
 // Globally configure the API client
 client.setConfig({
-  // Bude používat Next.js proxy, tím odpadnou problémy s CORS a cookies!
-  baseUrl: process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_API_URL : "",
+  // Requests stay same-origin in the browser: Next rewrites them in development and Caddy routes them in production.
+  baseUrl: "",
   // Ensure cookies are included in cross-origin requests
-  fetch: (input: RequestInfo | URL, init?: RequestInit) =>
-    fetch(input, { ...init, credentials: "include", cache: "no-store" }),
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    const method = (init?.method ?? "GET").toUpperCase();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      headers.set("X-Requested-With", "bod");
+    }
+    return fetch(input, {
+      ...init,
+      headers,
+      credentials: "include",
+      cache: "no-store",
+    });
+  },
 });
 
 // Exportujeme alias pro zbytek aplikace (aby store nevyžadoval změny po vygenerování klienta)
@@ -39,19 +55,21 @@ export async function login(username: string, password: string): Promise<UserPub
   return userData;
 }
 
-export async function getMe(options?: any): Promise<UserPublic | null> {
+export async function getMe(options?: ApiRequestOptions): Promise<UserPublic> {
   const { data, error } = await meApiV1AuthMeGet(options);
-  if (error || !data) return null;
+  if (error) throw parseApiError(error);
+  if (!data) throw new Error("Server nevrátil přihlášeného uživatele.");
   return data;
 }
 
 export async function logout(): Promise<void> {
-  await logoutApiV1AuthLogoutPost();
+  const { error } = await logoutApiV1AuthLogoutPost();
+  if (error) throw parseApiError(error);
 }
 
 export type AuthSession = AuthSessionPublic;
 
-export async function getSessions(options?: any): Promise<AuthSession[]> {
+export async function getSessions(options?: ApiRequestOptions): Promise<AuthSession[]> {
   const result = await getSessionsApiV1AuthSessionsGet(options);
   const { data, error } = result;
   if (error) {

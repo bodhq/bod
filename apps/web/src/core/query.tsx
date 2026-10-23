@@ -7,11 +7,18 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@ta
 import { useAuthStore } from "@/core/auth/store";
 
 // Globální handler pro 401 Unauthorized
-// biome-ignore lint/suspicious/noExplicitAny: API errors have dynamic shape
-const handleAuthError = (error: any) => {
-  // @hey-api vyhazuje chyby s vlastnostmi status
-  // Zde zachytíme 401 a globálně odhlásíme uživatele
-  if (error?.status === 401 || error?.response?.status === 401) {
+const handleAuthError = (error: unknown) => {
+  const apiError = error as {
+    status?: number;
+    response?: { status?: number };
+    code?: string;
+  } | null;
+  if (
+    apiError?.status === 401 ||
+    apiError?.response?.status === 401 ||
+    apiError?.code === "AUTH_UNAUTHENTICATED" ||
+    apiError?.code === "AUTH_SESSION_NOT_FOUND"
+  ) {
     useAuthStore.getState().setUser(null);
     if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login";

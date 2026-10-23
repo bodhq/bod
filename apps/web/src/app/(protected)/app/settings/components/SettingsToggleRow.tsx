@@ -22,7 +22,9 @@ export function SettingsToggleRow({
   className?: string;
 }) {
   return (
-    <div className={cn("grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4", className)}>
+    <div
+      className={cn("grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4", className)}
+    >
       <div className="min-w-0">
         <Label htmlFor={id} className="flex cursor-pointer items-center gap-2 text-sm font-medium">
           {icon && <span className="text-(--color-muted-foreground) [&_svg]:size-4">{icon}</span>}

@@ -1,5 +1,7 @@
 import * as React from "react";
+
 import { cn } from "@/core/utils";
+
 import { Label } from "./Label";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -36,9 +38,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     if (label || description) {
       return (
         <div className="flex flex-col gap-1.5 w-full">
-          {label && <Label htmlFor={inputId} className="text-(--color-foreground)">{label}</Label>}
+          {label && (
+            <Label htmlFor={inputId} className="text-(--color-foreground)">
+              {label}
+            </Label>
+          )}
           {inputContent}
-          {description && <p className="text-[0.8rem] text-(--color-muted-foreground)">{description}</p>}
+          {description && (
+            <p className="text-[0.8rem] text-(--color-muted-foreground)">{description}</p>
+          )}
         </div>
       );
     }

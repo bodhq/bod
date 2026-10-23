@@ -2,9 +2,8 @@
 
 import type { User } from "../api";
 
-import { useLayoutEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 import { useAuthStore, useAuthUser } from "../store";
 
@@ -23,7 +22,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   // avoiding the "Cannot update a component while rendering a different component" warning.
   useLayoutEffect(() => {
     if (!initialized.current) {
-      useAuthStore.setState({ user: initialUser, isLoading: false });
+      useAuthStore.setState({
+        user: initialUser,
+        isAuthenticated: Boolean(initialUser),
+        isLoading: false,
+      });
       initialized.current = true;
     } else if (initialUser !== undefined) {
       useAuthStore.getState().setUser(initialUser);

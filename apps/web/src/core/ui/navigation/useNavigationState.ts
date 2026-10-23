@@ -8,8 +8,8 @@ export function useNavigationState() {
 
   // Zrušit pending stav, jakmile reálně dojde ke změně cesty (navigace proběhla)
   useEffect(() => {
-    setPendingPath(null);
-  }, [pathname]);
+    if (pendingPath === pathname) setPendingPath(null);
+  }, [pathname, pendingPath]);
 
   const activePath = pendingPath || pathname;
 

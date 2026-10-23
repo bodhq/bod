@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface AppearanceState {
   accentColor: string;
@@ -17,9 +17,9 @@ interface AppearanceState {
 export const useAppearanceStore = create<AppearanceState>()(
   persist(
     (set) => ({
-      accentColor: 'lime',
-      textSize: 'md',
-      density: 'standard',
+      accentColor: "lime",
+      textSize: "md",
+      density: "standard",
       reduceMotion: false,
       highContrast: false,
       setAccentColor: (accentColor) => set({ accentColor }),
@@ -28,6 +28,6 @@ export const useAppearanceStore = create<AppearanceState>()(
       setReduceMotion: (reduceMotion) => set({ reduceMotion }),
       setHighContrast: (highContrast) => set({ highContrast }),
     }),
-    { name: 'bod-appearance-storage' },
+    { name: "bod-appearance-storage" },
   ),
 );

@@ -27,8 +27,8 @@ export function useRevokeSession() {
       }
       toast.success("Zařízení bylo úspěšně odhlášeno.");
     },
-    onError: () => {
-      toast.error("Nepodařilo se odhlásit zařízení. Zkuste to prosím znovu.");
+    onError: (error: Error) => {
+      toast.error(error.message || "Nepodařilo se odhlásit zařízení.");
     },
   });
 }
@@ -38,19 +38,24 @@ export function useRevokeMultipleSessions() {
 
   return useMutation({
     mutationFn: async (sessionIds: string[]) => {
-      await Promise.all(sessionIds.map((id) => revokeSession(id)));
+      const results = await Promise.allSettled(sessionIds.map((id) => revokeSession(id)));
+      const firstFailure = results.find(
+        (result): result is PromiseRejectedResult => result.status === "rejected",
+      );
+      if (firstFailure) throw firstFailure.reason;
     },
-    onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    onSuccess: () => {
+      toast.success("Zařízení byla úspěšně odhlášena.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Nepodařilo se odhlásit všechna zařízení.");
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["sessions"] });
       await useAuthStore.getState().checkAuth();
       if (!useAuthStore.getState().isAuthenticated) {
         window.location.href = "/login";
-        return;
       }
-      toast.success("Zařízení byla úspěšně odhlášena.");
-    },
-    onError: () => {
-      toast.error("Nepodařilo se odhlásit některá zařízení. Zkuste to prosím znovu.");
     },
   });
 }
