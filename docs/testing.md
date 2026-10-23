@@ -31,6 +31,8 @@ pnpm check
 
 Ruční průchod účty, rolemi a oprávněními popisuje [návod pro Postman](postman.md)
 s připravenou importovatelnou kolekcí. Nevyžaduje spuštění webové aplikace.
+Pravidla vstupů, chybové odpovědi a export kontraktu popisuje
+[validace API a OpenAPI](validation.md).
 
 Na backendu je testování zaměřeno na ověřování výstupů Byznys Logiky (Services) a HTTP Kontraktů (Routers). Cílové pokrytí (Code Coverage) je stanoveno na 80 % (`cov-fail-under=80`).
 
@@ -72,7 +74,7 @@ ověřené nejsou. Provozní implementace ani migrace se kvůli SQLite nemění.
 
 ### Volitelné PostgreSQL migrace
 
-Pět testů migrací má značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
+Šest testů migrací má značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
 nejde o povinnou závislost běžných testů. Pokud je chceš ověřit proti
 PostgreSQL, spusť například:
 
@@ -87,6 +89,45 @@ server; role musí smět vytvářet schémata. Pro úplný běh včetně pokryt�
 stejnou proměnnou nastavit při `uv run pytest` bez filtru značky.
 
 CI používá pro běžnou sadu SQLite a nepotřebuje PostgreSQL service.
+
+### Importy ve VS Code / Pylance
+
+Otevři jako workspace kořen `bod`, aby se načetl `pyrightconfig.json`.
+V paletě příkazů vyber **Python: Select Interpreter** a nastav
+`<kořen projektu>/.venv/bin/python`. Po změně konfigurace spusť
+**Python: Restart Language Server**. Konfigurace obsahuje cesty `apps/api`
+a `tests/api`, takže importy `server.*` z testů vedou na skutečný backend.
+
+Ověření instalace z kořene projektu:
+
+```sh
+uv run python -c 'import server; print(server.__file__)'
+```
+
+Pokud tento příkaz na macOS hlásí chybějící modul i po `uv sync`, zkontroluj
+`ls -lO .venv/lib/python*/site-packages/*api*.pth`. Python přeskakuje `.pth`
+s příznakem `hidden`; tento příznak lze odstranit příkazem:
+
+```sh
+chflags nohidden .venv/lib/python*/site-packages/_editable_impl_api.pth
+```
+
+### Převod profilovek a dostupnost databáze
+
+SQLite je určeno pro automatické testy. Údržbový příkaz
+`python -m server.scripts.convert_avatars` pracuje s databází z `.env`
+a vyžaduje dostupný PostgreSQL. `Connection refused` na portu 5433 znamená,
+že server na nastavené adrese nepřijímá připojení.
+
+Spusť Docker Desktop a z kořene projektu:
+
+```sh
+docker compose -f infra/docker-compose.dev.yml up -d --wait db redis
+cd apps/api
+uv run python -m server.scripts.convert_avatars
+```
+
+Při nedostupné databázi příkaz skončí s kódem 1 a vypíše stručný postup.
 
 ---
 

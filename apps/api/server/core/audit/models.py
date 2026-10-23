@@ -17,7 +17,9 @@ class AuditEvent(SQLModel, table=True):
         CheckConstraint("operation IN ('created', 'updated', 'deleted')"),
     )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    actor_user_id: UUID | None = Field(default=None, foreign_key="users.id")
+    actor_user_id: UUID | None = Field(
+        default=None, foreign_key="users.id", ondelete="SET NULL"
+    )
     actor_role_code: str | None = Field(default=None, max_length=64)
     operation: str = Field(max_length=16)
     event_code: str = Field(max_length=100)

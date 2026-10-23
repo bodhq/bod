@@ -10,11 +10,13 @@ from uuid import UUID, uuid4
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from server.core.exceptions import AppException, ErrorCode, NotFoundException
+from server.core.validation import AVATAR_FILENAME_PATTERN
 
 logger = logging.getLogger(__name__)
 MAX_AVATAR_BYTES = 5 * 1024 * 1024
 MAX_AVATAR_PIXELS = 16_000_000
-AVATAR_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+AVATAR_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
+AVATAR_QUALITY = 85
 
 
 class AvatarTooLarge(AppException):
@@ -52,7 +54,7 @@ def normalize_avatar(data: bytes) -> bytes:
             normalized = Image.new(mode, oriented.size)
             normalized.paste(oriented.convert(mode))
             output = BytesIO()
-            normalized.save(output, format="PNG")
+            normalized.save(output, format="WEBP", quality=AVATAR_QUALITY, method=6)
             return output.getvalue()
     except (
         UnidentifiedImageError,
@@ -74,13 +76,13 @@ class LocalAvatarStorage:
 
     def path(self, key: str) -> Path:
         # Klíče vytváří server. Kontrola chrání i před poškozeným záznamem DB.
-        if re.fullmatch(r"[0-9a-f]{32}\.png", key) is None:
+        if re.fullmatch(AVATAR_FILENAME_PATTERN, key) is None:
             raise AvatarStorageUnavailable()
         return self.directory / key
 
     @staticmethod
     def url_for(user_id: UUID, key: str) -> str:
-        if re.fullmatch(r"[0-9a-f]{32}\.png", key) is None:
+        if re.fullmatch(AVATAR_FILENAME_PATTERN, key) is None:
             raise AvatarStorageUnavailable()
         return f"/api/v1/users/{user_id}/avatar/{key}"
 
@@ -90,12 +92,12 @@ class LocalAvatarStorage:
         if not url.startswith(prefix):
             raise AvatarStorageUnavailable()
         key = url.removeprefix(prefix)
-        if re.fullmatch(r"[0-9a-f]{32}\.png", key) is None:
+        if re.fullmatch(AVATAR_FILENAME_PATTERN, key) is None:
             raise AvatarStorageUnavailable()
         return key
 
     def write(self, image: bytes) -> str:
-        key = f"{uuid4().hex}.png"
+        key = f"{uuid4().hex}.webp"
         path = self.path(key)
         created = False
         try:
@@ -137,6 +139,6 @@ class LocalAvatarStorage:
             return []
         return [
             p.name
-            for p in self.directory.glob("*.png")
-            if re.fullmatch(r"[0-9a-f]{32}\.png", p.name)
+            for p in self.directory.iterdir()
+            if p.is_file() and re.fullmatch(AVATAR_FILENAME_PATTERN, p.name)
         ]

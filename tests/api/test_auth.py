@@ -352,3 +352,47 @@ def test_sessions_list_and_revoke_only_own_session(client: TestClient, db: Sessi
     assert client.delete(f"/api/v1/auth/sessions/{uuid4()}").status_code == 404
     assert client.delete(f"/api/v1/auth/sessions/{session_id}").status_code == 204
     assert client.get("/api/v1/auth/me").status_code == 401
+
+
+def test_own_sessions_are_available_before_and_after_password_change_without_role(
+    admin,
+):
+    from conftest import HEADERS
+    from server.main import app
+    from test_access import complete_password, issue, sign_in
+
+    issued = issue(admin, roles=["student", "parent"])
+    with TestClient(app, headers=HEADERS) as user:
+        sign_in(user, issued)
+        assert user.get("/api/v1/auth/me").json()["active_role"] is None
+        before = user.get("/api/v1/auth/sessions")
+        assert before.status_code == 200, before.text
+        assert len(before.json()) == 1
+        previous_id = before.json()[0]["id"]
+        complete_password(user, issued)
+        sessions = user.get("/api/v1/auth/sessions")
+        assert sessions.status_code == 200, sessions.text
+        assert len(sessions.json()) == 1
+        assert sessions.json()[0]["id"] != previous_id
+        for session in sessions.json():
+            assert "token_hash" not in session
+        # Vlastní relace jsou přístupné i s rolí bez oprávnění profilu.
+        assert (
+            admin.put(
+                "/api/v1/admin/roles/student",
+                json={"name": "Žák", "permission_codes": []},
+            ).status_code
+            == 200
+        )
+        assert (
+            user.put(
+                "/api/v1/auth/active-role", json={"role_code": "student"}
+            ).status_code
+            == 200
+        )
+        assert len(user.get("/api/v1/auth/sessions").json()) == 1
+        root_session = admin.get("/api/v1/auth/sessions").json()[0]["id"]
+        assert user.delete(f"/api/v1/auth/sessions/{root_session}").status_code == 404
+        current_id = sessions.json()[0]["id"]
+        assert user.delete(f"/api/v1/auth/sessions/{current_id}").status_code == 204
+        assert user.get("/api/v1/auth/me").status_code == 401

@@ -3,14 +3,18 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from server.core.validation import Username
+
 
 class LoginRequest(BaseModel):
-    username: str = Field(
-        min_length=3,
-        max_length=64,
-        pattern=r"^[a-zA-Z0-9_.-]+$",
+    model_config = ConfigDict(extra="forbid")
+    username: Username
+    password: str = Field(
+        min_length=1,
+        max_length=1024,
+        repr=False,
+        json_schema_extra={"format": "password", "writeOnly": True},
     )
-    password: str = Field(min_length=1, max_length=1024)
 
 
 class AuthSessionPublic(BaseModel):
