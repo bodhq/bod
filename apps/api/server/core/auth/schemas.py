@@ -22,6 +22,7 @@ class AuthSessionPublic(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    is_current: bool
     id: UUID
     active_role_code: str | None
     ip_address: str | None

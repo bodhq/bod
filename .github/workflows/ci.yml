@@ -47,3 +47,38 @@ jobs:
 
       - name: Build Applications
         run: pnpm exec turbo run build
+
+  backend-integration:
+    name: PostgreSQL and Redis integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: bod
+          POSTGRES_PASSWORD: bod
+          POSTGRES_DB: bod_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bod -d bod_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: sqlite://
+      TEST_POSTGRES_URL: postgresql+psycopg://bod:bod@localhost:5432/bod_test
+      TEST_REDIS_URL: redis://localhost:6379/0
+      DEBUG: "false"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.0"
+      - run: uv sync --all-packages --all-groups --frozen
+      - run: uv run pytest -m "postgres or redis" --no-cov

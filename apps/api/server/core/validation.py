@@ -14,8 +14,12 @@ AVATAR_FILENAME_PATTERN = r"^[0-9a-f]{32}\.(?:webp|png)$"
 MAX_DATABASE_ID = 2_147_483_647
 
 
+def canonical_username(value: str) -> str:
+    return value.strip().lower()
+
+
 def normalize_username(value: object) -> object:
-    return value.strip().lower() if isinstance(value, str) else value
+    return canonical_username(value) if isinstance(value, str) else value
 
 
 Username = Annotated[

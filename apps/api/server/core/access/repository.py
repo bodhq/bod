@@ -50,10 +50,6 @@ class AccessRepository:
             raise AccessError("not_found", "Účet nebyl nalezen.")
         return user
 
-    def username(self, username: str, *, lock: bool = False) -> User | None:
-        query = select(User).where(col(User.username) == username.strip().lower())
-        return self.db.exec(query.with_for_update() if lock else query).first()
-
     def role_codes(self, user_id: UUID) -> list[str]:
         return list(
             self.db.exec(

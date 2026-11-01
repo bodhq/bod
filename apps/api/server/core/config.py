@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
@@ -13,7 +13,13 @@ class Settings(BaseSettings):
     session_refresh_threshold_days: int = 2
     login_max_failures: int = 5
     login_lock_minutes: int = 15
-    login_ip_max_requests: int = 20
+    # Shared school NAT: count failed credentials only, across all accounts.
+    login_ip_max_failures: int = Field(
+        default=100,
+        gt=0,
+        validation_alias=AliasChoices("LOGIN_IP_MAX_FAILURES", "LOGIN_IP_MAX_REQUESTS"),
+    )
+    session_activity_interval_seconds: int = Field(default=300, gt=0)
 
     cookie_secure: bool = True
     cookie_samesite: str = "lax"

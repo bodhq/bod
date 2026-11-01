@@ -20,46 +20,41 @@ class LoginAttemptLimiter:
 
     def assert_allowed(self, username: str, client_ip: str) -> None:
         try:
-            if self.redis.exists(self._lock_key(username, client_ip)):
-                raise LoginRateLimitExceeded
-
-            ip_count = int(self.redis.incr(self._ip_key(client_ip)))
-
-            if ip_count == 1:
-                self.redis.expire(
-                    self._ip_key(client_ip),
-                    self._window_seconds(),
-                )
+            failures = int(self.redis.get(self._failure_key(username, client_ip)) or 0)
+            ip_failures = int(self.redis.get(self._ip_key(client_ip)) or 0)
         except RedisError as error:
             raise LoginRateLimitUnavailable from error
 
-        if ip_count > settings.login_ip_max_requests:
+        if (
+            failures >= settings.login_max_failures
+            or ip_failures >= settings.login_ip_max_failures
+        ):
             raise LoginRateLimitExceeded
 
     def record_failed_attempt(self, username: str, client_ip: str) -> bool:
         try:
-            failure_key = self._failure_key(username, client_ip)
-            failed_attempts = int(self.redis.incr(failure_key))
-            self.redis.expire(failure_key, self._window_seconds())
-
-            if failed_attempts >= settings.login_max_failures:
-                self.redis.set(
-                    self._lock_key(username, client_ip),
-                    "1",
-                    ex=self._window_seconds(),
+            # MULTI/EXEC applies both counters and TTLs together, including on
+            # connection loss. Each failure restarts the inactivity window.
+            with self.redis.pipeline(transaction=True) as pipeline:
+                pipeline.incr(self._failure_key(username, client_ip))
+                pipeline.expire(
+                    self._failure_key(username, client_ip), self._window_seconds()
                 )
-                return True
+                pipeline.incr(self._ip_key(client_ip))
+                pipeline.expire(self._ip_key(client_ip), self._window_seconds())
+                failed_attempts, _, ip_failures, _ = pipeline.execute()
         except RedisError as error:
             raise LoginRateLimitUnavailable from error
 
-        return False
+        return (
+            int(failed_attempts) >= settings.login_max_failures
+            or int(ip_failures) >= settings.login_ip_max_failures
+        )
 
     def reset_failed_attempts(self, username: str, client_ip: str) -> None:
         try:
-            self.redis.delete(
-                self._failure_key(username, client_ip),
-                self._lock_key(username, client_ip),
-            )
+            # A successful login must not erase other accounts' IP failures.
+            self.redis.delete(self._failure_key(username, client_ip))
         except RedisError as error:
             raise LoginRateLimitUnavailable from error
 
@@ -68,9 +63,6 @@ class LoginAttemptLimiter:
 
     def _failure_key(self, username: str, client_ip: str) -> str:
         return f"auth:login:fail:{self._identifier_hash(username, client_ip)}"
-
-    def _lock_key(self, username: str, client_ip: str) -> str:
-        return f"auth:login:lock:{self._identifier_hash(username, client_ip)}"
 
     def _ip_key(self, client_ip: str) -> str:
         return f"auth:login:ip:{self._identifier_hash(client_ip)}"

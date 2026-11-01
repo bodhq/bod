@@ -173,9 +173,11 @@ def test_login_locks_username_and_ip_after_five_failures(
     assert correct_password_response.status_code == 429
 
 
-def test_login_limits_more_than_twenty_requests_from_one_ip(
+def test_login_limits_failed_requests_from_one_ip(
     client: TestClient,
+    monkeypatch,
 ) -> None:
+    monkeypatch.setattr(settings, "login_ip_max_failures", 21)
     for index in range(20):
         response = login(
             client,
@@ -396,3 +398,108 @@ def test_own_sessions_are_available_before_and_after_password_change_without_rol
         current_id = sessions.json()[0]["id"]
         assert user.delete(f"/api/v1/auth/sessions/{current_id}").status_code == 204
         assert user.get("/api/v1/auth/me").status_code == 401
+
+
+def test_many_accounts_can_login_from_shared_school_ip(client, db):
+    # Exceeds the previous request limit, without counting successful logins.
+    password_hash = get_password_hash("TestovaciHeslo123")
+    for index in range(25):
+        db.add(User(username=f"school_{index}", hashed_password=password_hash))
+    db.commit()
+    for index in range(25):
+        response = login(client, f"school_{index}", "TestovaciHeslo123")
+        assert response.status_code == 200, response.text
+
+
+def test_successful_login_does_not_reset_ip_failures(client, db, monkeypatch):
+    monkeypatch.setattr(settings, "login_ip_max_failures", 3)
+    user = create_user(db)
+    assert login(client, "unknown_one", "wrong").status_code == 401
+    assert login(client, user.username, "TestovaciHeslo123").status_code == 200
+    assert login(client, "unknown_two", "wrong").status_code == 401
+    assert login(client, "unknown_three", "wrong").status_code == 429
+    assert login(client, user.username, "TestovaciHeslo123").status_code == 429
+
+
+def test_sessions_identify_current_session_with_identical_user_agents(client, db):
+    user = create_user(db)
+    assert login(client, user.username, "TestovaciHeslo123").status_code == 200
+    first_token = client.cookies.get(settings.session_cookie_name)
+    assert login(client, user.username, "TestovaciHeslo123").status_code == 200
+    second_token = client.cookies.get(settings.session_cookie_name)
+    for token in (first_token, second_token):
+        client.cookies.set(settings.session_cookie_name, token)
+        response = client.get("/api/v1/auth/sessions")
+        assert response.status_code == 200
+        sessions = response.json()
+        assert len(sessions) == 2
+        assert sessions[0]["user_agent"] == sessions[1]["user_agent"]
+        current = [s for s in sessions if s["is_current"]]
+        assert len(current) == 1
+        expected = db.exec(
+            select(AuthSession).where(
+                AuthSession.token_hash == hash_session_token(token)
+            )
+        ).one()
+        assert current[0]["id"] == str(expected.id)
+        assert all("token_hash" not in s and "token" not in s for s in sessions)
+
+
+def test_ssr_preserves_expiry_until_browser_renews_database_and_cookie(
+    client, db, monkeypatch
+):
+    from server.core.auth.service import as_utc
+
+    user = create_user(db)
+    login(client, user.username, "TestovaciHeslo123")
+    session = db.exec(select(AuthSession)).one()
+    now = datetime.now(UTC)
+    expires = now + timedelta(hours=1)
+    session.expires_at = expires
+    db.commit()
+    monkeypatch.setattr("server.core.auth.service.utcnow", lambda: now)
+
+    ssr = client.get("/api/v1/auth/me", headers={"X-Session-Refresh": "skip"})
+    assert ssr.status_code == 200
+    assert "set-cookie" not in ssr.headers
+    db.refresh(session)
+    assert as_utc(session.expires_at) == expires
+
+    browser = client.get("/api/v1/auth/me")
+    assert browser.status_code == 200
+    cookie_age = settings.session_idle_days * 86400
+    assert f"Max-Age={cookie_age}" in browser.headers["set-cookie"]
+    db.refresh(session)
+    assert as_utc(session.expires_at) == now + timedelta(seconds=cookie_age)
+
+
+def test_activity_is_updated_without_refresh_and_throttled(client, db, monkeypatch):
+    from server.core.auth.service import as_utc
+
+    user = create_user(db)
+    login(client, user.username, "TestovaciHeslo123")
+    session = db.exec(select(AuthSession)).one()
+    now = datetime.now(UTC)
+    session.last_seen_at = now - timedelta(
+        seconds=settings.session_activity_interval_seconds
+    )
+    expires = as_utc(session.expires_at)
+    db.commit()
+    monkeypatch.setattr("server.core.auth.service.utcnow", lambda: now)
+    first = client.get("/api/v1/auth/me")
+    assert first.status_code == 200
+    assert "set-cookie" not in first.headers
+    db.refresh(session)
+    assert as_utc(session.last_seen_at) == now
+    assert as_utc(session.expires_at) == expires
+    monkeypatch.setattr(
+        "server.core.auth.service.utcnow", lambda: now + timedelta(seconds=1)
+    )
+    assert client.get("/api/v1/auth/me").status_code == 200
+    db.refresh(session)
+    assert as_utc(session.last_seen_at) == now
+
+
+def test_ssr_cannot_extend_an_expired_session(client, db):
+    client.headers["X-Session-Refresh"] = "skip"
+    test_expired_session_is_rejected_and_deleted(client, db)

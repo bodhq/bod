@@ -139,6 +139,10 @@
             ],
             "title": "Ip Address"
           },
+          "is_current": {
+            "title": "Is Current",
+            "type": "boolean"
+          },
           "last_seen_at": {
             "format": "date-time",
             "title": "Last Seen At",
@@ -157,6 +161,7 @@
           }
         },
         "required": [
+          "is_current",
           "id",
           "active_role_code",
           "ip_address",
@@ -1265,6 +1270,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -1411,6 +1432,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -1563,6 +1600,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -1707,6 +1760,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -1877,6 +1946,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -2022,6 +2107,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -2204,6 +2305,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -2348,6 +2465,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -2503,6 +2636,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -2675,6 +2824,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -2818,6 +2983,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -2971,6 +3152,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -3139,6 +3336,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -3284,6 +3497,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -3416,6 +3645,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -3815,6 +4060,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -3938,6 +4199,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -4081,6 +4358,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -4176,6 +4469,22 @@
               "minimum": 1,
               "title": "Class Id",
               "type": "integer"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -4315,6 +4624,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -4473,6 +4798,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -4626,6 +4967,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -4854,6 +5211,22 @@
             }
           },
           {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
             "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
             "in": "cookie",
             "name": "session_id",
@@ -5017,6 +5390,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -5197,6 +5586,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {
@@ -5434,6 +5839,22 @@
                 "bod"
               ],
               "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
             }
           },
           {

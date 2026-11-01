@@ -32,8 +32,12 @@ class FakeRedis:
     def __init__(self) -> None:
         self.values: dict[str, str] = {}
 
-    def exists(self, key: str) -> int:
-        return int(key in self.values)
+    def get(self, key: str) -> str | None:
+        return self.values.get(key)
+
+    def pipeline(self, *, transaction: bool):
+        assert transaction
+        return FakePipeline(self)
 
     def incr(self, key: str) -> int:
         value = int(self.values.get(key, "0")) + 1
@@ -56,6 +60,27 @@ class FakeRedis:
                 deleted_keys += 1
 
         return deleted_keys
+
+
+class FakePipeline:
+    def __init__(self, redis: FakeRedis):
+        self.redis = redis
+        self.commands = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    def incr(self, key):
+        self.commands.append((self.redis.incr, (key,)))
+
+    def expire(self, key, seconds):
+        self.commands.append((self.redis.expire, (key, seconds)))
+
+    def execute(self):
+        return [command(*args) for command, args in self.commands]
 
 
 @contextmanager

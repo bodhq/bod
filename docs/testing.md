@@ -72,9 +72,9 @@ Tímto během se ověřuje funkční chování API a pravidla souběžných změ
 PostgreSQL advisory locky, row locky a PostgreSQL migrační SQL tímto během
 ověřené nejsou. Provozní implementace ani migrace se kvůli SQLite nemění.
 
-### Volitelné PostgreSQL migrace
+### PostgreSQL a Redis integrace
 
-Šest testů migrací má značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
+Testy migrací a souběhu mají značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
 nejde o povinnou závislost běžných testů. Pokud je chceš ověřit proti
 PostgreSQL, spusť například:
 
@@ -88,7 +88,28 @@ Tyto testy mají na určeném PostgreSQL serveru vlastní dočasné schéma
 server; role musí smět vytvářet schémata. Pro úplný běh včetně pokrytí stačí
 stejnou proměnnou nastavit při `uv run pytest` bez filtru značky.
 
-CI používá pro běžnou sadu SQLite a nepotřebuje PostgreSQL service.
+CI spouští běžnou sadu na SQLite a samostatný povinný job
+`PostgreSQL and Redis integration` se službami PostgreSQL 17 a Redis 7.
+Ten ověřuje migrace, souběžný bootstrap a ochranu posledního správce,
+a atomické čítače limiteru včetně ztracené odpovědi po EXEC.
+
+Testy značky `redis` lokálně vyžadují `TEST_REDIS_URL` a používají náhodné
+klíče, které po doběhu smažou:
+
+```sh
+TEST_REDIS_URL=redis://localhost:6379/0 uv run pytest -m redis --no-cov
+```
+
+Limiter počítá jen chybná přihlášení: standardně 5 na účet/IP a 100 na IP.
+Okno 15 minut běží od posledního neúspěchu. Úspěšný login smaže pouze
+chyby konkrétního účtu/IP, nikoli souhrnné chyby celé IP. Nastavení je v
+`.env.example`; starší `LOGIN_IP_MAX_REQUESTS` zůstává aliasem pro IP limit.
+
+SSR layout posílá `X-Session-Refresh: skip`, takže ověření neprodlouží
+expiraci v DB bez doručení cookie. AuthProvider po připojení v prohlížeči
+volá `/auth/me` bez této hlavičky a dostane obnovu cookie i DB expirace.
+`last_seen_at` se nezávisle aktualizuje nejvýše jednou za 300 sekund
+(`SESSION_ACTIVITY_INTERVAL_SECONDS`).
 
 ### Importy ve VS Code / Pylance
 

@@ -177,12 +177,20 @@ def change_password(
     "dočasného hesla a bez vybrané aktivní role; vyžaduje přihlášení.",
 )
 def get_sessions(
-    current_user: CurrentUserDep,
+    context: CurrentContextDep,
     auth_service: AuthServiceDep,
 ) -> list[AuthSessionPublic]:
-    sessions = auth_service.get_user_sessions(current_user)
+    sessions = auth_service.get_user_sessions(context.user)
 
-    return [AuthSessionPublic.model_validate(session) for session in sessions]
+    return [
+        AuthSessionPublic.model_validate(
+            {
+                **session.model_dump(),
+                "is_current": session.id == context.session.id,
+            }
+        )
+        for session in sessions
+    ]
 
 
 @router.delete(

@@ -16,12 +16,9 @@ from server.core.security import (
     hash_session_token,
     verify_password,
 )
-from server.core.users.models import User
+from server.core.users.models import User, utcnow
 from server.core.users.repository import UserRepository
-
-
-def utcnow() -> datetime:
-    return datetime.now(UTC)
+from server.core.validation import canonical_username
 
 
 def as_utc(value: datetime) -> datetime:
@@ -34,14 +31,12 @@ def as_utc(value: datetime) -> datetime:
 
 @dataclass(frozen=True)
 class LoginResult:
-    user: User
     session_token: str
     context: AccessContext
 
 
 @dataclass(frozen=True)
 class AuthenticatedUser:
-    user: User
     session_was_refreshed: bool
     context: AccessContext
 
@@ -65,7 +60,7 @@ class AuthService:
         client_ip: str,
         user_agent: str | None,
     ) -> LoginResult | None:
-        normalized_username = username.strip().lower()
+        normalized_username = canonical_username(username)
         self.login_limiter.assert_allowed(normalized_username, client_ip)
         # Reset/deaktivace zamyká stejný účet. Souběžný login nesmí vydat
         # relaci ověřenou proti starému heslu. Jiné účty se neblokují.
@@ -91,7 +86,6 @@ class AuthService:
         self.access.repo.commit()
 
         return LoginResult(
-            user=user,
             session_token=raw_token,
             context=context,
         )
@@ -99,6 +93,8 @@ class AuthService:
     def authenticate_session(
         self,
         raw_token: str,
+        *,
+        refresh: bool = True,
     ) -> AuthenticatedUser | None:
         token_hash = hash_session_token(raw_token)
 
@@ -111,27 +107,33 @@ class AuthService:
 
         if as_utc(auth_session.expires_at) <= now:
             self.sessions.delete(auth_session)
+            self.sessions.db.commit()
             return None
 
         user = self.users.get_by_id(auth_session.user_id)
 
         if user is None or not user.is_active:
             self.sessions.delete(auth_session)
+            self.sessions.db.commit()
             return None
 
         refresh_threshold = timedelta(days=settings.session_refresh_threshold_days)
 
         session_was_refreshed = False
 
-        if as_utc(auth_session.expires_at) - now <= refresh_threshold:
+        if refresh and as_utc(auth_session.expires_at) - now <= refresh_threshold:
             auth_session.expires_at = now + timedelta(days=settings.session_idle_days)
-            auth_session.last_seen_at = now
-
-            self.sessions.save(auth_session)
             session_was_refreshed = True
 
+        activity_due = now - as_utc(auth_session.last_seen_at) >= timedelta(
+            seconds=settings.session_activity_interval_seconds
+        )
+        if activity_due or session_was_refreshed:
+            auth_session.last_seen_at = now
+            self.sessions.save(auth_session)
+            self.sessions.db.commit()
+
         return AuthenticatedUser(
-            user=user,
             session_was_refreshed=session_was_refreshed,
             context=self.access.context(user, auth_session),
         )
@@ -145,6 +147,7 @@ class AuthService:
 
         if auth_session is not None:
             self.sessions.delete(auth_session)
+            self.sessions.db.commit()
 
     def get_user_sessions(self, user: User) -> list[AuthSession]:
         return self.sessions.get_active_for_user(user.id, utcnow())
@@ -163,6 +166,7 @@ class AuthService:
             return False
 
         self.sessions.delete(auth_session)
+        self.sessions.db.commit()
         return True
 
 
@@ -174,4 +178,6 @@ class SessionCleanupService:
         self.sessions = sessions
 
     def remove_expired_sessions(self) -> int:
-        return self.sessions.delete_expired(utcnow())
+        deleted = self.sessions.delete_expired(utcnow())
+        self.sessions.db.commit()
+        return deleted

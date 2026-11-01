@@ -5,6 +5,7 @@ import type { User } from "../api";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
+import { getMe } from "../api";
 import { useAuthStore, useAuthUser } from "../store";
 
 export interface AuthProviderProps {
@@ -32,6 +33,25 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       useAuthStore.getState().setUser(initialUser);
     }
   }, [initialUser]);
+
+  // The browser receives Set-Cookie; SSR deliberately leaves expiration alone.
+  useEffect(() => {
+    if (!initialUser) return;
+    let active = true;
+    void getMe()
+      .then((currentUser) => {
+        if (active) useAuthStore.getState().setUser(currentUser);
+      })
+      .catch((error: Error & { code?: string }) => {
+        if (active && error.code === "AUTH_UNAUTHENTICATED") {
+          useAuthStore.getState().setUser(null);
+          router.replace("/login?error=unauthorized");
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [initialUser, router]);
 
   useEffect(() => {
     if (user?.must_change_password && pathname !== "/app/settings/security") {

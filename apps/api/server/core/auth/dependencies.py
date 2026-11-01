@@ -87,11 +87,20 @@ def get_current_context(
     response: Response,
     auth_service: AuthServiceDep,
     session_token: SessionCookie = None,
+    session_refresh: Annotated[
+        Literal["allow", "skip"],
+        Header(
+            alias="X-Session-Refresh",
+            description="SSR: skip validates without extending DB or cookie expiry.",
+        ),
+    ] = "allow",
 ) -> AccessContext:
     if session_token is None:
         raise UnauthenticatedException()
 
-    result = auth_service.authenticate_session(session_token)
+    result = auth_service.authenticate_session(
+        session_token, refresh=session_refresh == "allow"
+    )
 
     if result is None:
         raise UnauthenticatedException()

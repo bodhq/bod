@@ -18,6 +18,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         baseUrl: env.API_INTERNAL_URL,
         headers: {
           Cookie: `session_id=${sessionId}`,
+          // Server components cannot forward Set-Cookie to the browser.
+          "X-Session-Refresh": "skip",
         },
       });
     } catch (error) {

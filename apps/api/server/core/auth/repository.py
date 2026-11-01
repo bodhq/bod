@@ -12,9 +12,7 @@ class AuthSessionRepository:
 
     def get_by_token_hash(self, token_hash: str) -> AuthSession | None:
         return self.db.exec(
-            select(AuthSession).where(
-                AuthSession.token_hash == token_hash
-            )
+            select(AuthSession).where(AuthSession.token_hash == token_hash)
         ).first()
 
     def get_by_id_and_user_id(
@@ -45,30 +43,18 @@ class AuthSessionRepository:
             ).all()
         )
 
-    def create(self, auth_session: AuthSession) -> None:
-        self.db.add(auth_session)
-        self.db.commit()
-
     def save(self, auth_session: AuthSession) -> None:
         self.db.add(auth_session)
-        self.db.commit()
 
     def delete(self, auth_session: AuthSession) -> None:
         self.db.delete(auth_session)
-        self.db.commit()
 
     def delete_expired(self, now: datetime) -> int:
-        exired_sessions = list(
-            self.db.exec(
-                select(AuthSession).where(
-                    AuthSession.expires_at <= now
-                )
-            ).all()
+        expired_sessions = list(
+            self.db.exec(select(AuthSession).where(AuthSession.expires_at <= now)).all()
         )
 
-        for auth_session in exired_sessions:
+        for auth_session in expired_sessions:
             self.db.delete(auth_session)
 
-        self.db.commit()
-
-        return len(exired_sessions)
+        return len(expired_sessions)

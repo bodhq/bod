@@ -3,7 +3,7 @@
 import { changePasswordApiV1AuthChangePasswordPost } from "@bod/api-client/sdk.gen";
 import { useMutation } from "@tanstack/react-query";
 import { Globe, Laptop, Monitor, Smartphone, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { parseApiError } from "@/core/api/api-errors";
 import {
@@ -59,12 +59,7 @@ export default function SecuritySettingsPage() {
   const revokeMutation = useRevokeSession();
   const revokeMultipleMutation = useRevokeMultipleSessions();
 
-  const currentSessionId = useMemo(() => {
-    if (!sessions || sessions.length === 0) return null;
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-    const matching = sessions.filter((s) => s.user_agent === ua);
-    return matching.length === 1 ? (matching[0]?.id ?? null) : null;
-  }, [sessions]);
+  const currentSessionId = sessions?.find((session) => session.is_current)?.id ?? null;
 
   const handleRevoke = (sessionId: string) => {
     if (!currentSessionId || sessionId === currentSessionId) {
