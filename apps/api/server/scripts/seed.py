@@ -1,9 +1,10 @@
-from sqlmodel import Session, select
+"""Initialize permissions and the first administrator for the domain API."""
+
+from sqlmodel import Session
 
 from server.core.access.repository import AccessRepository
 from server.core.access.services import AccessService
 from server.core.database import engine, init_db
-from server.modules.timetable.models import Lesson
 
 
 def seed_db() -> None:
@@ -14,85 +15,8 @@ def seed_db() -> None:
             print(f"Správce: {issued.user.username}")
             print(f"Dočasné heslo: {issued.temporary_password}")
             print("Při prvním přihlášení je nutná změna hesla.")
-
-        # Check if we already have some lessons
-        lesson = session.exec(select(Lesson).limit(1)).first()
-        if not lesson:
-            print("Základám Prod-Grade testovací data (Seed)...")
-
-            """
-            ONBOARDING PRO VÝVOJÁŘE:
-            Proč potřebujeme Seed data?
-            V Enterprise aplikacích musí mít každý vývojář na svém notebooku 
-            okamžitě dostupná stejná data jako kolega. Slouží to k rychlému 
-            vývoji UI a plně izolovanému (deterministickému) End-to-End testování.
-            Když se aplikace zapne v kontejneru poprvé, musí se naplnit fakovými daty.
-            """
-
-            lessons_data = [
-                {
-                    "class_id": 1,
-                    "subject": "Matematika",
-                    "teacher_id": 1,
-                    "room": "U2",
-                    "day": 1,
-                    "start_time": "08:00",
-                    "end_time": "08:45",
-                },
-                {
-                    "class_id": 1,
-                    "subject": "Český jazyk",
-                    "teacher_id": 2,
-                    "room": "U1",
-                    "day": 1,
-                    "start_time": "08:55",
-                    "end_time": "09:40",
-                },
-                {
-                    "class_id": 1,
-                    "subject": "Anglický jazyk",
-                    "teacher_id": 3,
-                    "room": "U3",
-                    "day": 1,
-                    "start_time": "09:55",
-                    "end_time": "10:40",
-                },
-                {
-                    "class_id": 1,
-                    "subject": "Fyzika",
-                    "teacher_id": 4,
-                    "room": "LAB1",
-                    "day": 1,
-                    "start_time": "10:50",
-                    "end_time": "11:35",
-                },
-                {
-                    "class_id": 1,
-                    "subject": "Tělesná výchova",
-                    "teacher_id": 5,
-                    "room": "TV1",
-                    "day": 1,
-                    "start_time": "11:45",
-                    "end_time": "12:30",
-                },
-                {
-                    "class_id": 1,
-                    "subject": "Tělesná výchova",
-                    "teacher_id": 5,
-                    "room": "TV1",
-                    "day": 1,
-                    "start_time": "12:40",
-                    "end_time": "13:25",
-                },
-            ]
-
-            for l_data in lessons_data:
-                session.add(Lesson(**l_data))
-
-            session.commit()
-            print("Testovací rozvrh (6 hodin) úspěšně vytvořen.")
         else:
-            print("Databáze již obsahuje rozvrh. Seedování přeskočeno.")
+            print("Katalog oprávnění je připravený; správce již existuje.")
 
 
 if __name__ == "__main__":

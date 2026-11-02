@@ -9,6 +9,7 @@ from sqlmodel import Session, SQLModel
 
 from server.core.access.repository import AccessRepository
 from server.core.access.services import AccessService
+from server.core.domain.migration import migrate_er, migrate_rooms_permission
 
 VERSION = "20261022_01_access"
 
@@ -28,6 +29,8 @@ def migrate(engine: Engine) -> None:
             ("20261022_02_user_avatars", _migrate_avatars),
             ("20261022_03_avatar_urls", _migrate_avatar_urls),
             ("20261023_04_audit_actor_delete", _migrate_audit_actor_delete),
+            ("20261102_05_school_er_model", migrate_er),
+            ("20261102_06_rooms_permission", migrate_rooms_permission),
         ):
             applied = connection.execute(
                 text("SELECT 1 FROM schema_migrations WHERE version = :version"),

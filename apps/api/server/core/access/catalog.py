@@ -1,4 +1,13 @@
 PERMISSIONS = {
+    "school.manage": "Spravovat evidenci školy, tříd a skupin",
+    "rooms.manage": "Spravovat místnosti a jejich dostupnost",
+    "classbook.manage": "Spravovat všechny zápisy třídnice a docházku",
+    "classbook.read": "Číst vlastní výuku nebo výuku svých dětí",
+    "classbook.write": "Zapisovat vlastní výuku do třídnice",
+    "classbook.correct": "Opravovat podepsanou vlastní výuku",
+    "attendance.mark": "Zapisovat docházku vlastní výuky",
+    "attendance.request": "Žádat o omluvení vlastní absence nebo absence dítěte",
+    "attendance.excuse": "Rozhodovat o omluvení absencí svých tříd",
     "profile.self.read": "Číst vlastní profil",
     "profile.self.update": "Upravit vlastní osobní údaje",
     "timetable.read": "Zobrazovat rozvrh",

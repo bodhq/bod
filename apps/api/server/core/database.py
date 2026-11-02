@@ -12,9 +12,10 @@ from server.core.audit.models import AuditEvent  # noqa: F401
 from server.core.auth.models import AuthSession  # noqa
 from server.core.config import settings
 from server.core.users.models import User  # noqa
-
-# Musíme naimportovat všechny modely, aby je SQLModel.metadata zaregistroval
-from server.modules.timetable.models import Lesson  # noqa
+from server.modules.classbook import models as classbook_models  # noqa: F401
+from server.modules.rooms import models as rooms_models  # noqa: F401
+from server.modules.school import models as school_models  # noqa: F401
+from server.modules.timetable import models as timetable_models  # noqa: F401
 
 engine = create_engine(settings.database_url, echo=False, hide_parameters=True)
 
