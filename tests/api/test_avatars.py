@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
-from conftest import HEADERS
+from .conftest import HEADERS
 from fastapi.testclient import TestClient
 from PIL import Image
 from server.core.access.repository import AccessError, AccessRepository
@@ -24,7 +24,7 @@ from server.core.users.models import User
 from server.main import app
 from sqlalchemy import inspect, text
 from sqlmodel import Session, select
-from test_access import complete_password, issue, sign_in
+from .test_access import complete_password, issue, sign_in
 
 
 def picture(format="PNG", size=(1000, 600)):

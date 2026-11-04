@@ -5,6 +5,7 @@
     "includes": [
       "**",
       "!**/.next",
+      "!**/next-env.d.ts",
       "!**/.turbo",
       "!**/.venv",
       "!**/node_modules",
@@ -12,7 +13,8 @@
       "!**/coverage",
       "!apps/api/uv.lock",
       "!packages/api-client/src",
-      "!docs/openapi.json"
+      "!docs/openapi.json",
+      "!apps/api/schema/openapi.json"
     ]
   },
 
@@ -32,63 +34,48 @@
   },
 
   "assist": {
-  "actions": {
-    "source": {
-      "organizeImports": {
-        "level": "on",
-        "options": {
-          "sortBareImports": true,
-          "groups": [
-            {
-              "type": true
-            },
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "sortBareImports": true,
+            "groups": [
+              {
+                "type": true
+              },
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            [
-              ":NODE:",
-              ":BUN:"
-            ],
+              [":NODE:", ":BUN:"],
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            [
-              ":PACKAGE:",
-              "!@/*",
-              "!@repo/**",
-              "!@/*/**"
-            ],
+              [":PACKAGE:", "!@/*", "!@repo/**", "!@/*/**"],
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            [
-              ":ALIAS:"
-            ],
+              [":ALIAS:"],
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            [
-              ":PATH:",
-              "!."
-            ],
+              [":PATH:", "!."],
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            [
-              ":STYLE:"
-            ],
+              [":STYLE:"],
 
-            ":BLANK_LINE:",
+              ":BLANK_LINE:",
 
-            {
-              "kind": "bare"
-            }
-          ]
+              {
+                "kind": "bare"
+              }
+            ]
+          }
         }
       }
     }
-  }
-},
+  },
 
   "javascript": {
     "formatter": {

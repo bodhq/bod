@@ -77,7 +77,7 @@ Klientská aplikace komunikuje se serverovou vrstvou výhradně prostřednictví
 
 **Proces aktualizace kontraktu:**
 1. Změna struktury endpointu nebo DTO na backendu.
-2. Backend vygeneruje novou OpenAPI specifikaci do `docs/openapi.json`.
+2. Backend exportuje `apps/api/schema/openapi.json` a jeho dokumentační kopii `docs/openapi.json` pomocí `pnpm api:openapi`.
 3. Vývojář frontendu spustí `pnpm gen:api`, což transpiluje schéma do NPM balíčku `@bod/api-client`.
 4. Frontend striktně využívá nové, plně otypované metody z tohoto balíčku.
 
@@ -87,4 +87,4 @@ Klientská aplikace komunikuje se serverovou vrstvou výhradně prostřednictví
 
 API při startu spouští transakční, verzovanou migraci v `server/core/migrations.py`. Vytvoří chybějící tabulky a jednorázově převede původní `users.role` na vazby rolí. Provedenou verzi eviduje v `schema_migrations`; opakovaný start data nepřevádí znovu. `SQLModel.metadata.create_all` vytváří chybějící tabulky, samo však neumí upravovat sloupce existujících tabulek.
 
-Sdílené jádro obsahuje `users` (identita a osobní údaje), `auth` (přihlášení a relace), `access` (role, oprávnění a správa účtů) a `audit` (historie změn). Podrobná pravidla, API a inicializace prvního správce jsou v [Účty, role a oprávnění](access.md).
+Sdílené jádro obsahuje `users` (identita a osobní údaje), `auth` (přihlášení a relace), `access` (role, oprávnění a správa účtů) a `audit` (historie změn). Podrobná pravidla, API a inicializace prvního správce jsou v [README backendu](../apps/api/README.md).

@@ -54,13 +54,15 @@ Názvy Pull Requestů a případných merge commitů musí povinně dodržovat s
 
 Proces revize kódu je vyžadován a automatizován prostřednictvím souboru `.github/CODEOWNERS`.
 
-Každý Pull Request musí získat minimálně jeden status *Approve* od oprávněných správců repozitáře (Elias `@ejaprrr` nebo Filip `@zorkonator`). Bez tohoto schválení systém znemožní Merge do hlavní větve.
+Před sloučením si vyžádej revizi příslušného vlastníka kódu. Soubor CODEOWNERS
+určuje recenzenty; vynucení schválení a povinných CI kontrol se nastavuje
+v pravidlech chráněných větví na GitHubu. Samotný soubor je nezapíná.
 
 ---
 
 ## 4. Kontinuální integrace (GitHub Actions CI)
 
-Každý otevřený Pull Request spouští izolovanou kontrolní pipelinu složenou z automatizovaných kroků. Pokud jeden z kroků selže, PR nelze spojit.
+Pull Request do `main` nebo `develop` spouští izolovanou kontrolní pipeline:
 
 1. **OpenAPI Sync:** Ověření konzistence sdíleného `openapi.json`.
 2. **Gen API:** Transpilace TypeScript klienta z API schématu.
@@ -70,10 +72,18 @@ Každý otevřený Pull Request spouští izolovanou kontrolní pipelinu složen
 6. **Build:** Verifikační produkční kompilace projektu (Next.js).
 
 > [!NOTE]
-> Lokální simulace celého CI procesu je proveditelná příkazem `pnpm check`. Důrazně se doporučuje tuto verifikaci vykonat před každým začleněním kódu (commit).
+> Základní lokální kontrola je `pnpm check`. PostgreSQL/Redis integrace a produkční Compose jsou samostatné kontroly popsané v testovací příručce.
 
 ---
 
 ## 5. Automatizace závislostí (Dependabot)
 
-V repozitáři je integrována služba GitHub Dependabot, která kontinuálně monitoruje dostupné verze využívaných knihoven (NPM, Python) a Docker obrazů. V případě detekce stabilní novější verze nebo bezpečnostní záplaty systém automaticky vytvoří izolovaný Pull Request s úpravou verzí.
+Dependabot každý týden kontroluje npm/pnpm workspace, uv workspace
+v kořeni repozitáře a GitHub Actions. Konfigurace je v
+`.github/dependabot.yml`. Aktualizace se kontrolují v PR, automatické
+slučování není nastavené. Verze React/React DOM a Vitest/coverage se musí
+měnit společně; Dependabot je seskupuje a kompatibilitu kontroluje `pnpm deps:check`.
+
+CI běží pro PR a push do `main` i `develop`. Rozsah jednotlivých kontrol
+popisuje [testovací příručka](docs/testing.md). Produkční test používá
+samostatný Compose projekt a po doběhu smaže pouze jeho testovací volumes.

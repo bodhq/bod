@@ -2,7 +2,7 @@
 
 Vstupy jsou definované v Pydantic schématech a typech parametrů FastAPI.
 Kontrakt se generuje z téhož kódu; omezení není potřeba zvlášť ručně psát
-do `docs/openapi.json`. Společné typy jsou v
+do `apps/api/schema/openapi.json` ani jeho dokumentační kopie `docs/openapi.json`. Společné typy jsou v
 `apps/api/server/core/validation.py`.
 
 ## Pravidla vstupů
@@ -139,7 +139,7 @@ nenahrazuje autorizaci.
 Z `apps/api`:
 
 ```sh
-uv run python -m server.openapi ../../docs/openapi.json
+uv run python -m server.openapi schema/openapi.json ../../docs/openapi.json
 ```
 
 Živý kontrakt je na `http://localhost:8000/openapi.json`, interaktivní

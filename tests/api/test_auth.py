@@ -359,9 +359,9 @@ def test_sessions_list_and_revoke_only_own_session(client: TestClient, db: Sessi
 def test_own_sessions_are_available_before_and_after_password_change_without_role(
     admin,
 ):
-    from conftest import HEADERS
+    from .conftest import HEADERS
     from server.main import app
-    from test_access import complete_password, issue, sign_in
+    from .test_access import complete_password, issue, sign_in
 
     issued = issue(admin, roles=["student", "parent"])
     with TestClient(app, headers=HEADERS) as user:

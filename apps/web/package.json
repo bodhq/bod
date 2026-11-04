@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@bod/config-typescript": "workspace:*",
-    "@hey-api/openapi-ts": "^0.99.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
@@ -38,10 +37,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "4.1.10",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "4.1.10"
   }
 }

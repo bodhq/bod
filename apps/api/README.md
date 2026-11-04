@@ -136,7 +136,8 @@ PostgreSQL testy se přeskočí. Produkční `.env` databázi testy nepoužívaj
 
 Statický OpenAPI snapshot API je v `schema/openapi.json` a jeho aktuálnost
 kontroluje místní `tests/test_http_validation.py`. Klient `packages/api-client`
-a kořenový `docs/openapi.json` leží mimo tuto změnu omezenou na `apps/api`.
+Kořenový `pnpm gen:api` exportuje obě kopie kontraktu a generuje klienta
+z `apps/api/schema/openapi.json`; `pnpm gen:client` používá již uložený kontrakt.
 
 Z `apps/api` spustí `uv run python -m pytest` novou doménovou a validační sadu
 spolu s dosavadními testy jádra. Konfigurace vynechává kořenové
@@ -149,3 +150,7 @@ je nahrazená `test_active_roles_apply_to_canonical_schedule` v místní sadě.
 
 Migrace `20261102_06_rooms_permission` převádí stávající ruční přidělení
 oprávnění správy místností na `rooms.manage`.
+
+Instalaci, produkční prostředí a testovací příkazy popisují společné návody
+[pro vývoj](../../docs/guides/development.md), [nasazení](../../docs/guides/deployment.md)
+a [testování](../../docs/testing.md).

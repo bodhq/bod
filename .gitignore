@@ -58,3 +58,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Next.js generated agent instructions
+/apps/web/AGENTS.md
+/apps/web/CLAUDE.md

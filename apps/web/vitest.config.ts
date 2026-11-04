@@ -15,6 +15,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "next/navigation": path.resolve(__dirname, "node_modules/next/navigation.js"),
+      "@bod/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+      "@tanstack/react-query": path.resolve(__dirname, "node_modules/@tanstack/react-query"),
       "@testing-library/react": path.resolve(__dirname, "node_modules/@testing-library/react"),
     },
   },

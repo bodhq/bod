@@ -85,10 +85,20 @@ def engine(tmp_path, monkeypatch, request):
             postgres_url,
             connect_args={
                 "connect_timeout": 5,
-                "options": f"-c search_path={schema},public "
+                "options": f"-c search_path={schema} "
                 "-c statement_timeout=30000 -c lock_timeout=15000",
             },
+            execution_options={"schema_translate_map": {None: schema}},
         )
+
+        def cleanup_database():
+            current.dispose()
+            with control.begin() as connection:
+                connection.execute(DropSchema(schema, cascade=True))
+            control.dispose()
+
+        # Register cleanup before migration so setup failures cannot leak schemas.
+        request.addfinalizer(cleanup_database)
         migrate(current)
     else:
         current = create_engine(
@@ -137,11 +147,8 @@ def engine(tmp_path, monkeypatch, request):
             event.remove(mapper.class_, "refresh", restore_utc)
         if not postgres_url:
             event.remove(Session, "after_transaction_end", release)
-        current.dispose()
-        if control:
-            with control.begin() as connection:
-                connection.execute(DropSchema(schema, cascade=True))
-            control.dispose()
+        if not control:
+            current.dispose()
 
 
 @pytest.fixture

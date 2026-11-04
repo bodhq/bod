@@ -1,14 +1,15 @@
 # bod web
 
-Aplikace bod postavená na Next.js App Routeru.
+Next.js a React frontend. Příkazy spouštěj z kořene repozitáře:
 
-Používejte příkazy z kořene monorepa:
-
-```bash
-pnpm install
-pnpm web:dev
-pnpm --filter web build
-pnpm --filter web typecheck
+```sh
+pnpm gen:api
+pnpm --filter @bod/web dev
+pnpm --filter @bod/web build
+pnpm --filter @bod/web test
 ```
 
-API typy a klientské funkce se generují v `packages/api-client` z OpenAPI schématu backendu ve FastAPI.
+Instalace a konfigurace: [lokální vývoj](../../docs/guides/development.md).
+Produkční image používá standalone server; postup a požadavky jsou v
+[nasazení](../../docs/guides/deployment.md). Kontrakt klienta vzniká z backendu,
+generované soubory v `packages/api-client/src` se ručně neupravují.

@@ -23,7 +23,7 @@ from server.core.auth.dependencies import get_login_attempt_limiter  # noqa: E40
 from server.core.auth.rate_limit import LoginAttemptLimiter  # noqa: E402
 from server.core.config import settings  # noqa: E402
 from server.core.migrations import migrate  # noqa: E402
-from sqlite_support import sqlite_support  # noqa: E402
+from .sqlite_support import sqlite_support  # noqa: E402
 
 HEADERS = {"X-Requested-With": "bod"}
 

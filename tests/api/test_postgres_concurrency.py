@@ -1,7 +1,7 @@
 """Run the same invariants with PostgreSQL row and advisory locks in CI."""
 
 import pytest
-import test_access
+from . import test_access
 
 pytestmark = pytest.mark.postgres
 

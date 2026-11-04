@@ -1,6 +1,12 @@
-# Enterprise-Grade Production Docker Compose
+# Produkční Docker Compose
 # Pouze pro reálné nasazení nebo full produkční lokální testování.
 # API i WEB porty jsou schované. Přístup zvenčí pouze přes Caddy (porty 80/443).
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   caddy:
@@ -16,8 +22,12 @@ services:
       - caddy-config:/config
     environment:
       DOMAIN: ${DOMAIN:-localhost}
-    networks:
-      - bod-network
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    logging: *default-logging
 
   db:
     image: postgres:16-alpine
@@ -33,16 +43,10 @@ services:
       retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    networks:
-      - bod-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    logging: *default-logging
 
   db-backup:
-    image: prodrigestivill/postgres-backup-local
+    image: prodrigestivill/postgres-backup-local:16-alpine
     restart: unless-stopped
     depends_on:
       db:
@@ -57,31 +61,54 @@ services:
       BACKUP_KEEP_WEEKS: 4
       BACKUP_KEEP_MONTHS: 6
       HEALTHCHECK_PORT: 8080
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:$${HEALTHCHECK_PORT}/ > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     volumes:
       - ../backups:/backups
-    networks:
-      - bod-network
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *default-logging
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
+    # API nemá veřejný port; předané IP přijímá jen v interní Docker síti.
+    command: ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DOCKER_DATABASE_URL:?Set DOCKER_DATABASE_URL using db:5432}
+      REDIS_URL: redis://redis:6379/0
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to the public HTTPS origin}
+      COOKIE_SECURE: "true"
+      DEBUG: "false"
       MEDIA_ROOT: /var/lib/bod/media
     volumes:
       - school-media:/var/lib/bod/media
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - bod-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      redis:
+        condition: service_healthy
+    logging: *default-logging
 
   web:
     build:
@@ -92,19 +119,17 @@ services:
     restart: unless-stopped
     environment:
       API_INTERNAL_URL: http://api:8000
+      HOSTNAME: 0.0.0.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     depends_on:
-      - api
-    networks:
-      - bod-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-networks:
-  bod-network:
-    driver: bridge
+      api:
+        condition: service_healthy
+    logging: *default-logging
 
 volumes:
   school-media:

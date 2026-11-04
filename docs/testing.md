@@ -1,179 +1,79 @@
-# 🧪 Testovací příručka (Testing Guidelines)
+# Testování
 
-Tento dokument definuje testovací strategie, nástroje a standardy využívané v repozitáři `bod`. Hlavním cílem je zajištění spolehlivosti klíčové byznys logiky a prevence regresních chyb prostřednictvím standardizovaných postupů.
+Příkazy spouštěj z kořene repozitáře po instalaci podle
+[vývojového návodu](guides/development.md). Testy používají dočasné databáze
+a explicitní `TEST_*` adresy místo provozní databáze z `.env`.
 
-> [!TIP]
-> Testovací architektura využívá striktně vymezené hranice a standardizované šablony. Pro implementaci nových testů se doporučuje replikovat strukturu existujících testovacích sad.
+## Úplná kontrola
 
-## 📖 Obsah
-- [Základní příkazy](#-základní-příkazy)
-- [Backend: FastAPI (Pytest)](#1-backend-fastapi-pytest)
-- [Frontend: Next.js (Vitest)](#2-frontend-react-a-nextjs-vitest)
-- [End-to-End: Playwright](#3-end-to-end-playwright)
-
----
-
-## ⚡ Základní příkazy
-
-Všechny testy napříč monorepem jsou symetricky zmapovány do hlavního skriptu v kořenové složce.
-
-```bash
-# Spuštění kompletní sady testů (Frontend, Backend, E2E)
-pnpm test
-
-# Komplexní QA (Testy + Linting + Build) - simulace CI
+```sh
+pnpm --filter @bod/e2e exec playwright install chromium
+pnpm gen:api
 pnpm check
 ```
 
----
+`pnpm check` ověří spojené verze React/Vitest, lint, typy, unit testy,
+prohlížečový test a produkční build. CI navíc kontroluje aktuálnost obou
+verzovaných OpenAPI snapshotů, skutečné PostgreSQL/Redis integrace a běh
+produkčních obrazů přes HTTPS proxy. Testování není automatické nasazení.
 
-## 1. Backend: FastAPI (Pytest)
-
-Ruční průchod účty, rolemi a oprávněními popisuje [návod pro Postman](postman.md)
-s připravenou importovatelnou kolekcí. Nevyžaduje spuštění webové aplikace.
-Pravidla vstupů, chybové odpovědi a export kontraktu popisuje
-[validace API a OpenAPI](validation.md).
-
-Na backendu je testování zaměřeno na ověřování výstupů Byznys Logiky (Services) a HTTP Kontraktů (Routers). Cílové pokrytí (Code Coverage) je stanoveno na 80 % (`cov-fail-under=80`).
-
-- **Umístění testů:** `tests/api/`
-- **Spuštění modulu:** `uv run pytest` z kořene projektu, případně `cd apps/api && uv run pytest ../../tests/api`
-
-### Metodika testování
-
-Běžné API testy používají **SQLite v dočasném souboru pro každý test**.
-Docker, PostgreSQL server ani Redis nejsou pro tento běh potřeba. Databáze
-se vytvoří automaticky v pytest tmp adresáři, profilové fotky také směřují
-do tmp adresáře. HTTP požadavky používají vlastní transakce a připojení.
+## API
 
 ```sh
-uv sync --all-packages --all-groups --frozen
 uv run pytest
+uv run pytest apps/api/tests --no-cov
 ```
 
-Používáme vzor **AAA (Arrange - Act - Assert)**:
+Kořenová konfigurace zahrnuje `apps/api/tests` i `tests/api`; stejně jako
+konfigurace v `apps/api/pytest.ini` zachovává výjimky převzaté z backendové
+větve: staré `tests/api/test_timetable.py`, `tests/api/test_validation.py`
+a scénář `test_active_role_is_session_local_and_permissions_are_not_combined`.
+Tyto testy dosud používají odstraněný prototyp rozvrhu. Jejich migrace na
+nový kontrakt patří backendu a není součástí provozních oprav. Zelený běh
+proto neznamená, že tyto vyřazené scénáře prošly.
 
-1. **Arrange:** vytvoření potřebných záznamů v izolované SQLite databázi.
-2. **Act:** volání API nebo služby.
-3. **Assert:** ověření odpovědi a uložených dat.
-
-`tests/api/conftest.py` přepíše nastavení testovacího připojení bez ohledu
-na DATABASE_URL v `.env`. Provozní databázi nepoužívá. Redis limiter je
-nahrazen lokálním testovacím objektem.
-
-`tests/api/sqlite_support.py` řeší rozdíly databází pouze uvnitř testů:
-
-- zapíná cizí klíče (`PRAGMA foreign_keys=ON`), včetně složené vazby aktivní role,
-- mapuje SQL typ JSONB na SQLite JSON a doplňuje funkci btrim,
-- doplňuje UTC k časům načteným SQLite driverem,
-- nahrazuje správní advisory lock lokálním zámkem drženým do konce transakce.
-
-Tímto během se ověřuje funkční chování API a pravidla souběžných změn.
-PostgreSQL advisory locky, row locky a PostgreSQL migrační SQL tímto během
-ověřené nejsou. Provozní implementace ani migrace se kvůli SQLite nemění.
-
-### PostgreSQL a Redis integrace
-
-Testy migrací a souběhu mají značku `postgres`. Bez `TEST_POSTGRES_URL` se přeskočí;
-nejde o povinnou závislost běžných testů. Pokud je chceš ověřit proti
-PostgreSQL, spusť například:
+Běžné testy používají dočasné SQLite a lokální limiter. Pokrytí API má práh
+80 %. SQLite nenahrazuje ověření PostgreSQL zámků, triggerů a migrací.
+Pro ně použij samostatnou testovací databázi, nikdy produkční adresu:
 
 ```sh
-TEST_POSTGRES_URL=postgresql+psycopg://bod:bod@localhost:5433/bod \
-  uv run pytest -m postgres --no-cov
+TEST_POSTGRES_URL=postgresql+psycopg://bod:bod@localhost:55432/bod_test \
+TEST_REDIS_URL=redis://localhost:56379/0 \
+  uv run pytest -m 'postgres or redis' --no-cov
 ```
 
-Tyto testy mají na určeném PostgreSQL serveru vlastní dočasné schéma
-`bod_test_<uuid>`, které se po testu odstraní. Používej lokální nebo testovací
-server; role musí smět vytvářet schémata. Pro úplný běh včetně pokrytí stačí
-stejnou proměnnou nastavit při `uv run pytest` bez filtru značky.
+PostgreSQL testy vytvářejí schémata s náhodným názvem a po testu je odstraní;
+role potřebuje právo vytvořit schéma. Redis testy používají vlastní náhodné
+klíče. Bez příslušných `TEST_*` proměnných se integrace přeskočí. CI používá
+PostgreSQL 16 a Redis 7, stejné hlavní verze jako produkční Compose.
 
-CI spouští běžnou sadu na SQLite a samostatný povinný job
-`PostgreSQL and Redis integration` se službami PostgreSQL 17 a Redis 7.
-Ten ověřuje migrace, souběžný bootstrap a ochranu posledního správce,
-a atomické čítače limiteru včetně ztracené odpovědi po EXEC.
-
-Testy značky `redis` lokálně vyžadují `TEST_REDIS_URL` a používají náhodné
-klíče, které po doběhu smažou:
+## Web
 
 ```sh
-TEST_REDIS_URL=redis://localhost:6379/0 uv run pytest -m redis --no-cov
+pnpm --filter @bod/web test
+pnpm --filter @bod/web typecheck
+pnpm --filter @bod/web lint
 ```
 
-Limiter počítá jen chybná přihlášení: standardně 5 na účet/IP a 100 na IP.
-Okno 15 minut běží od posledního neúspěchu. Úspěšný login smaže pouze
-chyby konkrétního účtu/IP, nikoli souhrnné chyby celé IP. Nastavení je v
-`.env.example`; starší `LOGIN_IP_MAX_REQUESTS` zůstává aliasem pro IP limit.
+Vitest načítá testy z `tests/web`; závislosti a aliasy řeší vůči `apps/web`,
+aby fungoval i čistý checkout bez hoistovaných balíčků. Jednotkové testy
+mockují síť a nepotřebují běžící API.
 
-SSR layout posílá `X-Session-Refresh: skip`, takže ověření neprodlouží
-expiraci v DB bez doručení cookie. AuthProvider po připojení v prohlížeči
-volá `/auth/me` bez této hlavičky a dostane obnovu cookie i DB expirace.
-`last_seen_at` se nezávisle aktualizuje nejvýše jednou za 300 sekund
-(`SESSION_ACTIVITY_INTERVAL_SECONDS`).
-
-### Importy ve VS Code / Pylance
-
-Otevři jako workspace kořen `bod`, aby se načetl `pyrightconfig.json`.
-V paletě příkazů vyber **Python: Select Interpreter** a nastav
-`<kořen projektu>/.venv/bin/python`. Po změně konfigurace spusť
-**Python: Restart Language Server**. Konfigurace obsahuje cesty `apps/api`
-a `tests/api`, takže importy `server.*` z testů vedou na skutečný backend.
-
-Ověření instalace z kořene projektu:
+## Prohlížeč
 
 ```sh
-uv run python -c 'import server; print(server.__file__)'
+pnpm --filter @bod/e2e test
 ```
 
-Pokud tento příkaz na macOS hlásí chybějící modul i po `uv sync`, zkontroluj
-`ls -lO .venv/lib/python*/site-packages/*api*.pth`. Python přeskakuje `.pth`
-s příznakem `hidden`; tento příznak lze odstranit příkazem:
+Playwright sám spustí vývojový web na `http://localhost:3000`. Základní test
+ověřuje pouze načtení stránky a titul. Nepokrývá kompletní školní workflow.
+Pro existující produkční server z [ověřovacího postupu](guides/deployment.md):
 
 ```sh
-chflags nohidden .venv/lib/python*/site-packages/_editable_impl_api.pth
+PLAYWRIGHT_BASE_URL=https://localhost:18443 \
+PLAYWRIGHT_SKIP_WEBSERVER=1 PLAYWRIGHT_IGNORE_HTTPS_ERRORS=1 \
+  pnpm --filter @bod/e2e test
 ```
 
-### Převod profilovek a dostupnost databáze
-
-SQLite je určeno pro automatické testy. Údržbový příkaz
-`python -m server.scripts.convert_avatars` pracuje s databází z `.env`
-a vyžaduje dostupný PostgreSQL. `Connection refused` na portu 5433 znamená,
-že server na nastavené adrese nepřijímá připojení.
-
-Spusť Docker Desktop a z kořene projektu:
-
-```sh
-docker compose -f infra/docker-compose.dev.yml up -d --wait db redis
-cd apps/api
-uv run python -m server.scripts.convert_avatars
-```
-
-Při nedostupné databázi příkaz skončí s kódem 1 a vypíše stručný postup.
-
----
-
-## 2. Frontend: React a Next.js (Vitest)
-
-V prostředí frontendu **netestujeme vizuální vrstvu** (prezentační React komponenty a Tailwind třídy). Testování UI je často nestabilní a narušuje rychlost vývoje. Zaměřujeme se výhradně na datovou vrstvu frontendu.
-
-- **Umístění testů:** `apps/web/tests/web/`
-- **Spuštění modulu:** `pnpm --filter @bod/web test`
-
-### Metodika testování (Hooks a API)
-1. Cílem je testování výlučně **Custom Hooks** (např. `useTimetable.ts`), které zprostředkovávají datový most.
-2. Používáme knihovnu `@testing-library/react` (zejména funkci `renderHook`).
-3. Veškerá komunikace na backend se izolačně mockuje přímo na úrovni autogenerovaného API klienta přes `vi.spyOn()`. Tím testujeme, jak hook správně mění stav při načítání a chybách.
-
-> [!NOTE]
-> Pro ukázkovou architekturu testování React Hooks si prohlédněte soubor `tests/web/timetable/useTimetable.test.tsx`.
-
----
-
-## 3. End-to-End (Playwright)
-
-Zatímco Unit testy (Pytest, Vitest) ověřují izolované jednotky kódu, E2E testování slouží k prověření zdraví celého distribuovaného systému (Frontend ↔ Backend ↔ Databáze).
-
-- **Umístění testů:** `tests/e2e/`
-- **Spuštění modulu:** K dispozici globální skript, vyžaduje běžící aplikaci a nasazená seed data.
-
-Tyto testy využívají engine Playwright k inicializaci prostředí reálného prohlížeče, který automatizovaně simuluje interakce uživatele s aplikací. Nasazují se výhradně pro kritické cesty (uživatelská flow, např. úspěšné přihlášení nebo zobrazení rozvrhu). End-to-End testy pokrývají fundamentální chování systému a garantují jeho základní funkčnost.
+Ignorování TLS chyb zde slouží pouze lokálnímu Caddy certifikátu.
+V běžné produkci se používá důvěryhodný certifikát.

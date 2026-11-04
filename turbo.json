@@ -1,14 +1,30 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env", ".env.*"],
+  "globalDependencies": [
+    ".env",
+    ".env.*"
+  ],
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "PORT",
+        "API_INTERNAL_URL"
+      ]
     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "dist/**"
+      ],
+      "env": [
+        "API_INTERNAL_URL",
+        "SKIP_ENV_VALIDATION"
+      ]
     },
     "@bod/api#build": {
       "outputs": []
@@ -16,12 +32,45 @@
     "lint": {},
     "typecheck": {},
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "start": {
       "cache": false,
       "persistent": true
+    },
+    "@bod/api#test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tests/api/**",
+        "$TURBO_ROOT$/pytest.ini",
+        "$TURBO_ROOT$/pyproject.toml",
+        "$TURBO_ROOT$/uv.lock",
+        "!$TURBO_ROOT$/tests/api/**/__pycache__/**"
+      ],
+      "env": [
+        "TEST_POSTGRES_URL",
+        "TEST_REDIS_URL"
+      ],
+      "outputs": []
+    },
+    "@bod/web#test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tests/web/**"
+      ],
+      "outputs": []
+    },
+    "@bod/e2e#test": {
+      "cache": false,
+      "env": [
+        "PLAYWRIGHT_BASE_URL",
+        "PLAYWRIGHT_SKIP_WEBSERVER",
+        "PLAYWRIGHT_IGNORE_HTTPS_ERRORS",
+        "PORT"
+      ]
     }
   }
 }

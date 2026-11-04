@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -22,19 +22,22 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-env
 
+      - name: Verify Dependency Compatibility
+        run: pnpm deps:check
+
       - name: Verify OpenAPI Sync
         run: |
           pnpm api:openapi
-          if ! git diff --exit-code docs/openapi.json; then
-            echo "::error::OpenAPI schema docs/openapi.json je neaktuální!"
+          if ! git diff --exit-code apps/api/schema/openapi.json docs/openapi.json; then
+            echo "::error::OpenAPI snapshots jsou neaktuální!"
             exit 1
           fi
 
       - name: Generate API Client
-        run: pnpm gen:api
+        run: pnpm gen:client
 
       - name: Install Playwright Browsers
-        run: pnpm --filter @bod/e2e exec playwright install --with-deps
+        run: pnpm --filter @bod/e2e exec playwright install --with-deps chromium
 
       - name: Lint Codebase
         run: pnpm exec turbo run lint
@@ -53,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: bod
           POSTGRES_PASSWORD: bod
@@ -82,3 +85,63 @@ jobs:
           version: "0.11.0"
       - run: uv sync --all-packages --all-groups --frozen
       - run: uv run pytest -m "postgres or redis" --no-cov
+
+  production:
+    name: Production images and proxy smoke test
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_PROJECT_NAME: bod-ci-production
+      COMPOSE_FILE: infra/docker-compose.yml:infra/docker-compose.verify.yml
+      DOMAIN: localhost
+      POSTGRES_USER: bod_verify
+      POSTGRES_PASSWORD: ci-isolated-not-for-deployment
+      POSTGRES_DB: bod_verify
+      DOCKER_DATABASE_URL: postgresql://bod_verify:ci-isolated-not-for-deployment@db:5432/bod_verify
+      ALLOWED_ORIGINS: '["https://localhost:18443"]'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and start production services
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Verify HTTPS, database, API routing and static assets
+        run: |
+          curl --fail --silent --insecure https://localhost:18443/health | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          test "$(curl --silent --insecure -o /dev/null -w '%{http_code}' https://localhost:18443/api/v1/auth/me)" = "401"
+          curl --fail --silent --insecure https://localhost:18443/login -o /tmp/login.html
+          python3 -c 'import re; from pathlib import Path; assets = set(re.findall(r"(?:src|href)=\"(/_next/static/[^\"]+)\"", Path("/tmp/login.html").read_text())); assert assets; Path("/tmp/assets.txt").write_text("\n".join(assets))'
+          while IFS= read -r asset || [ -n "$asset" ]; do
+            curl --fail --silent --insecure "https://localhost:18443$asset" -o /dev/null
+          done < /tmp/assets.txt
+      - name: Verify authenticated SSR with a disposable administrator
+        run: |
+          umask 077
+          docker compose exec -T api python -m server.scripts.bootstrap_admin > /tmp/production-bootstrap.txt
+          python3 - <<'PYAUTH'
+          import http.cookiejar, json, secrets, ssl, urllib.request
+          from pathlib import Path
+          origin = "https://localhost:18443"
+          password = next(line.split(": ", 1)[1] for line in Path("/tmp/production-bootstrap.txt").read_text().splitlines() if line.startswith("Dočasné heslo: "))
+          jar = http.cookiejar.CookieJar()
+          opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar), urllib.request.HTTPSHandler(context=ssl._create_unverified_context()))
+          def call(path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              req = urllib.request.Request(origin + path, data=data, headers={"Origin": origin, "Content-Type": "application/json", "X-Requested-With": "bod"})
+              response = opener.open(req, timeout=10)
+              assert response.status == 200 and response.url == origin + path, (path, response.status, response.url)
+              return response.read()
+          call("/api/v1/auth/login", {"username": "root", "password": password})
+          assert any(cookie.secure for cookie in jar)
+          call("/api/v1/auth/change-password", {"current_password": password, "new_password": secrets.token_urlsafe(24)})
+          call("/api/v1/auth/me")
+          call("/api/v1/admin/users")
+          call("/app")
+          print("Secure login, password change and authenticated SSR passed")
+          PYAUTH
+          rm /tmp/production-bootstrap.txt
+      - name: Service status and logs on failure
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail=100
+      - name: Remove isolated services and test data
+        if: always()
+        run: docker compose down --volumes --remove-orphans

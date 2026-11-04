@@ -12,7 +12,7 @@ from server.core.auth.rate_limit import (
 )
 from server.core.config import settings
 
-from conftest import FakeRedis
+from .conftest import FakeRedis
 
 
 def test_redis_failure_rejects_login(monkeypatch):

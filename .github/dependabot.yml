@@ -5,12 +5,17 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      vitest:
+        patterns: ["vitest", "@vitest/*"]
     labels:
       - "deps"
 
-  # Aktualizace Python závislostí (pyproject.toml / uv) pro backend
-  - package-ecosystem: "pip"
-    directory: "/apps/api"
+  # Python workspace a uv.lock jsou v kořeni repozitáře.
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
       interval: "weekly"
     labels:
