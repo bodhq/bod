@@ -13,7 +13,7 @@
     "format": "biome format --write .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm deps:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm deps:check && pnpm infra:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "db:dev": "docker compose -f infra/docker-compose.dev.yml up -d",
     "db:seed": "cd apps/api && pnpm db:seed",
     "api:dev": "pnpm --filter @bod/api dev",
@@ -21,11 +21,22 @@
     "gen:api": "pnpm api:openapi && pnpm gen:client",
     "web:dev": "pnpm --filter @bod/web dev",
     "gen:client": "openapi-ts",
-    "deps:check": "node scripts/check-dependencies.mjs"
+    "deps:check": "node scripts/check-dependencies.mjs",
+    "infra:check": "uv run ruff check infra/deploy scripts/package_release.py tests/infra && uv run ruff format --check infra/deploy scripts/package_release.py tests/infra && uv run python -m unittest discover -s tests/infra -p \"test_*.py\" -v",
+    "release:package": "uv run python scripts/package_release.py"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
     "@hey-api/openapi-ts": "^0.99.0",
     "turbo": "^2.10.7"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss@8": "^8.5.23",
+      "undici@7": "^7.30.1",
+      "js-yaml@4": "^4.3.2",
+      "nanoid@3": "^3.3.18",
+      "source-map-js@1": "^1.2.2"
+    }
   }
 }

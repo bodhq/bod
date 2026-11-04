@@ -18,5 +18,7 @@
 **/*.log
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 backups/

@@ -5,13 +5,19 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_call:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   validate:
     name: Validate
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: sqlite://
@@ -25,11 +31,17 @@ jobs:
       - name: Verify Dependency Compatibility
         run: pnpm deps:check
 
+      - name: Audit JavaScript dependencies
+        run: pnpm audit --audit-level=high
+
+      - name: Verify deployment tooling
+        run: pnpm infra:check
+
       - name: Verify OpenAPI Sync
         run: |
           pnpm api:openapi
-          if ! git diff --exit-code apps/api/schema/openapi.json docs/openapi.json; then
-            echo "::error::OpenAPI snapshots jsou neaktuální!"
+          if ! git diff --exit-code apps/api/schema/openapi.json; then
+            echo "::error::OpenAPI snapshot je neaktuální!"
             exit 1
           fi
 
@@ -53,6 +65,7 @@ jobs:
 
   backend-integration:
     name: PostgreSQL and Redis integration
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -87,8 +100,9 @@ jobs:
       - run: uv run pytest -m "postgres or redis" --no-cov
 
   production:
-    name: Production images and proxy smoke test
-    runs-on: ubuntu-latest
+    name: Production images and school deployment
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
     env:
       COMPOSE_PROJECT_NAME: bod-ci-production
       COMPOSE_FILE: infra/docker-compose.yml:infra/docker-compose.verify.yml
@@ -101,7 +115,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Build and start production services
-        run: docker compose up -d --build --wait --wait-timeout 180
+        run: |
+          docker compose pull db redis caddy
+          docker compose build --pull
+          docker compose up -d --wait --wait-timeout 180
       - name: Verify HTTPS, database, API routing and static assets
         run: |
           curl --fail --silent --insecure https://localhost:18443/health | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
@@ -137,6 +154,22 @@ jobs:
           print("Secure login, password change and authenticated SSR passed")
           PYAUTH
           rm /tmp/production-bootstrap.txt
+      - name: Package the exact tested images
+        run: |
+          python3 scripts/package_release.py --output "$RUNNER_TEMP/bod-dist" --api-image bod-ci-production-api --web-image bod-ci-production-web
+      - name: Install, upgrade and restore on the disposable Linux VM
+        run: |
+          bundle=$(python3 -c 'import glob,os; paths=glob.glob(os.environ["RUNNER_TEMP"]+"/bod-dist/bod-*-linux-*.tar.gz"); assert len(paths)==1; print(paths[0])')
+          sudo python3 tests/infra/acceptance.py --bundle "$bundle" --root "$RUNNER_TEMP/bod-school" --output "$RUNNER_TEMP/bod-acceptance" --cleanup
+          sudo install -m 600 -o "$(id -u)" -g "$(id -g)" "$RUNNER_TEMP/bod-acceptance/recovery.tar.gz" "$RUNNER_TEMP/bod-dist/recovery.tar.gz"
+          sudo install -m 600 -o "$(id -u)" -g "$(id -g)" "$RUNNER_TEMP/bod-acceptance/fixture.json" "$RUNNER_TEMP/bod-dist/fixture.json"
+      - name: Keep tested bundle and disposable recovery fixture
+        uses: actions/upload-artifact@v7
+        with:
+          name: school-deployment
+          path: ${{ runner.temp }}/bod-dist/
+          retention-days: 1
+          if-no-files-found: error
       - name: Service status and logs on failure
         if: failure()
         run: |
@@ -145,3 +178,19 @@ jobs:
       - name: Remove isolated services and test data
         if: always()
         run: docker compose down --volumes --remove-orphans
+
+  school-recovery:
+    name: Recover school on another clean Linux VM
+    timeout-minutes: 15
+    needs: production
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: school-deployment
+          path: ${{ runner.temp }}/bod-dist
+      - name: Restore into an empty installation
+        run: |
+          bundle=$(python3 -c 'import glob,os; paths=glob.glob(os.environ["RUNNER_TEMP"]+"/bod-dist/bod-*-linux-*.tar.gz"); assert len(paths)==1; print(paths[0])')
+          sudo python3 tests/infra/acceptance.py --phase fresh --bundle "$bundle" --archive "$RUNNER_TEMP/bod-dist/recovery.tar.gz" --fixture "$RUNNER_TEMP/bod-dist/fixture.json" --root "$RUNNER_TEMP/bod-recovered" --output "$RUNNER_TEMP/bod-recovery-test" --cleanup

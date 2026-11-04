@@ -10,6 +10,7 @@ out/
 dist/
 build/
 .turbo/
+.vercel/
 *.tsbuildinfo
 next-env.d.ts
 

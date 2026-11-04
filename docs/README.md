@@ -1,26 +1,20 @@
 # Dokumentace
 
-Návody popisují aktuální způsob práce a technická reference současný stav projektu.
+Pro první spuštění projektu začni návodem [Lokální vývoj](development.md).
 
-## Vývoj a provoz
+## Vývoj aplikace
 
-- [Lokální vývoj](guides/development.md) — instalace, konfigurace a první správce.
-- [Nasazení](guides/deployment.md) — produkční Compose a trvalá data.
-- [Řešení potíží](guides/troubleshooting.md) — Python importy a údržba profilových fotografií.
-- [Testování](testing.md) — příkazy, rozsah testů a jejich omezení.
-- [Pravidla spolupráce](../CONTRIBUTING.md) — větve, PR, CI a Dependabot.
+- [Architektura](architecture.md) — struktura aplikací a jejich propojení.
+- [Backend a API](../apps/api/README.md) — doménový model, operace a API kontrakt.
+- [Testování](testing.md) — lokální kontroly, integrační testy a CI.
+- [Spolupráce](../CONTRIBUTING.md) — větve, commity a pull requesty.
 
-## Technická reference
+## Správa školního serveru
 
-- [Architektura](architecture.md) — moduly, vrstvy, API klient a databázové migrace.
-- [Validace API](validation.md) — vstupy, chybové odpovědi a export kontraktu.
-- [OpenAPI kontrakt](openapi.json) — generovaný soubor; dokumentační kopie kontraktu z `apps/api/schema/openapi.json`.
+- [Nasazení a provoz](deployment.md) — požadavky na server, instalace,
+  aktualizace, zálohování a obnova.
 
-## Školní podklady a historie
+## Podklady maturitního projektu
 
-- Původní zadání: [Filip (PDF)](nagyfilip23-zadani.pdf), [Filip (DOCX)](nagyfilip23-zadani.docx), [Eliáš (PDF)](prochazkaelias23-zadani.pdf), [Eliáš (DOCX)](prochazkaelias23-zadani.docx).
-- [Sprint reviews](sprint-reviews/README.md) — průběh práce a šablona záznamu.
-- [Backendový audit z 1. 11. 2026](backend-review-2026-11-01.md) — historický podklad, aktuální stav popisuje technická reference.
-
-Nový návod patří do `guides/`. Stejný postup neudržuj ve více dokumentech;
-README jednotlivých aplikací mohou odkázat na společný návod.
+- [Zadání](project/assignments/) — zadání obou autorů v PDF a DOCX.
+- [Sprint reviews](project/sprint-reviews/README.md) — výsledky sprintů a šablona zápisu.

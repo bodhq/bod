@@ -13,9 +13,3 @@ services:
   redis:
     ports:
       - "127.0.0.1:56379:6379"
-  db-backup:
-    volumes: !override
-      - verification-backups:/backups
-
-volumes:
-  verification-backups:

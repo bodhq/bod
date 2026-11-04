@@ -1,15 +1,9 @@
 # bod web
 
-Next.js a React frontend. Příkazy spouštěj z kořene repozitáře:
+Next.js a React frontend. Routy a layouty jsou v `src/app`, sdílené UI,
+autentizace a nastavení vzhledu v `src/core`. Používá generovaný balíček
+`@bod/api-client`; zdroje klienta se ručně neupravují.
 
-```sh
-pnpm gen:api
-pnpm --filter @bod/web dev
-pnpm --filter @bod/web build
-pnpm --filter @bod/web test
-```
-
-Instalace a konfigurace: [lokální vývoj](../../docs/guides/development.md).
-Produkční image používá standalone server; postup a požadavky jsou v
-[nasazení](../../docs/guides/deployment.md). Kontrakt klienta vzniká z backendu,
-generované soubory v `packages/api-client/src` se ručně neupravují.
+- [Instalace a spuštění](../../docs/development.md)
+- [Testy a kontroly webu](../../docs/testing.md#web)
+- [Produkční standalone server a nasazení](../../docs/deployment.md)

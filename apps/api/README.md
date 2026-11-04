@@ -2,16 +2,6 @@
 
 FastAPI služba pro školní informační systém bod. Python balíček se jmenuje `server`.
 
-## Příkazy
-
-```bash
-uv sync
-uv run uvicorn server.main:app --reload
-uv run python -m server.openapi
-```
-
-OpenAPI schéma se generuje z FastAPI aplikace a spotřebovává ho balíček `packages/api-client`.
-
 ## ER model a rozdělení backendu
 
 Zdrojový ER návrh je uložený v `schema/bod.dbml`. Backend používá společné
@@ -111,7 +101,7 @@ kalendáře návrhu. `is_override=true` zachová ručně zvolený konkrétní t�
 neposune další fáze. Výjimka výukového dne nepřerušuje cyklus. Publikovaný plán
 se neupravuje; nejprve se naklonuje do nového návrhu.
 
-## Migrace a ověření
+## Migrace
 
 Startup spouští transakční migraci `20261102_05_school_er_model` přes existující
 `schema_migrations`. Zachovává účty, relace, audit a původní rozvrhová data.
@@ -119,38 +109,23 @@ PostgreSQL navíc vynucuje intervalové EXCLUDE constraints a ochranu zmrazenýc
 závislostí pomocí triggerů. První instalace vyžaduje možnost vytvořit rozšíření
 `btree_gist`, případně jeho předchozí instalaci správcem databáze do `public`.
 
-Z kořene repozitáře:
-
-```sh
-uv run python -m pytest apps/api/tests --no-cov
-uv run python -m ruff check apps/api/server
-uv run python -m mypy apps/api/server
-uv run python -m bandit -r apps/api/server -c apps/api/pyproject.toml
-uv run python -m server.openapi apps/api/schema/openapi.json
-```
-
-Pro skutečné PostgreSQL migrace, triggery a souběh nastav `TEST_POSTGRES_URL`
-na lokální či testovací server. Testy mají vlastní dočasné schéma, které po
-doběhu odstraní. Bez této proměnné běží funkční API testy na dočasném SQLite;
-PostgreSQL testy se přeskočí. Produkční `.env` databázi testy nepoužívají.
-
-Statický OpenAPI snapshot API je v `schema/openapi.json` a jeho aktuálnost
-kontroluje místní `tests/test_http_validation.py`. Klient `packages/api-client`
-Kořenový `pnpm gen:api` exportuje obě kopie kontraktu a generuje klienta
-z `apps/api/schema/openapi.json`; `pnpm gen:client` používá již uložený kontrakt.
-
-Z `apps/api` spustí `uv run python -m pytest` novou doménovou a validační sadu
-spolu s dosavadními testy jádra. Konfigurace vynechává kořenové
-`tests/api/test_timetable.py` a `tests/api/test_validation.py`, které importují
-odstraněný prototyp. Jejich relevantní HTTP validace je zachovaná a aktualizovaná
-v místní sadě; testy verzovaných rozvrhů jsou v `tests/test_er_workflows.py`
-a `tests/test_er_guards.py`.
-Kontrola oddělení aktivních rolí, která také používala starou cestu rozvrhu,
-je nahrazená `test_active_roles_apply_to_canonical_schedule` v místní sadě.
-
 Migrace `20261102_06_rooms_permission` převádí stávající ruční přidělení
 oprávnění správy místností na `rooms.manage`.
 
-Instalaci, produkční prostředí a testovací příkazy popisují společné návody
-[pro vývoj](../../docs/guides/development.md), [nasazení](../../docs/guides/deployment.md)
-a [testování](../../docs/testing.md).
+## Kontrakt a chyby
+
+Přesné vstupy a jejich limity jsou v [OpenAPI](schema/openapi.json), generovaném
+z FastAPI. Kontrakt a validační odpovědi ověřuje `tests/test_http_validation.py`.
+Při PATCH vynechané pole zachová hodnotu; `null` je povolené pouze tam,
+kde ho schéma přijímá. Oprávnění, existence záznamů a doménová pravidla
+se ověřují na serveru.
+
+Neplatné vstupy vracejí HTTP 422 s `error.code: VALIDATION_ERROR` a polem
+`error.details`. Každá položka obsahuje `location`, `message` a `type`;
+zaslané hodnoty ani tělo požadavku se v chybě nevracejí. Doménové chyby
+používají `error.message` a mohou `details` vynechat.
+
+Instalaci, generování klienta a spuštění popisuje [vývoj](../../docs/development.md),
+rozsah sad včetně PostgreSQL/Redis integrací a vyřazených starých testů
+[testování](../../docs/testing.md). Provoz školního serveru popisuje
+[nasazení](../../docs/deployment.md).

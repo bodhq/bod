@@ -13,7 +13,7 @@
       "!**/coverage",
       "!apps/api/uv.lock",
       "!packages/api-client/src",
-      "!docs/openapi.json",
+      "!apps/api/schema/openapi.json",
       "!apps/api/schema/openapi.json"
     ]
   },

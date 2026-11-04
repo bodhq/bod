@@ -1,7 +1,7 @@
 # Testování
 
 Příkazy spouštěj z kořene repozitáře po instalaci podle
-[vývojového návodu](guides/development.md). Testy používají dočasné databáze
+[vývojového návodu](development.md). Testy používají dočasné databáze
 a explicitní `TEST_*` adresy místo provozní databáze z `.env`.
 
 ## Úplná kontrola
@@ -13,9 +13,21 @@ pnpm check
 ```
 
 `pnpm check` ověří spojené verze React/Vitest, lint, typy, unit testy,
-prohlížečový test a produkční build. CI navíc kontroluje aktuálnost obou
-verzovaných OpenAPI snapshotů, skutečné PostgreSQL/Redis integrace a běh
+prohlížečový test a produkční build. CI navíc kontroluje aktuálnost autoritativního
+OpenAPI snapshotu, skutečné PostgreSQL/Redis integrace a běh
 produkčních obrazů přes HTTPS proxy. Testování není automatické nasazení.
+
+## Bezpečnost závislostí
+
+```sh
+pnpm audit
+```
+
+CI blokuje vysoké a kritické npm nálezy. React/React DOM i Vitest/coverage
+musí dál mít spojené verze. Bezpečnostní minima vybraných tranzitivních balíčků
+jsou v `package.json:pnpm.overrides`; při údržbě kontroluj i je a `uv.lock`.
+Dependabot sleduje npm i Python workspace, ale jeho seznam alertů na default
+větvi nemusí odpovídat rozpracované pracovní větvi.
 
 ## API
 
@@ -67,7 +79,7 @@ pnpm --filter @bod/e2e test
 
 Playwright sám spustí vývojový web na `http://localhost:3000`. Základní test
 ověřuje pouze načtení stránky a titul. Nepokrývá kompletní školní workflow.
-Pro existující produkční server z [ověřovacího postupu](guides/deployment.md):
+Pro existující produkční server z [lokálního ověřovacího postupu](development.md#lokální-produkční-ověření):
 
 ```sh
 PLAYWRIGHT_BASE_URL=https://localhost:18443 \
@@ -77,3 +89,31 @@ PLAYWRIGHT_SKIP_WEBSERVER=1 PLAYWRIGHT_IGNORE_HTTPS_ERRORS=1 \
 
 Ignorování TLS chyb zde slouží pouze lokálnímu Caddy certifikátu.
 V běžné produkci se používá důvěryhodný certifikát.
+
+## Nasazovací nástroje
+
+```sh
+pnpm infra:check
+```
+
+Samostatné unit testy v `tests/infra/test_deployment.py` ověřují poškozené
+balíčky, nebezpečné cesty, souběh údržby, odmítnutí nepodporované aktualizace,
+obnovení služeb po chybě zálohy a zachování původních dat při chybě obnovy.
+
+`tests/infra/acceptance.py` se spouští přes sudo pouze na dočasné Linux VM.
+Provádí skutečnou instalaci, přihlášení, změnu hesla, založení účtu, kontrolu
+binárních médií, update, návrat ze zálohy a provoz za HTTPS proxy. První
+update používá synteticky vyšší verzi stejného obsahu a ověřuje mechanismus;
+nenahrazuje migrační test dvou skutečných vydání. Před přidáním verze do
+`infra/release.json:upgrade_from` musí vydavatel ověřit i skutečnou dvojici.
+
+```sh
+sudo python3 tests/infra/acceptance.py \
+  --bundle /tmp/bod-0.1.0-linux-amd64.tar.gz \
+  --root /tmp/bod-school-test --output /tmp/bod-test-result --cleanup
+```
+
+CI spouští tento průchod na Ubuntu 24.04 a obnovu výsledné zálohy na další
+čisté VM. Testovací archiv obsahuje pouze vytvořené testovací účty. Do
+release se přenášejí výhradně instalační balíček a jeho checksum, nikoli
+záloha nebo testovací přihlašovací údaje.
