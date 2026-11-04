@@ -8,6 +8,6 @@
     "openapi": "uv run python -m server.openapi schema/openapi.json",
     "typecheck": "uv run mypy server/",
     "db:seed": "uv run python -m server.scripts.seed",
-    "test": "uv run python -m pytest tests ../../tests/api"
+    "test": "cd ../.. && uv run python -m pytest"
   }
 }

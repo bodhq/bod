@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from conftest import HEADERS
+from .conftest import HEADERS
 from fastapi.testclient import TestClient
 from server.core.access.repository import AccessRepository
 from server.core.access.services import AccessService

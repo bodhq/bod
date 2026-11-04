@@ -145,11 +145,11 @@ def test_restarting_does_not_restore_removed_role_permissions(db_engine):
 def test_audit_actor_delete_migration_preserves_history_and_allows_account_deletion(
     admin, db_engine
 ):
-    from conftest import HEADERS
+    from .conftest import HEADERS
     from fastapi.testclient import TestClient
     from server.core.audit.models import AuditEvent
     from server.main import app
-    from test_access import complete_password, issue, sign_in
+    from .test_access import complete_password, issue, sign_in
 
     issued = issue(admin)
     user_id = UUID(issued["user"]["id"])

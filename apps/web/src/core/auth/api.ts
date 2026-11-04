@@ -22,8 +22,9 @@ client.setConfig({
   baseUrl: "",
   // Ensure cookies are included in cross-origin requests
   fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-    const headers = new Headers(init?.headers);
-    const method = (init?.method ?? "GET").toUpperCase();
+    const request = input instanceof Request ? input : undefined;
+    const headers = new Headers(init?.headers ?? request?.headers);
+    const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
     if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
       headers.set("X-Requested-With", "bod");
     }

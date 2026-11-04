@@ -1,0 +1,15 @@
+# Isolated production verification; Compose >= 2.24.4 (!override).
+# Always use a separate project name and disposable test credentials.
+services:
+  caddy:
+    ports: !override
+      - "127.0.0.1:18080:80"
+      - "127.0.0.1:18443:443"
+    environment:
+      DOMAIN: localhost
+  db:
+    ports:
+      - "127.0.0.1:55432:5432"
+  redis:
+    ports:
+      - "127.0.0.1:56379:6379"
