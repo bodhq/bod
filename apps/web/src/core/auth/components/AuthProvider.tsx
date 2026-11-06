@@ -2,11 +2,12 @@
 
 import type { User } from "../api";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect } from "react";
 
-import { getMe } from "../api";
-import { useAuthStore, useAuthUser } from "../store";
+import { refreshAuthUser } from "../session";
+import { hasSameAuthContext, useAuthStore, useAuthUser } from "../store";
 
 export interface AuthProviderProps {
   children: React.ReactNode;
@@ -14,44 +15,30 @@ export interface AuthProviderProps {
 }
 
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
-  const initialized = useRef(false);
+  const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
   const user = useAuthUser();
 
-  // Use useLayoutEffect to update the store synchronously before paint on the client,
-  // avoiding the "Cannot update a component while rendering a different component" warning.
   useLayoutEffect(() => {
-    if (!initialized.current) {
-      useAuthStore.setState({
-        user: initialUser,
-        isAuthenticated: Boolean(initialUser),
-        isLoading: false,
-      });
-      initialized.current = true;
-    } else if (initialUser !== undefined) {
-      useAuthStore.getState().setUser(initialUser);
-    }
-  }, [initialUser]);
+    if (!hasSameAuthContext(useAuthStore.getState().user, initialUser)) queryClient.clear();
+    useAuthStore.getState().setUser(initialUser);
+  }, [initialUser, queryClient]);
 
-  // The browser receives Set-Cookie; SSR deliberately leaves expiration alone.
+  // SSR skips renewal; this browser request can receive the refreshed session cookie.
   useEffect(() => {
     if (!initialUser) return;
-    let active = true;
-    void getMe()
-      .then((currentUser) => {
-        if (active) useAuthStore.getState().setUser(currentUser);
-      })
-      .catch((error: Error & { code?: string }) => {
-        if (active && error.code === "AUTH_UNAUTHENTICATED") {
-          useAuthStore.getState().setUser(null);
+    const controller = new AbortController();
+    void refreshAuthUser(queryClient, { signal: controller.signal })
+      .then(({ user, applied }) => {
+        if (!controller.signal.aborted && applied && !user)
           router.replace("/login?error=unauthorized");
-        }
+      })
+      .catch(() => {
+        // A network failure or cancellation leaves the last confirmed user intact.
       });
-    return () => {
-      active = false;
-    };
-  }, [initialUser, router]);
+    return () => controller.abort();
+  }, [initialUser, queryClient, router]);
 
   useEffect(() => {
     if (user?.must_change_password && pathname !== "/app/settings/security") {

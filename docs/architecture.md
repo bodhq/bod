@@ -29,10 +29,31 @@ Z něj vzniká klient `@bod/api-client`; jeho generované zdroje nejsou verzovan
 a ručně se neupravují. Obnovení klienta popisuje [vývoj](development.md#api-klient).
 
 Prohlížeč volá `/api/` na stejné doméně jako web. Ve vývoji požadavky
-přeposílá Next.js, v produkci Caddy. Společný transport autentizace zachovává
-hlavičky a session cookie při volání generovaného SDK; serverové vykreslení
-předává cookie backendu. Relace a jejich expirace jsou uložené v PostgreSQL.
-Redis slouží limiteru přihlašování.
+přeposílá Next.js, v produkci Caddy. Aplikační instance `apiClient` v
+`apps/web/src/core/api/client.ts` zachovává hlavičky, tělo požadavku a cookies,
+vypíná HTTP cache a přidává hlavičku pro zápisy. Volání SDK ji předávají
+explicitně přes `client: apiClient`; nastavení nezávisí na importu autentizace.
+Serverové vykreslení předává interní URL a cookie v konkrétním volání,
+nikoli změnou globální konfigurace klienta.
+
+`apiData` a `apiVoid` z `core/api/result.ts` převádějí výsledek SDK na data
+nebo chybu s HTTP statusem a kódem backendu. Parser zachovává zprávu serveru
+a validační lokace; síťové chyby obsahují původní příčinu. Zrušený požadavek
+si ponechá původní důvod zrušení. Globální obsluha odhlášení rozlišuje
+neplatné přihlášení od nesprávného hesla při konkrétní operaci.
+Relace a jejich expirace jsou uložené v PostgreSQL. Redis slouží limiteru
+přihlašování.
+
+## Relace v prohlížeči
+
+Auth store drží jeden uživatelský snapshot a verzi přihlášení. Verze odlišuje
+staré odpovědi i při opětovném přihlášení stejného účtu. Síťové operace jsou
+v `core/auth/api.ts` a řízení přechodů v `core/auth/session.ts`.
+
+Přihlášení, odhlášení a změna role ruší běžící dotazy, vymažou klientskou
+cache a obnoví serverové vykreslení. Výpadek sítě ponechá posledního ověřeného
+uživatele. Hromadné odhlášení zařízení určuje aktuální relaci ze serveru,
+ruší ji jako poslední a po částečném neúspěchu obnoví skutečný seznam.
 
 ## Provoz
 

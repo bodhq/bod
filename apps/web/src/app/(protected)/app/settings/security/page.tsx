@@ -5,7 +5,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Globe, Laptop, Monitor, Smartphone, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-import { parseApiError } from "@/core/api/api-errors";
+import { apiClient } from "@/core/api/client";
+import { apiData } from "@/core/api/result";
 import {
   useRevokeMultipleSessions,
   useRevokeSession,
@@ -39,11 +40,11 @@ export default function SecuritySettingsPage() {
       if (!/\S/.test(newPassword)) {
         throw new Error("Nové heslo musí obsahovat alespoň jeden znak, který není mezera.");
       }
-      const { data, error } = await changePasswordApiV1AuthChangePasswordPost({
+      const result = await changePasswordApiV1AuthChangePasswordPost({
+        client: apiClient,
         body: { current_password: currentPassword, new_password: newPassword },
       });
-      if (error) throw parseApiError(error);
-      return data;
+      return apiData(result);
     },
     onSuccess: (user) => {
       if (user) useAuthStore.getState().setUser(user);
@@ -67,7 +68,9 @@ export default function SecuritySettingsPage() {
         currentSessionId
           ? "Opravdu se chcete odhlásit z aktuálního zařízení? Budete přesměrováni na přihlašovací obrazovku."
           : "Aktuální zařízení nelze bezpečně rozpoznat. Opravdu chcete tuto relaci odhlásit? Pokud jde o aktuální zařízení, budete přesměrováni na přihlášení.",
-        () => revokeMutation.mutateAsync(sessionId),
+        async () => {
+          await revokeMutation.mutateAsync(sessionId);
+        },
         { variant: "error", confirmText: "Odhlásit" },
       );
     } else {
@@ -87,7 +90,9 @@ export default function SecuritySettingsPage() {
     const all = sessions.map((s) => s.id);
     toast.confirm(
       "Opravdu se chcete odhlásit ze všech zařízení včetně aktuálního? Budete odhlášeni a přesměrováni.",
-      () => revokeMultipleMutation.mutateAsync(all),
+      async () => {
+        await revokeMultipleMutation.mutateAsync(all);
+      },
       { variant: "error", confirmText: "Odhlásit vše" },
     );
   };

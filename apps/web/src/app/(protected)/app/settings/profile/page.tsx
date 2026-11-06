@@ -4,7 +4,6 @@ import type { ProfilePatch, UserPublic } from "@bod/api-client/types.gen";
 
 import {
   deleteMyAvatarApiV1UsersMeAvatarDelete,
-  switchRoleApiV1AuthActiveRolePut,
   updateProfileApiV1UsersMePatch,
   uploadMyAvatarApiV1UsersMeAvatarPut,
 } from "@bod/api-client/sdk.gen";
@@ -12,8 +11,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Camera, LoaderCircle, Trash2, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { parseApiError } from "@/core/api/api-errors";
-import { useAuthStore, useAuthUser } from "@/core/auth/store";
+import { apiClient } from "@/core/api/client";
+import { apiData, apiVoid } from "@/core/api/result";
+import { useSwitchRole } from "@/core/auth/hooks/useSwitchRole";
+import { hasSameAuthContext, useAuthStore, useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/Button";
 import { Input } from "@/core/ui/Input";
 import { toast } from "@/core/ui/toast";
@@ -51,11 +52,15 @@ export default function ProfileSettingsPage() {
 
   const syncUser = (next: Partial<UserPublic>) => {
     const current = useAuthStore.getState().user;
-    if (current) useAuthStore.getState().setUser({ ...current, ...next });
-    queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    if (current && current.id === user?.id && current.active_role === user?.active_role) {
+      const updated = { ...current, ...next };
+      if (!hasSameAuthContext(current, updated)) queryClient.clear();
+      useAuthStore.getState().setUser(updated);
+    }
   };
 
   const saveProfile = useMutation({
+    onMutate: () => useAuthStore.getState().sessionVersion,
     mutationFn: async () => {
       const body: ProfilePatch = {
         display_name: values.display_name?.trim() || null,
@@ -64,12 +69,11 @@ export default function ProfileSettingsPage() {
         email: values.email?.trim() || null,
         phone: values.phone?.trim() || null,
       };
-      const { data, error } = await updateProfileApiV1UsersMePatch({ body });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil aktualizovaný profil.");
-      return data;
+      const result = await updateProfileApiV1UsersMePatch({ client: apiClient, body });
+      return apiData(result);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, _variables, version) => {
+      if (version !== useAuthStore.getState().sessionVersion) return;
       syncUser(data);
       toast.success("Osobní údaje byly uloženy.");
     },
@@ -77,16 +81,17 @@ export default function ProfileSettingsPage() {
   });
 
   const uploadAvatar = useMutation({
+    onMutate: () => useAuthStore.getState().sessionVersion,
     mutationFn: async (file: File) => {
-      const { data, error } = await uploadMyAvatarApiV1UsersMeAvatarPut({
+      const result = await uploadMyAvatarApiV1UsersMeAvatarPut({
+        client: apiClient,
         body: file,
         headers: { "Content-Type": file.type },
       });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil aktualizovaný profil.");
-      return data;
+      return apiData(result);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, _variables, version) => {
+      if (version !== useAuthStore.getState().sessionVersion) return;
       setAvatarError(null);
       syncUser(data);
       toast.success("Profilová fotografie byla změněna.");
@@ -95,32 +100,20 @@ export default function ProfileSettingsPage() {
   });
 
   const deleteAvatar = useMutation({
+    onMutate: () => useAuthStore.getState().sessionVersion,
     mutationFn: async () => {
-      const { error } = await deleteMyAvatarApiV1UsersMeAvatarDelete();
-      if (error) throw parseApiError(error);
+      const result = await deleteMyAvatarApiV1UsersMeAvatarDelete({ client: apiClient });
+      apiVoid(result);
     },
-    onSuccess: () => {
+    onSuccess: (_data, _variables, version) => {
+      if (version !== useAuthStore.getState().sessionVersion) return;
       syncUser({ avatar_url: null });
       toast.success("Profilová fotografie byla odebrána.");
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const switchRole = useMutation({
-    mutationFn: async (roleCode: string) => {
-      const { data, error } = await switchRoleApiV1AuthActiveRolePut({
-        body: { role_code: roleCode },
-      });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil změněnou roli.");
-      return data;
-    },
-    onSuccess: (data) => {
-      syncUser(data);
-      toast.success("Aktivní role byla změněna.");
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  const switchRole = useSwitchRole();
 
   const setField = (field: keyof ProfileValues, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -254,7 +247,16 @@ export default function ProfileSettingsPage() {
               <Button
                 key={role}
                 variant={user.active_role === role ? "default" : "outline"}
-                onClick={() => switchRole.mutate(role)}
+                onClick={() => {
+                  if (role === user.active_role) return;
+                  toast.confirm(
+                    "Změnit aktivní roli? Rozpracované údaje se neuloží.",
+                    async () => {
+                      await switchRole.mutateAsync(role);
+                    },
+                    { confirmText: "Změnit roli" },
+                  );
+                }}
                 disabled={switchRole.isPending}
               >
                 {roleLabels[role] ?? role}

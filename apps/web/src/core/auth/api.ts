@@ -1,92 +1,51 @@
 import type { AuthSessionPublic, UserPublic } from "@bod/api-client/types.gen";
+import type { ApiRequestOptions } from "@/core/api/client";
 
-import { client } from "@bod/api-client/client.gen";
 import {
   getSessionsApiV1AuthSessionsGet,
   loginApiV1AuthLoginPost,
   logoutApiV1AuthLogoutPost,
   meApiV1AuthMeGet,
   revokeSessionApiV1AuthSessionsSessionIdDelete,
+  switchRoleApiV1AuthActiveRolePut,
 } from "@bod/api-client/sdk.gen";
 
-import { parseApiError } from "@/core/api/api-errors";
+import { apiClient } from "@/core/api/client";
+import { apiData, apiVoid } from "@/core/api/result";
 
-interface ApiRequestOptions {
-  baseUrl?: string;
-  headers?: HeadersInit;
-}
-
-// Globally configure the API client
-client.setConfig({
-  // Requests stay same-origin in the browser: Next rewrites them in development and Caddy routes them in production.
-  baseUrl: "",
-  // Ensure cookies are included in cross-origin requests
-  fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-    const request = input instanceof Request ? input : undefined;
-    const headers = new Headers(init?.headers ?? request?.headers);
-    const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
-      headers.set("X-Requested-With", "bod");
-    }
-    return fetch(input, {
-      ...init,
-      headers,
-      credentials: "include",
-      cache: "no-store",
-    });
-  },
-});
-
-// Exportujeme alias pro zbytek aplikace (aby store nevyžadoval změny po vygenerování klienta)
 export type User = UserPublic;
 
 export async function login(username: string, password: string): Promise<UserPublic> {
-  const { data: userData, error } = await loginApiV1AuthLoginPost({
-    body: { username, password },
-  });
-
-  if (error) {
-    throw parseApiError(error);
-  }
-
-  if (!userData) {
-    throw new Error("Neočekávaná odpověď serveru");
-  }
-
-  return userData;
+  return apiData(
+    await loginApiV1AuthLoginPost({ client: apiClient, body: { username, password } }),
+  );
 }
 
 export async function getMe(options?: ApiRequestOptions): Promise<UserPublic> {
-  const { data, error } = await meApiV1AuthMeGet(options);
-  if (error) throw parseApiError(error);
-  if (!data) throw new Error("Server nevrátil přihlášeného uživatele.");
-  return data;
+  return apiData(await meApiV1AuthMeGet({ ...options, client: apiClient }));
 }
 
 export async function logout(): Promise<void> {
-  const { error } = await logoutApiV1AuthLogoutPost();
-  if (error) throw parseApiError(error);
+  apiVoid(await logoutApiV1AuthLogoutPost({ client: apiClient }));
 }
 
 export type AuthSession = AuthSessionPublic;
 
 export async function getSessions(options?: ApiRequestOptions): Promise<AuthSession[]> {
-  const result = await getSessionsApiV1AuthSessionsGet(options);
-  const { data, error } = result;
-  if (error) {
-    const apiError = parseApiError(error);
-    Object.assign(apiError, { status: result.response?.status });
-    throw apiError;
-  }
-  if (!data) throw new Error("Server nevrátil seznam aktivních relací.");
-  return data;
+  return apiData(await getSessionsApiV1AuthSessionsGet({ ...options, client: apiClient }));
 }
 
 export async function revokeSession(sessionId: string): Promise<void> {
-  const { error } = await revokeSessionApiV1AuthSessionsSessionIdDelete({
-    path: { session_id: sessionId },
-  });
-  if (error) {
-    throw parseApiError(error);
-  }
+  apiVoid(
+    await revokeSessionApiV1AuthSessionsSessionIdDelete({
+      client: apiClient,
+      path: { session_id: sessionId },
+    }),
+  );
+}
+
+export async function switchRole(roleCode: string): Promise<UserPublic> {
+  return apiData(
+    await switchRoleApiV1AuthActiveRolePut({ client: apiClient, body: { role_code: roleCode } }),
+  );
 }

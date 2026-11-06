@@ -1,13 +1,6 @@
 "use client";
 
-import type {
-  AuditEventRead,
-  IssuedAccount,
-  PermissionRead,
-  RoleRead,
-  UserPatch,
-  UserRead,
-} from "@bod/api-client/types.gen";
+import type { IssuedAccount, RoleRead, UserPatch, UserRead } from "@bod/api-client/types.gen";
 
 import {
   auditApiV1AdminAuditGet,
@@ -26,7 +19,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { parseApiError } from "@/core/api/api-errors";
+import { apiClient } from "@/core/api/client";
+import { apiData, apiVoid } from "@/core/api/result";
 import { useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/Button";
 import { Input } from "@/core/ui/Input";
@@ -35,12 +29,6 @@ import { toast } from "@/core/ui/toast";
 import { SettingsPageHeading } from "../components/SettingsPageHeading";
 
 type Section = "accounts" | "roles" | "audit";
-
-async function readData<T>(request: Promise<{ data?: T; error?: unknown }>) {
-  const { data, error } = await request;
-  if (error) throw parseApiError(error);
-  return data ?? ([] as T);
-}
 
 export default function AccessSettingsPage() {
   const user = useAuthUser();
@@ -73,22 +61,22 @@ export default function AccessSettingsPage() {
 
   const accountsQuery = useQuery({
     queryKey: ["access", "users"],
-    queryFn: () => readData<UserRead[]>(usersApiV1AdminUsersGet()),
+    queryFn: async () => apiData(await usersApiV1AdminUsersGet({ client: apiClient })),
     enabled: canManageUsers && activeSection === "accounts",
   });
   const rolesQuery = useQuery({
     queryKey: ["access", "roles"],
-    queryFn: () => readData<RoleRead[]>(rolesApiV1AdminRolesGet()),
+    queryFn: async () => apiData(await rolesApiV1AdminRolesGet({ client: apiClient })),
     enabled: canManageRoles && (activeSection === "roles" || activeSection === "accounts"),
   });
   const permissionsQuery = useQuery({
     queryKey: ["access", "permissions"],
-    queryFn: () => readData<PermissionRead[]>(permissionsApiV1AdminPermissionsGet()),
+    queryFn: async () => apiData(await permissionsApiV1AdminPermissionsGet({ client: apiClient })),
     enabled: canManageRoles && activeSection === "roles",
   });
   const auditQuery = useQuery({
     queryKey: ["access", "audit"],
-    queryFn: () => readData<AuditEventRead[]>(auditApiV1AdminAuditGet()),
+    queryFn: async () => apiData(await auditApiV1AdminAuditGet({ client: apiClient })),
     enabled: canReadAudit && activeSection === "audit",
   });
 
@@ -97,12 +85,11 @@ export default function AccessSettingsPage() {
   };
   const createAccount = useMutation({
     mutationFn: async () => {
-      const { data, error } = await createUserApiV1AdminUsersPost({
+      const result = await createUserApiV1AdminUsersPost({
+        client: apiClient,
         body: { username: username.trim(), role_codes: selectedRole ? [selectedRole] : [] },
       });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil vytvořený účet.");
-      return data;
+      return apiData(result);
     },
     onSuccess: async ({ temporary_password }) => {
       setTemporaryPassword(temporary_password);
@@ -121,7 +108,8 @@ export default function AccessSettingsPage() {
       if (usernames.length < 1 || usernames.length > 100) {
         throw new Error("Zadejte 1 až 100 uživatelských jmen.");
       }
-      const { data, error } = await generateUsersApiV1AdminUsersGeneratePost({
+      const result = await generateUsersApiV1AdminUsersGeneratePost({
+        client: apiClient,
         body: {
           users: usernames.map((name) => ({
             username: name,
@@ -129,9 +117,7 @@ export default function AccessSettingsPage() {
           })),
         },
       });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil vytvořené účty.");
-      return data;
+      return apiData(result);
     },
     onSuccess: async (accounts) => {
       setBatchIssuedAccounts(accounts);
@@ -143,21 +129,23 @@ export default function AccessSettingsPage() {
   });
   const updateAccount = useMutation({
     mutationFn: async ({ account, patch }: { account: UserRead; patch: UserPatch }) => {
-      const { error } = await updateUserApiV1AdminUsersUserIdPatch({
+      const result = await updateUserApiV1AdminUsersUserIdPatch({
+        client: apiClient,
         path: { user_id: account.id },
         body: patch,
       });
-      if (error) throw parseApiError(error);
+      apiVoid(result);
     },
     onSuccess: () => refresh(["access", "users"]),
     onError: (error: Error) => toast.error(error.message),
   });
   const deleteAccount = useMutation({
     mutationFn: async (account: UserRead) => {
-      const { error } = await deleteUserApiV1AdminUsersUserIdDelete({
+      const result = await deleteUserApiV1AdminUsersUserIdDelete({
+        client: apiClient,
         path: { user_id: account.id },
       });
-      if (error) throw parseApiError(error);
+      apiVoid(result);
     },
     onSuccess: async () => {
       await refresh(["access", "users"]);
@@ -167,12 +155,11 @@ export default function AccessSettingsPage() {
   });
   const resetPassword = useMutation({
     mutationFn: async (account: UserRead) => {
-      const { data, error } = await resetPasswordApiV1AdminUsersUserIdResetPasswordPost({
+      const result = await resetPasswordApiV1AdminUsersUserIdResetPasswordPost({
+        client: apiClient,
         path: { user_id: account.id },
       });
-      if (error) throw parseApiError(error);
-      if (!data) throw new Error("Server nevrátil nové heslo.");
-      return data;
+      return apiData(result);
     },
     onSuccess: ({ temporary_password }) => setTemporaryPassword(temporary_password),
     onError: (error: Error) => toast.error(error.message),
@@ -180,7 +167,8 @@ export default function AccessSettingsPage() {
   const saveRole = useMutation({
     mutationFn: async () => {
       if (editingRole) {
-        const { error } = await updateRoleApiV1AdminRolesCodePut({
+        const result = await updateRoleApiV1AdminRolesCodePut({
+          client: apiClient,
           path: { code: editingRole },
           body: {
             name: roleName.trim(),
@@ -188,9 +176,10 @@ export default function AccessSettingsPage() {
             permission_codes: rolePermissions,
           },
         });
-        if (error) throw parseApiError(error);
+        apiVoid(result);
       } else {
-        const { error } = await createRoleApiV1AdminRolesPost({
+        const result = await createRoleApiV1AdminRolesPost({
+          client: apiClient,
           body: {
             code: roleCode.trim(),
             name: roleName.trim(),
@@ -198,7 +187,7 @@ export default function AccessSettingsPage() {
             permission_codes: rolePermissions,
           },
         });
-        if (error) throw parseApiError(error);
+        apiVoid(result);
       }
     },
     onSuccess: async () => {
@@ -214,8 +203,11 @@ export default function AccessSettingsPage() {
   });
   const deleteRole = useMutation({
     mutationFn: async (role: RoleRead) => {
-      const { error } = await deleteRoleApiV1AdminRolesCodeDelete({ path: { code: role.code } });
-      if (error) throw parseApiError(error);
+      const result = await deleteRoleApiV1AdminRolesCodeDelete({
+        client: apiClient,
+        path: { code: role.code },
+      });
+      apiVoid(result);
     },
     onSuccess: async () => {
       await refresh(["access", "roles"], ["access", "users"]);
