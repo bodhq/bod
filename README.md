@@ -1,6 +1,5 @@
 <div align="center">
-  <a href="./apps/web/public/logo-white.svg#gh-dark-mode-only"><img alt="bod logo" src="./apps/web/public/logo-white.svg" width="200"></a>
-  <a href="./apps/web/public/logo-black.svg#gh-light-mode-only"><img alt="bod logo" src="./apps/web/public/logo-black.svg" width="200"></a>
+  <img alt="bod logo" src="./docs/assets/logo.svg" width="200">
   <p><strong>Modulární informační systém pro moderní výukové instituce</strong></p>
   
   [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](#)
@@ -35,7 +34,7 @@
 
 **Vedení projektu:**
 - **Vedoucí práce:** @haut
-- **Oponent práce:** @svitek2
+- **Oponent práce:** @svitek1
 - **Konzultant práce:** @olsavska
 
 ---
