@@ -63,3 +63,9 @@ playwright/.cache/
 # Next.js generated agent instructions
 /apps/web/AGENTS.md
 /apps/web/CLAUDE.md
+
+# Local assistant review notes; not project documentation
+/.local-notes/
+/docs/*-audit-*.md
+/docs/reviews/*audit*.md
+/docs/reviews/change-report-*

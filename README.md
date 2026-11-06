@@ -1,3 +1,7 @@
+<div align="center">
+  <img alt="bod logo" src="./docs/assets/logo.svg" width="200">
+</div>
+
 # bod
 
 Modulární školní informační systém vznikající jako středoškolský maturitní projekt.
@@ -26,4 +30,4 @@ Backend používá FastAPI a PostgreSQL, frontend Next.js a React.
 
 Backend a databáze: Filip Nagy. Frontend, UI, infrastruktura a CI: Eliáš Jan
 Procházka. Analýza a architektura jsou společné.
-Vedoucí práce: @haut. Oponent: @svitek1.
+Vedoucí práce: @haut. Oponent: @svitek1. Konzultant: @olsavska.
