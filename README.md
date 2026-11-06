@@ -1,9 +1,6 @@
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./apps/web/public/logo-white.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./apps/web/public/logo-black.svg">
-    <img alt="bod logo" src="./apps/web/public/logo-white.svg" width="200">
-  </picture>
+  <a href="./apps/web/public/logo-white.svg#gh-dark-mode-only"><img alt="bod logo" src="./apps/web/public/logo-white.svg" width="200"></a>
+  <a href="./apps/web/public/logo-black.svg#gh-light-mode-only"><img alt="bod logo" src="./apps/web/public/logo-black.svg" width="200"></a>
   <p><strong>Modulární informační systém pro moderní výukové instituce</strong></p>
   
   [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](#)
@@ -38,7 +35,8 @@
 
 **Vedení projektu:**
 - **Vedoucí práce:** @haut
-- **Oponent práce:** *(zatím neznámý)*
+- **Oponent práce:** @svitek2
+- **Konzultant práce:** @olsavska
 
 ---
 
@@ -69,6 +67,11 @@ Projekt je postaven jako asymetrická fullstack aplikace (oddělený klient a se
 ---
 
 ## Klíčová dokumentace
+
+Aktuální maturitní zadání:
+
+- **Eliáš Jan Procházka:** [PDF](docs/project/assignments/prochazkaelias23-zadani.pdf), [DOCX](docs/project/assignments/prochazkaelias23-zadani.docx).
+- **Filip Nagy:** [PDF](docs/project/assignments/nagyfilip23-zadani.pdf), [DOCX](docs/project/assignments/nagyfilip23-zadani.docx).
 
 Díky přísným konvencím a silné architektuře je dokumentace udržována v minimalistické, ale vysoce deskriptivní podobě. Vše je koncentrováno na třech hlavních místech:
 
