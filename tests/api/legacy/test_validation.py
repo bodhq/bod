@@ -290,7 +290,7 @@ def test_lesson_dto_rejects_invalid_times_ids_and_types():
 
 def test_exported_contract_matches_live_api_and_documents_upload_limits():
     live = app.openapi()
-    exported = json.loads((Path(__file__).parents[2] / "apps/api/schema/openapi.json").read_text())
+    exported = json.loads((Path(__file__).parents[3] / "apps/api/schema/openapi.json").read_text())
     assert exported == live, "Obnov apps/api/schema/openapi.json pomocí python -m server.openapi."
     for schema in live["components"]["schemas"].values():
         Draft202012Validator.check_schema(schema)

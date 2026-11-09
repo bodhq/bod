@@ -16,8 +16,8 @@ Turborepo spouští kontroly a build. Verze prostředí určuje
 | `packages/api-client` | Generované TypeScript typy a SDK |
 | `packages/config-typescript` | Sdílená konfigurace TypeScriptu |
 | `tests` | Testy API, webu, prohlížeče a nasazení |
-| `infra` | Služby, instalátor a metadata vydání |
-| `scripts` | Kontrola závislostí a sestavení distribučního balíčku |
+| `deploy` | Compose a správa školní instalace |
+| `scripts` | Společné příkazy CI a vydávání |
 | `.github` | CI, vydávání a pravidla spolupráce |
 
 ## Frontend
@@ -88,9 +88,23 @@ neúspěchu načte skutečný seznam zbývajících relací.
 
 ## Backend a provoz
 
-Backendové moduly sdílejí infrastrukturu z `core`. Doménový model,
-endpointy a migrace popisuje [README API](../apps/api/README.md).
+Doménový model, endpointy a migrace popisuje [README API](../apps/api/README.md).
+Produkční konfigurace je v [`deploy/compose.yml`](../deploy/compose.yml).
+Používá hotové obrazy; vývojové databáze mají samostatný
+[`compose.dev.yml`](../deploy/compose.dev.yml). Provozní příkazy jsou
+v [`deploy/bod.py`](../deploy/bod.py), kontroly pro oba CI providery
+v [`scripts/ci`](../scripts/ci). Postup popisuje [nasazení](deployment.md).
 
-Školní server používá hotový balíček s Caddy, webem, API, PostgreSQL a Redisem.
-Databáze, Redis a samostatné API zůstávají v interní síti. Trvalá data,
-aktualizace a obnovu popisuje [nasazení](deployment.md).
+## Moduly
+
+Samostatné složky zatím neznamenají samostatně instalovatelné moduly.
+API router i databázová infrastruktura importují všechny školní moduly.
+Mezi školou, rozvrhem a třídnicí existují vzájemné importy a vazby tabulek.
+Současné vydání proto obsahuje všechny moduly; konfigurace výběru se
+nenabízí, dokud ji backend a sestavení skutečně nepodporují.
+
+Pro výběrovou instalaci musí backend oddělit registraci routerů, modelů
+a migrací od společného jádra. Závislosti modulů musejí být výslovné a bez
+cyklů. Volitelné integrace nesmějí vyžadovat přítomnost druhého modulu.
+Frontend i distribuční obrazy pak musejí obsahovat jen vybranou sestavu.
+Skrytí navigace tuto vlastnost nezajišťuje.

@@ -74,7 +74,7 @@ Vedoucí: @haut. Oponent: @svitek1. Konzultant: @olsavska.
 - [Pravidla spolupráce](CONTRIBUTING.md) a [sprint reviews](docs/project/sprint-reviews/README.md).
 
 Školní instalace používá hotové obrazy. Požadavky a naměřenou spotřebu
-popisuje [nasazení](docs/deployment.md#naměřená-spotřeba).
+popisuje [nasazení](docs/deployment.md#příprava).
 
 | Maturitní zadání | PDF | DOCX |
 | --- | --- | --- |

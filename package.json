@@ -13,17 +13,15 @@
     "format": "biome format --write .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm deps:check && pnpm infra:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "db:dev": "docker compose -f infra/docker-compose.dev.yml up -d",
+    "check": "pnpm deploy:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "db:dev": "docker compose -f deploy/compose.dev.yml up -d",
     "db:seed": "cd apps/api && pnpm db:seed",
     "api:dev": "pnpm --filter @bod/api dev",
     "api:openapi": "pnpm --filter @bod/api openapi",
     "gen:api": "pnpm api:openapi && pnpm gen:client",
     "web:dev": "pnpm --filter @bod/web dev",
     "gen:client": "openapi-ts",
-    "deps:check": "node scripts/check-dependencies.mjs",
-    "infra:check": "uv run ruff check infra/deploy scripts/package_release.py tests/infra && uv run ruff format --check infra/deploy scripts/package_release.py tests/infra && uv run python -m unittest discover -s tests/infra -p \"test_*.py\" -v",
-    "release:package": "uv run python scripts/package_release.py"
+    "deploy:check": "uv run ruff check deploy tests/deploy && uv run ruff format --check deploy tests/deploy && uv run python -m unittest discover -s tests/deploy -v"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",

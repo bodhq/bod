@@ -1,201 +1,92 @@
-# Instalace a správa školního serveru
+# Nasazení na školní server
 
-Každá škola má vlastní Linux VM, databázi a média. Podporované výchozí
-prostředí je Ubuntu Server 24.04, Docker Engine, Docker Compose alespoň
-2.24.4 a systémový Python 3.12. Aplikační závislosti jsou uvnitř obrazů;
-na školním serveru se nepoužívá pnpm, uv ani sestavení zdrojového kódu.
+Škola provozuje vlastní Linux server, databázi a média. Potřebuje Docker
+Engine s Compose, Python 3.12 a internet pro stažení hotových obrazů.
+Na serveru se aplikace nesestavuje. Offline distribuce zatím není podporovaná.
 
-## Příprava školy
+## Příprava
 
-IT správce připraví VM a doménu, například `bod.skola.cz`. Výchozí rozpočet
-pro pilot je 2 vCPU, 4 GiB RAM, 30 GB SSD a místo na školní data a zálohy.
-Instalátor ověřuje alespoň 3 GiB volného místa na instalačním i Docker
-souborovém systému. Před instalací nebo aktualizací ponech alespoň 10 GiB volných
-a další místo podle velikosti školních dat.
-Pro trvalou zátěž podobnou níže uvedenému testu plánuj rezervu CPU.
+Pro pilot počítej s 2 vCPU, 4 GiB RAM, 30 GB SSD a dalším místem na data
+a zálohy. Jde o výchozí odhad, ne ověřenou kapacitu celé školy.
+Výchozí systém je Ubuntu Server 24.04. Před změnou instalace nástroj ověřuje
+alespoň 3 GiB volných na instalačním disku; další místo potřebuje i úložiště Dockeru.
 
-Vyber jeden způsob přístupu:
+| Režim HTTPS | Nastavení |
+| --- | --- |
+| Přímé HTTPS | Doména míří na server, porty 80/443 obsluhuje Caddy |
+| Školní proxy | Školní HTTPS proxy předává celou doménu na `127.0.0.1:8080` |
 
-- **Přímé HTTPS (`direct`):** Caddy v balíčku obsluhuje HTTPS. Doména musí
-  směrovat na server; veřejný certifikát vyžaduje síťové podmínky ACME.
-  Výchozí porty jsou 80 a 443.
-- **Školní proxy (`proxy`):** HTTPS zajišťuje existující školní proxy. Balíček
-  zpřístupní HTTP na `127.0.0.1:8080`; školní proxy na něj přeposílá celou doménu včetně
-  `/api/`. Veřejná adresa nadále používá HTTPS. Certifikáty a konfiguraci
-  této vnější proxy spravuje a zálohuje školní IT.
+Databáze, Redis a samostatné API nemají veřejné porty. Aplikace používá
+vlastní kořen domény; instalace do podcesty není podporovaná.
 
-Doména má vlastní kořen webu, například `https://bod.skola.cz/`.
-Postup nepočítá s instalací do podcesty jiného webu.
-Databáze, Redis a samostatné API nemají veřejné porty.
+## Instalace
 
-## První instalace
-
-Od vydavatele převezmi balíček odpovídající platformě VM a soubor `.sha256`.
-Například pro AMD64 vydání 0.1.0:
+Z publikovaného vydání převezmi malý archiv konfigurace a jeho `.sha256`.
+Obsahuje Compose, Caddyfile, `bod.py` a odkazy na obrazy v `images.env`.
 
 ```sh
-sha256sum -c bod-0.1.0-linux-amd64.sha256
-mkdir bod-installer
-tar -xzf bod-0.1.0-linux-amd64.tar.gz -C bod-installer
-cd bod-installer
-sudo ./bod install
+sha256sum -c bod-v0.1.0.sha256
+tar -xzf bod-v0.1.0.tar.gz
+cd deploy
+python3 bod.py install --domain bod.skola.cz
 ```
 
-Průvodce se ptá na doménu, režim HTTPS, jméno prvního správce a adresář záloh.
-Interní databázové heslo a navazující adresy vytvoří sám. Po spuštění ověří
-služby a HTTPS, vypíše dočasné heslo správce a přidá příkaz `bod`.
-Při prvním přihlášení je nutná změna hesla. Potom vytvoř první úplnou zálohu:
+Za školní HTTPS proxy přidej `--proxy`. Příkaz vytvoří náhodné databázové
+heslo v `config.env`, stáhne obrazy, spustí služby a vypíše dočasné heslo
+správce. Při prvním přihlášení jej změň. Opakovaná instalace zachová konfiguraci.
 
-```sh
-sudo bod status
-sudo bod doctor
-sudo bod backup
-```
+Instalační adresář obsahuje citlivé údaje. Uchovej ho na trvalém disku
+s přístupem jen pro školního správce. Příkazy spouští účet s přístupem k Dockeru.
 
-Instalace je v `/opt/bod`. Konfigurace a zálohy obsahují citlivé údaje;
-mají omezená oprávnění. Opakování `install` existující konfiguraci a hesla
-nepřepisuje. `--root` dovoluje zvolit jiný samostatný instalační adresář.
+## Správa
 
-Balíček obsahuje všech pět hotových obrazů včetně PostgreSQL, Redisu a Caddy.
-Instalace nevyžaduje přihlášení do registru ani přístup ke zdrojovému repozitáři.
-Automatické veřejné HTTPS potřebuje spojení s certifikační autoritou;
-v uzavřené síti použij školní proxy a certifikát důvěryhodný pro klienty.
-
-## Běžná správa
+Příkazy spouštěj v instalačním adresáři:
 
 | Příkaz | Výsledek |
 | --- | --- |
-| `sudo bod status` | Verze, stav služeb, adresář a poslední úspěšná záloha |
-| `sudo bod doctor` | Kontrola prostředí, dostupnosti webu a databáze přes HTTPS |
-| `sudo bod start` | Opakované spuštění právě zvolené verze |
-| `sudo bod backup` | Úplná konzistentní záloha s krátkou odstávkou aplikace |
-| `sudo bod update --bundle /cesta/bod-verze-platforma.tar.gz` | Řízená aktualizace |
-| `sudo bod restore /cesta/zaloha.tar.gz` | Obnova do nových datových volumes |
+| `python3 bod.py status` | Stav služeb |
+| `python3 bod.py backup /mnt/skolni-nas/bod/zaloha-2026-11-09` | Záloha do nové prázdné složky |
+| `python3 bod.py update /cesta/nove-images.env` | Stažení obrazů, záloha a aktualizace |
+| `python3 bod.py restore /cesta/zaloha` | Obnova do nového Docker projektu |
 
-Systémový timer `bod-backup.timer` spouští zálohu denně od 02:30 v časové zóně
-Europe/Prague, s náhodným odkladem do 20 minut. Výsledek úlohy je v systemd:
+Záloha obsahuje databázi, média, konfiguraci a odkazy na aplikační obrazy.
+Aplikační služby jsou během vytváření krátce zastavené; po chybě se znovu
+spustí dříve běžící služby. Dokončenou zálohu označuje `.complete`.
 
-```sh
-sudo systemctl status bod-backup.timer bod-backup.service
-sudo journalctl -u bod-backup.service
-```
+Zálohy nejsou šifrované. Ukládej je na chráněné úložiště mimo server.
+Plánování a retenci nastav ve školním zálohování nebo cronu; nástroj
+neinstaluje vlastní systemd služby. Uchovej i instalační archiv a zajisti,
+že obrazy ze zálohy zůstávají dostupné v registru.
 
-Kontroluj i stáří poslední úspěšné zálohy. OS a Docker aktualizuje školní IT;
-`bod update` spravuje vydání aplikace.
+## Aktualizace a obnova
 
-## Zálohy
+Nový `images.env` vezmi z ověřeného vydání. Stávající soubor před spuštěním
+`update` nepřepisuj. Aktualizace nejprve stáhne obrazy a vytvoří zálohu.
+Příkaz mění aplikační obrazy; změny Compose nebo správy instalace se řídí
+návodem konkrétního vydání. Migrace provádí backend při startu. Při neúspěchu zůstávají zvolené nové
+obrazy; po změně databáze se starý obraz automaticky nespouští.
 
-Záloha zahrnuje databázi, školní média, data a konfiguraci našeho Caddy,
-nastavení instalace a identifikaci vydání. Výchozí retence je posledních
-7 úplných záloh této instalace. Během kopírování jsou aplikační služby zastavené,
-aby soubory a databáze odpovídaly jednomu stavu. Při chybě zálohy se nástroj
-pokusí původně běžící služby znovu spustit.
+Obnova načte databázi a média do nového projektu. Původní služby zastaví
+až při přepnutí. Při jeho chybě znovu spustí původní služby; původní volumes
+nemaže. Po úspěchu zůstávají stará data na disku, dokud je správce po
+ověření obnovy výslovně neodstraní.
 
-Výchozí `/opt/bod/backups` je lokální kopie. Pro obnovu po ztrátě VM je nutná
-kopie mimo server, například na NAS zvolený při instalaci. Dostupnost
-síťového úložiště zajišťuje školní IT. Archiv není sám šifrovaný; úložiště
-musí chránit školní data i databázové přihlašovací údaje, které záloha obsahuje.
+Na čistém serveru rozbal stejný instalační archiv a spusť `restore` nad
+kopií zálohy. Certifikáty Caddy se vytvoří znovu. Doménu přesměruje školní IT.
+Převod staršího offline instalátoru není automatický. Hlavní verzi
+PostgreSQL tento postup neaktualizuje.
 
-Hotové obrazy nejsou součástí každé zálohy. Uchovej i původní instalační
-balíček pro verzi uvedenou v záloze; na prázdném serveru je potřebný pro obnovu.
+## Vydávání
 
-## Aktualizace
+Číslo vydání určuje Git tag, například `v0.1.0`. Sdílený `scripts/ci`
+sestaví a otestuje obrazy; GitHub z téhož testovaného sestavení publikuje
+obrazy a připraví draft vydání. Archiv obsahuje odkazy podle digestu.
+Testovací zálohy ani přihlašovací údaje se nepublikují.
 
-Převezmi novou verzi a ověř její checksum. Potom:
+Před prvním veřejným vydáním nastav balíčkům `bod/api` a `bod/web` v GHCR
+veřejnou viditelnost. Vydávací skript ověřuje anonymní dostupnost obrazů.
+Veřejnost Git repozitáře nestačí. Draft zkontroluje a zveřejní vydavatel.
 
-```sh
-sudo bod update --bundle /cesta/bod-0.2.0-linux-amd64.tar.gz
-```
-
-Číslo je příklad budoucí verze. Instalátor nejprve ověří obsah, platformu,
-povolenou předchozí verzi a shodu hlavní verze PostgreSQL. Načte obrazy,
-vytvoří úplnou zálohu, přepne vydání a spustí služby. Stávající backend
-provede své migrace při startu. Nakonec se ověří dostupnost.
-
-Po změně databáze se nástroj automaticky nevrací ke starému obrazu. Při chybě
-zůstává zvolená nová verze a cesta k předaktualizační záloze; správce může
-odstranit provozní příčinu a použít `bod start`, nebo provést výslovnou obnovu.
-Hlavní verze PostgreSQL se tímto postupem nemění.
-
-Aktualizace používá výslovně předaný lokální balíček; nástroj sám nevybírá
-vzdálené vydání ani nevyžaduje přístup do soukromého GitHub repozitáře.
-`--yes` slouží automatizaci již schválené aktualizace nebo obnovy.
-
-## Obnova
-
-Na existujícím serveru:
-
-```sh
-sudo bod restore /cesta/bod-backup-identita-cas.tar.gz
-```
-
-Obnova vytvoří jiný Docker projekt a nové volumes. Původní data zůstávají
-zachovaná; po neúspěchu kandidáta se nástroj pokusí obnovit původní provoz.
-Zálohu jiné instalace lze obnovit jen do prázdného instalačního adresáře.
-Po úspěšné obnově staré volumes zabírají místo dál. Odstraň je až po ověření
-obnovy a dostupnosti nezávislé zálohy; jejich identifikace je v metadatech instalace.
-
-Na novém serveru s Dockerem a rozbaleným odpovídajícím instalačním balíčkem:
-
-```sh
-sudo ./bod restore /cesta/zaloha.tar.gz \
-  --bundle /cesta/bod-0.1.0-linux-amd64.tar.gz \
-  --backup-dir /mnt/skolni-nas/bod
-```
-
-Verze balíčku musí přesně odpovídat záloze. Účty a jejich hesla se obnoví
-z databáze; bootstrap správce se znovu neprovádí. IT správce nasměruje původní
-doménu na nový server. Ruční instalace vytvořené pouze původním Compose
-nemají metadata tohoto formátu a vyžadují samostatný převod.
-
-## Vydávání a ověření pro vývojáře
-
-Metadata vydání jsou v `infra/release.json`; `upgrade_from` obsahuje pouze
-skutečně ověřené předchozí verze. Balíček se generuje z
-`infra/docker-compose.yml`, takže nemá druhou ručně udržovanou konfiguraci.
-Zdrojový Compose i distribuce mají stejných pět služeb. Úplnou zálohu
-spravuje příkaz `bod` a systemd timer; samostatný SQL zálohovací kontejner
-se nepoužívá.
-
-```sh
-pnpm release:package --output /tmp/bod-dist \
-  --api-image bod-ci-production-api --web-image bod-ci-production-web
-```
-
-Obrazy musí být předem sestavené a dostupné v lokálním Dockeru. Balíček
-obsahuje jejich přesný obsah a kontrolní součty souborů. Při instalaci se
-vždy načítá ověřený archiv, nepoužívá se vzdálený `latest` ani build na škole.
-
-Tag `v0.1.0` musí odpovídat verzi v metadatech. Workflow School release nejprve
-spustí celé CI, instalaci, aktualizaci a obnovu na dvou čistých Linux VM.
-Potom připraví **draft release** s balíčkem a checksumem. Vydavatel jej
-zkontroluje a publikuje. Testovací zálohy ani přihlašovací údaje se do
-release nepřenášejí. Postup testů a jejich limity jsou v [testovacím návodu](testing.md).
-
-## Naměřená spotřeba
-
-Distribuční balíček s pěti službami byl 4. 11. 2026 otestovaný na Ubuntu
-24.04 ARM64 VM se 2 vCPU a 3 GiB RAM. Instalace, HTTPS, školní proxy,
-systemd zálohy, aktualizace, obnova dat i restart serveru prošly. Následná
-obnova zálohy na druhé čisté VM zachovala účty, přihlášení i binární média.
-Komprimovaný offline balíček měl přibližně 326 MiB.
-
-Měření běželo 45 s nad 201 účty s 20 souběžnými přihlášenými HTTP relacemi.
-Mix obsahoval `auth/me`, seznam 50 účtů a autentizované SSR `/app`.
-
-| Metrika | Výsledek |
-| --- | --- |
-| Požadavky | 10 515 bez chyby, přibližně 233/s |
-| Latence P95 | 139 ms |
-| RAM kontejnerů v klidu | Medián 391 MiB |
-| RAM kontejnerů při zátěži | Vzorkované maximum 518 MiB |
-| CPU kontejnerů při zátěži | Průměr 154 %, maximum 164 %; 100 % je jedno jádro |
-
-Zátěž běžela přímo ve VM. Přes QEMU port forwarding se objevily TCP resety;
-výsledek proto nepopisuje veřejnou síť. RAM nezahrnuje OS ani veškerou
-souborovou cache. Generátor běžel na téže VM a soutěžil s aplikací o CPU;
-jeho spotřeba není v součtu kontejnerů.
-
-Uvedený rozpočet je výchozí odhad pro pilot. Test neobsahoval skládání
-velkých rozvrhů, složité skupiny ani velká média a neurčuje kapacitu celé
-školy. Pro školní špičky a reálné scénáře je potřeba vlastní měření.
+Ověření a podmínky GitLab runneru popisuje [testování](testing.md).
+Výběrová instalace modulů zatím není podporovaná; stav uvádí
+[architektura](architecture.md#moduly).

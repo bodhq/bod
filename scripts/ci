@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Shared entry points for local runs, GitHub Actions and GitLab CI.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+pnpm() { corepack pnpm "$@"; }
+export DATABASE_URL=sqlite:// DEBUG=false
+
+case "${1:-check}" in
+  install)
+    pnpm install --frozen-lockfile
+    uv sync --all-packages --all-groups --frozen
+    ;;
+  check)
+    pnpm api:openapi
+    git diff --exit-code -- apps/api/schema/openapi.json
+    pnpm gen:client
+    pnpm --filter @bod/e2e exec playwright install --with-deps chromium
+    pnpm audit --audit-level=high
+    pnpm check
+    ;;
+  integration)
+    if [[ -z "${TEST_POSTGRES_URL:-}" && -z "${TEST_REDIS_URL:-}" ]]; then
+      project="bod-integration-$$-$RANDOM"
+      export POSTGRES_PORT=0 REDIS_PORT=0
+      compose=(docker compose -p "$project" -f deploy/compose.dev.yml)
+      trap '"${compose[@]}" down --volumes --remove-orphans' EXIT
+      "${compose[@]}" up -d --wait
+      postgres_port=$("${compose[@]}" port db 5432)
+      redis_port=$("${compose[@]}" port redis 6379)
+      export TEST_POSTGRES_URL="postgresql+psycopg://bod:bod@127.0.0.1:${postgres_port##*:}/bod"
+      export TEST_REDIS_URL="redis://127.0.0.1:${redis_port##*:}/0"
+    fi
+    : "${TEST_POSTGRES_URL:?Set an isolated test database URL}"
+    : "${TEST_REDIS_URL:?Set an isolated test Redis URL}"
+    uv run pytest -m 'postgres or redis' --no-cov
+    ;;
+  production)
+    docker build -f apps/api/Dockerfile -t bod-ci-api:verify .
+    docker build -f apps/web/Dockerfile -t bod-ci-web:verify .
+    uv run python tests/deploy/smoke.py
+    ;;
+  release)
+    : "${BOD_TAG:?Set the version tag, for example v0.1.0}"
+    [[ "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
+    : "${BOD_REGISTRY:=ghcr.io/bodhq/bod}"
+    rm -rf dist/deploy
+    mkdir -p dist/deploy
+    anonymous=$(mktemp -d)
+    trap 'rm -rf "$anonymous"' EXIT
+    for service in api web; do
+      image="$BOD_REGISTRY/$service:${BOD_TAG#v}"
+      docker tag "bod-ci-$service:verify" "$image"
+      docker push "$image"
+      digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")
+      [[ "$digest" == "$BOD_REGISTRY/$service@sha256:"* ]] || exit 1
+      docker --config "$anonymous" manifest inspect "$digest" > /dev/null
+      printf '%s_IMAGE=%s\n' "$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')" "$digest" >> dist/deploy/images.env
+    done
+    cp deploy/bod.py deploy/compose.yml deploy/Caddyfile dist/deploy/
+    tar -czf "dist/bod-$BOD_TAG.tar.gz" -C dist deploy
+    (cd dist && sha256sum "bod-$BOD_TAG.tar.gz" > "bod-$BOD_TAG.sha256")
+    ;;
+  *) echo 'Usage: scripts/ci {install|check|integration|production|release}' >&2; exit 2 ;;
+esac

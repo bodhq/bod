@@ -12,8 +12,8 @@ pnpm gen:api
 pnpm check
 ```
 
-`pnpm check` ověří spojené verze React/Vitest, lint, typy, unit testy,
-prohlížečové testy a produkční build. CI navíc kontroluje aktuálnost autoritativního
+`pnpm check` ověří nástroje nasazení, lint, typy, unit testy,
+prohlížečový test a produkční build. CI navíc kontroluje aktuálnost autoritativního
 OpenAPI snapshotu, skutečné PostgreSQL/Redis integrace a běh
 produkčních obrazů přes HTTPS proxy. Testování není automatické nasazení.
 
@@ -33,25 +33,26 @@ větvi nemusí odpovídat rozpracované pracovní větvi.
 
 ```sh
 uv run pytest
-uv run pytest apps/api/tests --no-cov
+uv run pytest tests/api/domain --no-cov
 ```
 
-Kořenová konfigurace zahrnuje `apps/api/tests` i `tests/api`; stejně jako
-konfigurace v `apps/api/pytest.ini` zachovává výjimky převzaté z backendové
-větve: staré `tests/api/test_timetable.py`, `tests/api/test_validation.py`
-a scénář `test_active_role_is_session_local_and_permissions_are_not_combined`.
-Tyto scénáře zatím nejsou převedené na současný kontrakt. Jejich migrace
-patří backendu. Zelený běh neznamená, že vyřazené scénáře prošly.
+API testy mají jednu kořenovou konfiguraci `pytest.ini` a společné místo:
+
+| Složka | Obsah |
+| --- | --- |
+| `tests/api/core` | Účty, relace, oprávnění, média a limity přihlášení |
+| `tests/api/domain` | Školní agendy, jejich pravidla a kontrakt |
+| `tests/api/legacy` | Dva vyřazené testy odstraněného prototypu |
+
+Konfigurace zachovává také dosavadní výjimku scénáře
+`test_active_role_is_session_local_and_permissions_are_not_combined`.
+Přesun nemění tyto výjimky ani obsah scénářů. Jejich migrace patří backendu;
+zelený běh neznamená, že vyřazené testy prošly.
 
 Běžné testy používají dočasné SQLite a lokální limiter. Pokrytí API má práh
 80 %. SQLite nenahrazuje ověření PostgreSQL zámků, triggerů a migrací.
-Pro ně použij samostatnou testovací databázi, nikdy produkční adresu:
-
-```sh
-TEST_POSTGRES_URL=postgresql+psycopg://bod:bod@localhost:55432/bod_test \
-TEST_REDIS_URL=redis://localhost:56379/0 \
-  uv run pytest -m 'postgres or redis' --no-cov
-```
+Společný příkaz `scripts/ci integration` vytvoří vlastní PostgreSQL a Redis,
+spustí integrační scénáře a testovací služby odstraní.
 
 PostgreSQL testy vytvářejí schémata s náhodným názvem a po testu je odstraní;
 role potřebuje právo vytvořit schéma. Redis testy používají vlastní náhodné
@@ -83,41 +84,43 @@ načtení stránky, chyby přihlášení, styly formulářů, logo, veřejné so
 přihlášení a omezení pohybu. Síťové chyby přihlášení se simulují v prohlížeči.
 Kompletní školní workflow tím pokryté není.
 
-Pro existující produkční server z [lokálního ověřovacího postupu](development.md#lokální-produkční-ověření):
+Existující testovací server lze předat přes `PLAYWRIGHT_BASE_URL`
+a `PLAYWRIGHT_SKIP_WEBSERVER=1`. `PLAYWRIGHT_IGNORE_HTTPS_ERRORS=1` patří
+pouze k lokálnímu testu s nedůvěryhodným certifikátem.
+
+## Nasazení
 
 ```sh
-PLAYWRIGHT_BASE_URL=https://localhost:18443 \
-PLAYWRIGHT_SKIP_WEBSERVER=1 PLAYWRIGHT_IGNORE_HTTPS_ERRORS=1 \
-  pnpm --filter @bod/e2e test
+pnpm deploy:check
+scripts/ci production
 ```
 
-Ignorování TLS chyb zde slouží pouze lokálnímu Caddy certifikátu.
-V běžné produkci se používá důvěryhodný certifikát.
+Unit testy v `tests/deploy` pokrývají souběh údržby, neúplné zálohy,
+nebezpečné archivy, obnovení služeb po chybě a zachování původních dat při
+neúspěšné obnově. Smoke test používá skutečný Docker a dočasná data:
+HTTPS, statické soubory, secure cookie, změnu hesla, SSR, aktualizaci, zálohu médií
+a obnovu do jiného projektu. Aktualizační test používá stejné obrazy; ověřuje
+mechanismus, nikoli migraci mezi dvěma skutečnými vydáními. Nejde o kapacitní test celé školy.
 
-## Nasazovací nástroje
+## GitHub a GitLab
 
-```sh
-pnpm infra:check
-```
+Obě konfigurace spouštějí stejný [`scripts/ci`](../scripts/ci):
 
-Samostatné unit testy v `tests/infra/test_deployment.py` ověřují poškozené
-balíčky, nebezpečné cesty, souběh údržby, odmítnutí nepodporované aktualizace,
-obnovení služeb po chybě zálohy a zachování původních dat při chybě obnovy.
+| Příkaz | Účel |
+| --- | --- |
+| `scripts/ci install` | Závislosti podle lockfiles |
+| `scripts/ci check` | Kontrakt, klient, audit závislostí a úplná kontrola |
+| `scripts/ci integration` | PostgreSQL/Redis testy v izolovaných Docker službách |
+| `scripts/ci production` | Sestavení a provozní smoke test |
 
-`tests/infra/acceptance.py` se spouští přes sudo pouze na dočasné Linux VM.
-Provádí skutečnou instalaci, přihlášení, změnu hesla, založení účtu, kontrolu
-binárních médií, update, návrat ze zálohy a provoz za HTTPS proxy. První
-update používá synteticky vyšší verzi stejného obsahu a ověřuje mechanismus;
-nenahrazuje migrační test dvou skutečných vydání. Před přidáním verze do
-`infra/release.json:upgrade_from` musí vydavatel ověřit i skutečnou dvojici.
+Integrace si vytvoří vlastní databáze. Existující testovací služby můžeš
+předat oběma proměnnými `TEST_POSTGRES_URL` a `TEST_REDIS_URL`.
+Nepředávej adresy školní instalace.
 
-```sh
-sudo python3 tests/infra/acceptance.py \
-  --bundle /tmp/bod-0.1.0-linux-amd64.tar.gz \
-  --root /tmp/bod-school-test --output /tmp/bod-test-result --cleanup
-```
+GitLab vyžaduje Linux shell runner označený `bod-linux`, s Node.js podle
+`.nvmrc`, Corepackem, uv, Docker Compose a přístupem k Dockeru. Runner pro
+nedůvěryhodné projekty nesmí sdílet provozní školní server.
+Samotný mirror repozitáře runner nezřizuje.
 
-CI spouští tento průchod na Ubuntu 24.04 a obnovu výsledné zálohy na další
-čisté VM. Testovací archiv obsahuje pouze vytvořené testovací účty. Do
-release se přenášejí výhradně instalační balíček a jeho checksum, nikoli
-záloha nebo testovací přihlašovací údaje.
+Publikování obrazů a draftů vydání zajišťuje GitHub. GitLab spouští ověření,
+aby nevznikala dvě nezávislá vydání stejných verzí.
