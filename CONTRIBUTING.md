@@ -40,3 +40,18 @@ skupiny. Automatické slučování není nastavené.
 
 React/React DOM a Vitest/coverage se aktualizují společně;
 shodu verzí ověřuje `pnpm deps:check`. Verze a lockfiles měň ve stejném PR.
+
+## Dokumentace
+
+- Piš česky, stručně a přímo. Bez emoji, výplně a zbytečných anglicismů.
+- Návod má jeden H1. Hlavní části používají H2, podnadpisy jen tam, kde pomáhají.
+- Odděluj nadpisy, odstavce, seznamy, tabulky a bloky kódu prázdným řádkem.
+- Příklady mají jazyk bloku, například `sh`, `ts` nebo `mermaid`.
+- Odkazuj relativně na skutečné soubory a sekce. Nepoužívej prázdné odkazy `#`.
+- Každý údaj má jedno hlavní místo. README představuje projekt, návody řeší postupy.
+- HTML používej jen pro hlavičku README. Technické texty piš v Markdownu.
+- Rozlišuj dostupné funkce, plán a ověřený výsledek. Uváděj jen provedené kontroly.
+
+Tón značky je přímočarý: „Nová generace školních systémů. Navrženo pro lepší
+školu. Od studentů, pro studenty. #myslimenabudoucnost“.
+V technických návodech mají přednost konkrétní kroky.

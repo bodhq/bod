@@ -4,7 +4,7 @@ import type { User } from "../api";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect } from "react";
+import { Fragment, useEffect, useLayoutEffect } from "react";
 
 import { refreshAuthUser } from "../session";
 import { hasSameAuthContext, useAuthStore, useAuthUser } from "../store";
@@ -19,6 +19,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const user = useAuthUser();
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
 
   useLayoutEffect(() => {
     if (!hasSameAuthContext(useAuthStore.getState().user, initialUser)) queryClient.clear();
@@ -46,5 +47,5 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     }
   }, [user?.must_change_password, pathname, router]);
 
-  return <>{children}</>;
+  return <Fragment key={sessionVersion}>{children}</Fragment>;
 }

@@ -1,5 +1,7 @@
-## Shrnutí (Co a proč se mění?)
-<!-- Stručný a jasný popis toho, co Pull Request řeší. -->
+## Změna
 
+<!-- Co se mění a proč. -->
 
-*Vytvořením tohoto Pull Requestu potvrzuji, že kód splňuje standardy projektu a prošel lokálními kontrolami (pnpm check, testy).*
+## Ověření
+
+<!-- Uveď skutečně provedené kontroly a podstatná omezení. -->

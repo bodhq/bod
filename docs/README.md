@@ -1,20 +1,17 @@
 # Dokumentace
 
-Pro první spuštění projektu začni návodem [Lokální vývoj](development.md).
+První spuštění: [Lokální vývoj](development.md).
 
-## Vývoj aplikace
+| Potřebuješ | Dokument |
+| --- | --- |
+| Pochopit strukturu a závislosti | [Architektura](architecture.md) |
+| Spustit projekt a založit správce | [Lokální vývoj](development.md) |
+| Pracovat s API a doménovým modelem | [Backend a API](../apps/api/README.md) |
+| Upravit vzhled nebo komponenty | [Vizuální identita a UI](design-system.md) |
+| Ověřit změnu | [Testování](testing.md) |
+| Nasadit aplikaci, zálohovat nebo obnovit data | [Nasazení](deployment.md) |
+| Připravit větev, PR nebo dokumentaci | [Spolupráce](../CONTRIBUTING.md) |
 
-- [Architektura](architecture.md) — struktura aplikací a jejich propojení.
-- [Backend a API](../apps/api/README.md) — doménový model, operace a API kontrakt.
-- [Testování](testing.md) — lokální kontroly, integrační testy a CI.
-- [Spolupráce](../CONTRIBUTING.md) — větve, commity a pull requesty.
-
-## Správa školního serveru
-
-- [Nasazení a provoz](deployment.md) — požadavky na server, instalace,
-  aktualizace, zálohování a obnova.
-
-## Podklady maturitního projektu
-
-- [Zadání](project/assignments/) — zadání obou autorů v PDF a DOCX.
-- [Sprint reviews](project/sprint-reviews/README.md) — výsledky sprintů a šablona zápisu.
+Projektové podklady: [zadání](project/assignments/) a
+[sprint reviews](project/sprint-reviews/README.md).
+Pravidla psaní jsou v [CONTRIBUTING](../CONTRIBUTING.md#dokumentace).

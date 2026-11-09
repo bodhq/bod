@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { isUnauthenticated } from "@/core/api/api-errors";
-import { toast } from "@/core/ui/toast";
+import { toast } from "@/core/ui/feedback/toast";
 
 import { login as apiLogin, logout as apiLogout } from "../api";
 import { replaceAuthUser } from "../session";

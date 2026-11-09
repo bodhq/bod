@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { AuthSession, User } from "@/core/auth/api";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import { getSessions, revokeSession } from "@/core/auth/api";
@@ -12,7 +12,7 @@ import { useAuthStore } from "@/core/auth/store";
 const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/core/auth/api", () => ({ getSessions: vi.fn(), revokeSession: vi.fn() }));
-vi.mock("@/core/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/core/ui/feedback/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const user = { id: "teacher", active_role: "teacher" } as User;
 let devices: AuthSession[];
 let client: QueryClient;
@@ -83,10 +83,12 @@ it("refreshes the actual remaining devices after a partially successful revocati
       result.current.remove.mutateAsync(["other", "unavailable", "current"]),
     ).rejects.toThrow("Device revocation failed");
   });
-  expect(result.current.sessions.data?.map((device) => device.id)).toEqual([
-    "current",
-    "unavailable",
-  ]);
+  await waitFor(() => {
+    expect(result.current.sessions.data?.map((device) => device.id)).toEqual([
+      "current",
+      "unavailable",
+    ]);
+  });
   expect(useAuthStore.getState().user).toEqual(user);
   expect(revokeSession).not.toHaveBeenCalledWith("current");
 });

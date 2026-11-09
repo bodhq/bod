@@ -1,7 +1,8 @@
 import type { User } from "@/core/auth/api";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, render, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getMe } from "@/core/auth/api";
@@ -85,4 +86,51 @@ it("does not let an old unauthorized response log out a new account", async () =
   });
   expect(useAuthStore.getState().user).toEqual(next);
   expect(replace).not.toHaveBeenCalled();
+});
+
+function Draft() {
+  const [value, setValue] = useState("");
+  return (
+    <input aria-label="Draft" value={value} onChange={(event) => setValue(event.target.value)} />
+  );
+}
+
+it.each([
+  "role",
+  "account",
+  "new session",
+])("resets screen-local state when %s changes", async (change) => {
+  vi.mocked(getMe).mockReturnValue(new Promise(() => {}));
+  const screen = render(
+    <AuthProvider initialUser={user}>
+      <Draft />
+    </AuthProvider>,
+    { wrapper },
+  );
+  const input = screen.getByRole("textbox", { name: "Draft" });
+  fireEvent.change(input, { target: { value: "previous session draft" } });
+  act(() => {
+    const store = useAuthStore.getState();
+    if (change === "new session") store.setSessionUser(user);
+    else
+      store.setUser(
+        change === "role" ? { ...user, active_role: "teacher" } : { ...user, id: "other" },
+      );
+  });
+  expect(screen.getByRole("textbox", { name: "Draft" })).toHaveValue("");
+});
+
+it("keeps the current draft when the same actor's profile refreshes", () => {
+  vi.mocked(getMe).mockReturnValue(new Promise(() => {}));
+  const screen = render(
+    <AuthProvider initialUser={user}>
+      <Draft />
+    </AuthProvider>,
+    { wrapper },
+  );
+  fireEvent.change(screen.getByRole("textbox", { name: "Draft" }), {
+    target: { value: "unsaved" },
+  });
+  act(() => useAuthStore.getState().setUser({ ...user, display_name: "Updated profile" }));
+  expect(screen.getByRole("textbox", { name: "Draft" })).toHaveValue("unsaved");
 });

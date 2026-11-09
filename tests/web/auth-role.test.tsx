@@ -12,7 +12,7 @@ import { useAuthStore } from "@/core/auth/store";
 const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/core/auth/api", () => ({ switchRole: vi.fn() }));
-vi.mock("@/core/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/core/ui/feedback/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const user = { id: "teacher", active_role: "teacher", permissions: ["timetable.read"] } as User;
 const updated = { ...user, active_role: "scheduler", permissions: ["timetable.edit"] };
 

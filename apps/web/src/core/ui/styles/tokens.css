@@ -1,0 +1,379 @@
+@layer base {
+  :root {
+    --bod-brand-lime: #b9ff08;
+    --bod-brand-ink: #1a2400;
+    --bod-brand-paper: #f8ffe5;
+    --bod-brand-white: #ffffff;
+    --bod-brand-lime-edge: #6e9900;
+    --bod-brand-lime-ink: #496600;
+    --bod-brand-on-lime: var(--bod-brand-ink);
+    --bod-light-canvas: #f6f7f9;
+    --bod-light-surface: var(--bod-brand-white);
+    --bod-light-muted: #f0f1f4;
+    --bod-light-subtle: #e5e7ec;
+    --bod-light-hover: #e9ebf0;
+    --bod-light-text: #202329;
+    --bod-light-text-muted: #606672;
+    --bod-light-border: #e0e3e9;
+    --bod-light-border-hover: #c5cad4;
+    --bod-light-border-strong: #9aa2b0;
+    --bod-light-danger: #c62828;
+    --bod-light-success: #16804a;
+    --bod-light-warning: #9d6300;
+    --bod-light-info: #2865c7;
+    --bod-dark-canvas: #101216;
+    --bod-dark-surface: #191c22;
+    --bod-dark-muted: #22262e;
+    --bod-dark-subtle: #303641;
+    --bod-dark-hover: #2a2f39;
+    --bod-dark-text: #edf0f5;
+    --bod-dark-text-muted: #a4acba;
+    --bod-dark-border: #303641;
+    --bod-dark-border-hover: #4a5362;
+    --bod-dark-border-strong: #788395;
+    --bod-dark-danger: #ff8a85;
+    --bod-dark-success: #6bdb9d;
+    --bod-dark-warning: #efc265;
+    --bod-dark-info: #88b6ff;
+    --bod-accents-lime-base: var(--bod-brand-lime);
+    --bod-accents-lime-edge: var(--bod-brand-lime-edge);
+    --bod-accents-lime-accessible: var(--bod-brand-lime-ink);
+    --bod-accents-lime-text: var(--bod-brand-on-lime);
+    --bod-accents-cyan-base: #73e8ef;
+    --bod-accents-cyan-edge: #28a4ae;
+    --bod-accents-cyan-accessible: #07616a;
+    --bod-accents-cyan-text: #082c30;
+    --bod-accents-purple-base: #d7b9ff;
+    --bod-accents-purple-edge: #9a6bd9;
+    --bod-accents-purple-accessible: #653b9c;
+    --bod-accents-purple-text: #30134e;
+    --bod-accents-pink-base: #ffb6d2;
+    --bod-accents-pink-edge: #ce7298;
+    --bod-accents-pink-accessible: #943659;
+    --bod-accents-pink-text: #4f1930;
+    --bod-accents-orange-base: #ffcf8a;
+    --bod-accents-orange-edge: #d39a47;
+    --bod-accents-orange-accessible: #8b500b;
+    --bod-accents-orange-text: #412800;
+    --bod-accents-mint-base: #96ebc7;
+    --bod-accents-mint-edge: #4ca77f;
+    --bod-accents-mint-accessible: #1b6a49;
+    --bod-accents-mint-text: #123b29;
+    --bod-accents-yellow-base: #f9e580;
+    --bod-accents-yellow-edge: #c2ac3b;
+    --bod-accents-yellow-accessible: #74620a;
+    --bod-accents-yellow-text: #3e3504;
+    --bod-accents-neutral-base: #d5d9e1;
+    --bod-accents-neutral-edge: #9ba4b3;
+    --bod-accents-neutral-accessible: #4b5565;
+    --bod-accents-neutral-text: #202329;
+    --bod-action-danger: #dc2626;
+    --bod-action-danger-edge: #991b1b;
+    --bod-space-1: 4px;
+    --bod-space-2: 8px;
+    --bod-space-3: 12px;
+    --bod-space-4: 16px;
+    --bod-space-5: 20px;
+    --bod-space-6: 24px;
+    --bod-space-8: 32px;
+    --bod-space-10: 40px;
+    --bod-space-12: 48px;
+    --bod-space-16: 64px;
+    --bod-density-compact-page: 20px;
+    --bod-density-compact-section: 16px;
+    --bod-density-compact-field: 4px;
+    --bod-density-compact-control: 34px;
+    --bod-density-compact-control-padding: 5px;
+    --bod-density-compact-navigation: 34px;
+    --bod-density-compact-navigation-gap: 2px;
+    --bod-density-standard-page: 28px;
+    --bod-density-standard-section: 24px;
+    --bod-density-standard-field: 6px;
+    --bod-density-standard-control: 40px;
+    --bod-density-standard-control-padding: 8px;
+    --bod-density-standard-navigation: 40px;
+    --bod-density-standard-navigation-gap: 4px;
+    --bod-density-relaxed-page: 36px;
+    --bod-density-relaxed-section: 32px;
+    --bod-density-relaxed-field: 8px;
+    --bod-density-relaxed-control: 46px;
+    --bod-density-relaxed-control-padding: 11px;
+    --bod-density-relaxed-navigation: 46px;
+    --bod-density-relaxed-navigation-gap: 6px;
+    --bod-layout-sidebar: 232px;
+    --bod-layout-sidebar-collapsed: 76px;
+    --bod-layout-content: 1440px;
+    --bod-layout-focused: 1120px;
+    --bod-layout-touch: 44px;
+    --bod-shape-subtle: 5px;
+    --bod-shape-soft: 10px;
+    --bod-shape-round: 16px;
+    --bod-type-family: "Plus Jakarta Sans";
+    --bod-type-hero: 6rem;
+    --bod-type-display: 4rem;
+    --bod-type-page: 1.75rem;
+    --bod-type-section: 0.875rem;
+    --bod-type-body: 0.9375rem;
+    --bod-type-control: 0.875rem;
+    --bod-type-small: 0.8125rem;
+    --bod-type-caption: 0.75rem;
+    --bod-type-regular: 400;
+    --bod-type-medium: 500;
+    --bod-type-semibold: 600;
+    --bod-type-strong: 650;
+    --bod-type-bold: 700;
+    --bod-type-leading: 1.55;
+    --bod-motion-fast: 140ms;
+    --bod-chartreuse-50: var(--bod-brand-paper);
+    --bod-chartreuse-100: #f1ffcc;
+    --bod-chartreuse-200: #e2ff99;
+    --bod-chartreuse-300: #d4ff66;
+    --bod-chartreuse-400: #c5ff33;
+    --bod-chartreuse-500: var(--bod-brand-lime);
+    --bod-chartreuse-600: #92cc00;
+    --bod-chartreuse-700: #6e9900;
+    --bod-chartreuse-800: #496600;
+    --bod-chartreuse-900: #253300;
+    --bod-chartreuse-950: var(--bod-brand-ink);
+  }
+}
+
+@theme {
+  --color-background: var(--theme-surface-0);
+  --color-foreground: var(--color-text-primary);
+  --color-primary: var(--color-brand-base);
+  --color-primary-foreground: var(--color-brand-text);
+  --color-primary-accessible: var(--color-brand-accessible);
+  --color-secondary: var(--theme-surface-200);
+  --color-secondary-foreground: var(--color-text-primary);
+  --color-muted: var(--theme-surface-300);
+  --color-muted-foreground: var(--color-text-secondary);
+  --color-accent: var(--theme-surface-200);
+  --color-accent-foreground: var(--color-text-primary);
+  --color-destructive: var(--status-destructive);
+  --color-destructive-foreground: var(--white);
+  --color-success: var(--status-success);
+  --color-success-foreground: var(--white);
+  --color-warning: var(--status-warning);
+  --color-info: var(--status-info);
+  --color-border: var(--theme-border-subtle);
+  --color-border-transparent: var(--theme-border-transparent);
+  --color-input: var(--theme-surface-100);
+  --color-ring: var(--color-brand-accessible);
+  --color-overlay: var(--theme-overlay);
+  --color-shadow: var(--theme-shadow);
+  --color-surface-0: var(--theme-surface-0);
+  --color-surface-100: var(--theme-surface-100);
+  --color-surface-200: var(--theme-surface-200);
+  --color-surface-300: var(--theme-surface-300);
+  --color-surface-hover: var(--theme-surface-hover);
+  --color-border-subtle: var(--theme-border-subtle);
+  --color-border-strong: var(--theme-border-strong);
+  --color-border-hover: var(--theme-border-hover);
+  --font-sans: var(--app-font-family);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-full: 9999px;
+}
+@layer base {
+  :root {
+    --white: var(--bod-brand-white);
+    --app-font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+    --theme-surface-0: var(--bod-light-canvas);
+    --theme-surface-100: var(--bod-light-surface);
+    --theme-surface-200: var(--bod-light-muted);
+    --theme-surface-300: var(--bod-light-subtle);
+    --theme-surface-hover: var(--bod-light-hover);
+    --color-text-primary: var(--bod-light-text);
+    --color-text-secondary: var(--bod-light-text-muted);
+    --theme-border-subtle: var(--bod-light-border);
+    --theme-border-hover: var(--bod-light-border-hover);
+    --theme-border-strong: var(--bod-light-border-strong);
+    --theme-border-transparent: rgb(20 25 35 / 6%);
+    --theme-overlay: rgb(14 18 28 / 45%);
+    --theme-shadow: rgb(20 25 35 / 8%);
+    --color-brand-base: var(--bod-brand-lime);
+    --color-brand-text: var(--bod-brand-on-lime);
+    --color-brand-accessible: var(--bod-brand-lime-ink);
+    --edge-primary: var(--bod-brand-lime-edge);
+    --edge-destructive: var(--bod-action-danger-edge);
+    --color-input-face: var(--theme-surface-100);
+    --input-edge: var(--theme-border-hover);
+    --color-destructive-fill: var(--bod-action-danger);
+    --status-destructive: var(--bod-light-danger);
+    --status-success: var(--bod-light-success);
+    --status-warning: var(--bod-light-warning);
+    --status-info: var(--bod-light-info);
+    --radius: var(--bod-shape-soft);
+    --page-padding: var(--bod-density-standard-page);
+    --section-gap: var(--bod-density-standard-section);
+    --field-gap: var(--bod-density-standard-field);
+    --control-height: var(--bod-density-standard-control);
+    --control-padding-y: var(--bod-density-standard-control-padding);
+    --nav-height: var(--bod-density-standard-navigation);
+    --nav-gap: var(--bod-density-standard-navigation-gap);
+    --sidebar-width: var(--bod-layout-sidebar);
+    --content-width: var(--bod-layout-content);
+    color-scheme: light;
+  }
+  :root.dark {
+    --theme-surface-0: var(--bod-dark-canvas);
+    --theme-surface-100: var(--bod-dark-surface);
+    --theme-surface-200: var(--bod-dark-muted);
+    --theme-surface-300: var(--bod-dark-subtle);
+    --theme-surface-hover: var(--bod-dark-hover);
+    --color-text-primary: var(--bod-dark-text);
+    --color-text-secondary: var(--bod-dark-text-muted);
+    --theme-border-subtle: var(--bod-dark-border);
+    --theme-border-hover: var(--bod-dark-border-hover);
+    --theme-border-strong: var(--bod-dark-border-strong);
+    --theme-border-transparent: rgb(255 255 255 / 8%);
+    --theme-overlay: rgb(0 0 0 / 65%);
+    --color-brand-accessible: var(--color-brand-base);
+    --status-destructive: var(--bod-dark-danger);
+    --status-success: var(--bod-dark-success);
+    --status-warning: var(--bod-dark-warning);
+    --status-info: var(--bod-dark-info);
+    color-scheme: dark;
+  }
+  :root[data-density="compact"] {
+    --page-padding: var(--bod-density-compact-page);
+    --section-gap: var(--bod-density-compact-section);
+    --field-gap: var(--bod-density-compact-field);
+    --control-height: var(--bod-density-compact-control);
+    --control-padding-y: var(--bod-density-compact-control-padding);
+    --nav-height: var(--bod-density-compact-navigation);
+    --nav-gap: var(--bod-density-compact-navigation-gap);
+  }
+  :root[data-density="relaxed"] {
+    --page-padding: var(--bod-density-relaxed-page);
+    --section-gap: var(--bod-density-relaxed-section);
+    --field-gap: var(--bod-density-relaxed-field);
+    --control-height: var(--bod-density-relaxed-control);
+    --control-padding-y: var(--bod-density-relaxed-control-padding);
+    --nav-height: var(--bod-density-relaxed-navigation);
+    --nav-gap: var(--bod-density-relaxed-navigation-gap);
+  }
+  :root[data-text-size="sm"] {
+    font-size: 14.5px;
+  }
+  :root[data-text-size="lg"] {
+    font-size: 18px;
+  }
+  :root[data-content-width="focused"] {
+    --content-width: var(--bod-layout-focused);
+  }
+  :root[data-font="system"] {
+    --app-font-family:
+      ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  :root[data-corners="subtle"] {
+    --radius: var(--bod-shape-subtle);
+  }
+  :root[data-corners="round"] {
+    --radius: var(--bod-shape-round);
+  }
+  :root[data-high-contrast="true"] {
+    --color-text-secondary: var(--color-text-primary);
+    --theme-border-subtle: var(--theme-border-strong);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--theme-surface-0);
+    color: var(--color-text-primary);
+    font-family: var(--app-font-family);
+    font-size: var(--bod-type-body);
+    line-height: var(--bod-type-leading);
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  [role="button"] {
+    cursor: pointer;
+  }
+  input[type="checkbox"] {
+    accent-color: var(--color-brand-accessible);
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand-base) 35%, transparent);
+  }
+}
+:root[data-accent="lime"] {
+  --color-brand-base: var(--bod-accents-lime-base);
+  --edge-primary: var(--bod-accents-lime-edge);
+  --color-brand-accessible: var(--bod-accents-lime-accessible);
+  --color-brand-text: var(--bod-accents-lime-text);
+}
+:root[data-accent="cyan"] {
+  --color-brand-base: var(--bod-accents-cyan-base);
+  --edge-primary: var(--bod-accents-cyan-edge);
+  --color-brand-accessible: var(--bod-accents-cyan-accessible);
+  --color-brand-text: var(--bod-accents-cyan-text);
+}
+:root[data-accent="purple"] {
+  --color-brand-base: var(--bod-accents-purple-base);
+  --edge-primary: var(--bod-accents-purple-edge);
+  --color-brand-accessible: var(--bod-accents-purple-accessible);
+  --color-brand-text: var(--bod-accents-purple-text);
+}
+:root[data-accent="pink"] {
+  --color-brand-base: var(--bod-accents-pink-base);
+  --edge-primary: var(--bod-accents-pink-edge);
+  --color-brand-accessible: var(--bod-accents-pink-accessible);
+  --color-brand-text: var(--bod-accents-pink-text);
+}
+:root[data-accent="orange"] {
+  --color-brand-base: var(--bod-accents-orange-base);
+  --edge-primary: var(--bod-accents-orange-edge);
+  --color-brand-accessible: var(--bod-accents-orange-accessible);
+  --color-brand-text: var(--bod-accents-orange-text);
+}
+:root[data-accent="mint"] {
+  --color-brand-base: var(--bod-accents-mint-base);
+  --edge-primary: var(--bod-accents-mint-edge);
+  --color-brand-accessible: var(--bod-accents-mint-accessible);
+  --color-brand-text: var(--bod-accents-mint-text);
+}
+:root[data-accent="yellow"] {
+  --color-brand-base: var(--bod-accents-yellow-base);
+  --edge-primary: var(--bod-accents-yellow-edge);
+  --color-brand-accessible: var(--bod-accents-yellow-accessible);
+  --color-brand-text: var(--bod-accents-yellow-text);
+}
+:root[data-accent="neutral"] {
+  --color-brand-base: var(--bod-accents-neutral-base);
+  --edge-primary: var(--bod-accents-neutral-edge);
+  --color-brand-accessible: var(--bod-accents-neutral-accessible);
+  --color-brand-text: var(--bod-accents-neutral-text);
+}
+:root {
+  --swatch-lime: var(--bod-accents-lime-base);
+  --swatch-cyan: var(--bod-accents-cyan-base);
+  --swatch-purple: var(--bod-accents-purple-base);
+  --swatch-pink: var(--bod-accents-pink-base);
+  --swatch-orange: var(--bod-accents-orange-base);
+  --swatch-mint: var(--bod-accents-mint-base);
+  --swatch-yellow: var(--bod-accents-yellow-base);
+  --swatch-neutral: var(--bod-accents-neutral-base);
+}
+
+:root.dark[data-accent] {
+  --color-brand-accessible: var(--color-brand-base);
+}

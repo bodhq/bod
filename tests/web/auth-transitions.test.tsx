@@ -12,7 +12,7 @@ import { useAuthStore } from "@/core/auth/store";
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/core/auth/api", () => ({ login: vi.fn(), logout: vi.fn(), getMe: vi.fn() }));
-vi.mock("@/core/ui/toast", () => ({ toast: { error: vi.fn() } }));
+vi.mock("@/core/ui/feedback/toast", () => ({ toast: { error: vi.fn() } }));
 const user = { id: "new-account", active_role: "teacher" } as User;
 
 function setup() {

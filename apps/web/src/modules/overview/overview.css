@@ -1,0 +1,72 @@
+@import "../../core/ui/styles/layers.css";
+
+@layer components {
+  .workspace-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    margin-top: calc(-1 * var(--section-gap) / 2);
+  }
+  .workspace-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--section-gap);
+    margin-top: 8px;
+  }
+  .workspace-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    padding: var(--section-gap);
+    border: 1px solid var(--theme-border-subtle);
+    border-radius: calc(var(--radius) + 2px);
+    background: var(--theme-surface-100);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition:
+      border-color 140ms,
+      background-color 140ms;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+  }
+  .workspace-link:hover {
+    border-color: var(--theme-border-hover);
+    background: var(--theme-surface-200);
+  }
+  .workspace-link:focus-visible {
+    outline-color: var(--color-brand-accessible);
+  }
+  .workspace-link strong {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .workspace-link strong + span {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+  .workspace-link > svg {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+  }
+  .workspace-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: var(--radius);
+    background: var(--theme-surface-200);
+  }
+  @media (max-width: 767px) {
+    .workspace-links {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

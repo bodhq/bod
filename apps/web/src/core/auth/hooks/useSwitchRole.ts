@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { toast } from "@/core/ui/toast";
+import { toast } from "@/core/ui/feedback/toast";
 
 import { switchRole } from "../api";
 import { replaceAuthUser } from "../session";

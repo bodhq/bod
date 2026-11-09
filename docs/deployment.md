@@ -10,17 +10,17 @@ na školním serveru se nepoužívá pnpm, uv ani sestavení zdrojového kódu.
 IT správce připraví VM a doménu, například `bod.skola.cz`. Výchozí rozpočet
 pro pilot je 2 vCPU, 4 GiB RAM, 30 GB SSD a místo na školní data a zálohy.
 Instalátor ověřuje alespoň 3 GiB volného místa na instalačním i Docker
-filesystemu. Před instalací nebo aktualizací ponech alespoň 10 GiB volných
+souborovém systému. Před instalací nebo aktualizací ponech alespoň 10 GiB volných
 a další místo podle velikosti školních dat.
 Pro trvalou zátěž podobnou níže uvedenému testu plánuj rezervu CPU.
 
 Vyber jeden způsob přístupu:
 
-- **Direct:** Caddy v balíčku obsluhuje HTTPS. Doména musí směrovat na server;
-  pro automatický veřejný certifikát musí fungovat síťové podmínky ACME.
+- **Přímé HTTPS (`direct`):** Caddy v balíčku obsluhuje HTTPS. Doména musí
+  směrovat na server; veřejný certifikát vyžaduje síťové podmínky ACME.
   Výchozí porty jsou 80 a 443.
-- **Proxy:** HTTPS zajišťuje existující školní proxy. Balíček zpřístupní HTTP
-  na `127.0.0.1:8080`; školní proxy na něj přeposílá celou doménu včetně
+- **Školní proxy (`proxy`):** HTTPS zajišťuje existující školní proxy. Balíček
+  zpřístupní HTTP na `127.0.0.1:8080`; školní proxy na něj přeposílá celou doménu včetně
   `/api/`. Veřejná adresa nadále používá HTTPS. Certifikáty a konfiguraci
   této vnější proxy spravuje a zálohuje školní IT.
 
@@ -92,8 +92,8 @@ aby soubory a databáze odpovídaly jednomu stavu. Při chybě zálohy se nástr
 pokusí původně běžící služby znovu spustit.
 
 Výchozí `/opt/bod/backups` je lokální kopie. Pro obnovu po ztrátě VM je nutná
-kopie mimo server, například do připojené NAS zvolené při instalaci. Dostupnost
-síťového úložiště zajišťuje školní IT. Archiv není sám šifrovaný; uložiště
+kopie mimo server, například na NAS zvolený při instalaci. Dostupnost
+síťového úložiště zajišťuje školní IT. Archiv není sám šifrovaný; úložiště
 musí chránit školní data i databázové přihlašovací údaje, které záloha obsahuje.
 
 Hotové obrazy nejsou součástí každé zálohy. Uchovej i původní instalační
@@ -174,27 +174,27 @@ release nepřenášejí. Postup testů a jejich limity jsou v [testovacím návo
 
 ## Naměřená spotřeba
 
-Předchozí technický Compose se šesti službami při 20 souběžných relacích
-nad 201 účty zvládl 12 243 požadavků za 45 s bez chyby, P95 116 ms a společné
-vzorkované maximum 373 MiB RAM. Šlo o Docker Desktop se 4 CPU a 3,827 GiB RAM,
-nikoli o kapacitní test celé školy. Lokální první build webu měl maximum RSS
-1,32 GiB; warm build 498,5 MiB. RSS není součtem všech workerů.
-
 Distribuční balíček s pěti službami byl 4. 11. 2026 otestovaný na Ubuntu
 24.04 ARM64 VM se 2 vCPU a 3 GiB RAM. Instalace, HTTPS, školní proxy,
 systemd zálohy, aktualizace, obnova dat i restart serveru prošly. Následná
 obnova zálohy na druhé čisté VM zachovala účty, přihlášení i binární média.
 Komprimovaný offline balíček měl přibližně 326 MiB.
 
-Při 201 účtech a 20 souběžných přihlášených HTTP relacích během 45 s prošlo
-10 515 požadavků bez chyby, přibližně 233/s, P95 139 ms. Mix obsahoval
-`auth/me`, seznam 50 účtů a autentizované SSR `/app`. Zátěž běžela přímo
-ve VM; při měření přes QEMU port forwarding se objevily TCP resety, takže
-výsledek nepopisuje chování veřejné sítě. Součet vzorkované kontejnerové RAM
-měl v klidu medián 391 MiB a při zátěži maximum 518 MiB; nezahrnuje OS ani
-veškerou souborovou cache. Součet CPU při zátěži měl průměr 154 % a maximum
-164 %; 100 % znamená jedno jádro. Generátor běžel na téže VM a soutěžil s
-aplikací o CPU, jeho spotřeba není v součtu kontejnerů.
+Měření běželo 45 s nad 201 účty s 20 souběžnými přihlášenými HTTP relacemi.
+Mix obsahoval `auth/me`, seznam 50 účtů a autentizované SSR `/app`.
+
+| Metrika | Výsledek |
+| --- | --- |
+| Požadavky | 10 515 bez chyby, přibližně 233/s |
+| Latence P95 | 139 ms |
+| RAM kontejnerů v klidu | Medián 391 MiB |
+| RAM kontejnerů při zátěži | Vzorkované maximum 518 MiB |
+| CPU kontejnerů při zátěži | Průměr 154 %, maximum 164 %; 100 % je jedno jádro |
+
+Zátěž běžela přímo ve VM. Přes QEMU port forwarding se objevily TCP resety;
+výsledek proto nepopisuje veřejnou síť. RAM nezahrnuje OS ani veškerou
+souborovou cache. Generátor běžel na téže VM a soutěžil s aplikací o CPU;
+jeho spotřeba není v součtu kontejnerů.
 
 Uvedený rozpočet je výchozí odhad pro pilot. Test neobsahoval skládání
 velkých rozvrhů, složité skupiny ani velká média a neurčuje kapacitu celé
