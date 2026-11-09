@@ -13,7 +13,7 @@ pnpm check
 ```
 
 `pnpm check` ověří spojené verze React/Vitest, lint, typy, unit testy,
-prohlížečový test a produkční build. CI navíc kontroluje aktuálnost autoritativního
+prohlížečové testy a produkční build. CI navíc kontroluje aktuálnost autoritativního
 OpenAPI snapshotu, skutečné PostgreSQL/Redis integrace a běh
 produkčních obrazů přes HTTPS proxy. Testování není automatické nasazení.
 
@@ -40,9 +40,8 @@ Kořenová konfigurace zahrnuje `apps/api/tests` i `tests/api`; stejně jako
 konfigurace v `apps/api/pytest.ini` zachovává výjimky převzaté z backendové
 větve: staré `tests/api/test_timetable.py`, `tests/api/test_validation.py`
 a scénář `test_active_role_is_session_local_and_permissions_are_not_combined`.
-Tyto testy dosud používají odstraněný prototyp rozvrhu. Jejich migrace na
-nový kontrakt patří backendu a není součástí provozních oprav. Zelený běh
-proto neznamená, že tyto vyřazené scénáře prošly.
+Tyto scénáře zatím nejsou převedené na současný kontrakt. Jejich migrace
+patří backendu. Zelený běh neznamená, že vyřazené scénáře prošly.
 
 Běžné testy používají dočasné SQLite a lokální limiter. Pokrytí API má práh
 80 %. SQLite nenahrazuje ověření PostgreSQL zámků, triggerů a migrací.
@@ -69,7 +68,9 @@ pnpm --filter @bod/web lint
 
 Vitest načítá testy z `tests/web`; závislosti a aliasy řeší vůči `apps/web`,
 aby fungoval i čistý checkout bez hoistovaných balíčků. Jednotkové testy
-mockují síť a nepotřebují běžící API.
+mockují síť a nepotřebují běžící API. Ověřují také relace, změny rolí,
+cache mezi účty a [hranice frontendových vrstev](architecture.md#frontend).
+Produktové tokeny a použití značky popisuje [vizuální identita](design-system.md#tokeny-a-podklady).
 
 ## Prohlížeč
 
@@ -77,8 +78,11 @@ mockují síť a nepotřebují běžící API.
 pnpm --filter @bod/e2e test
 ```
 
-Playwright sám spustí vývojový web na `http://localhost:3000`. Základní test
-ověřuje pouze načtení stránky a titul. Nepokrývá kompletní školní workflow.
+Playwright spustí vývojový web na `http://localhost:3000`. Testy ověřují
+načtení stránky, chyby přihlášení, styly formulářů, logo, veřejné soubory
+přihlášení a omezení pohybu. Síťové chyby přihlášení se simulují v prohlížeči.
+Kompletní školní workflow tím pokryté není.
+
 Pro existující produkční server z [lokálního ověřovacího postupu](development.md#lokální-produkční-ověření):
 
 ```sh

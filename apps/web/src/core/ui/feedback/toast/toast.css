@@ -1,0 +1,50 @@
+@import "../../styles/layers.css";
+
+@layer components {
+  .ui-toaster {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(400px, calc(100vw - 32px));
+    pointer-events: none;
+  }
+  .ui-toast {
+    --toast-tone: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px 8px 16px;
+    border: 1px solid var(--theme-border-subtle);
+    border-radius: var(--radius);
+    background: var(--theme-surface-100);
+    color: var(--color-text-primary);
+    box-shadow: 0 8px 32px var(--theme-shadow);
+    pointer-events: auto;
+  }
+  .ui-toast[data-variant="error"] {
+    --toast-tone: var(--status-destructive);
+  }
+  .ui-toast[data-variant="success"] {
+    --toast-tone: var(--status-success);
+  }
+  .ui-toast[data-variant="warning"] {
+    --toast-tone: var(--status-warning);
+  }
+  .ui-toast[data-variant="info"] {
+    --toast-tone: var(--status-info);
+  }
+  .toast-icon {
+    flex-shrink: 0;
+    color: var(--toast-tone);
+  }
+  .toast-message {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.875rem;
+  }
+}

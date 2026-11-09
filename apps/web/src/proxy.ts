@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // cesty, ktere nevyzaduji prihlaseni
-const PUBLIC_ROUTES = ["/login", "/api", "/health"];
+const PUBLIC_ROUTES = ["/login", "/api", "/health", "/brand", "/fonts"];
 
 // prida bezpecnostni hlavicky do odpovedi
 function withSecurityHeaders(response: NextResponse): NextResponse {
@@ -20,7 +20,9 @@ function handleAuthentication(request: NextRequest): NextResponse {
   const sessionCookie = request.cookies.get("session_id");
   const pathname = request.nextUrl.pathname;
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
 
   // pokud uzivatel neni prihlasen a pristupuje na chranenou cestu, presmeruj na login
   if (!isPublicRoute && !sessionCookie) {

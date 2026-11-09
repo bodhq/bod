@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-import { toast } from "@/core/ui/toast";
+import { toast } from "@/core/ui/feedback/toast";
 
 /**
  * Zpracovává chyby vrácené v URL při přesměrování (např. vypršení relace).

@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import NextTopLoader from "nextjs-toploader";
 
 import { AppProviders } from "@/core/providers";
-import { Toaster } from "@/core/ui/toast/Toaster";
+import { Toaster } from "@/core/ui/feedback/toast/Toaster";
 
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+const jakarta = localFont({
+  src: "../../public/fonts/plus-jakarta-sans.ttf",
+  weight: "200 800",
+  style: "normal",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -25,11 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="cs"
-      className={`h-full antialiased ${jakarta.className} ${jakarta.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="cs" className={`h-full antialiased ${jakarta.variable}`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
         <NextTopLoader
           color="var(--color-primary)"

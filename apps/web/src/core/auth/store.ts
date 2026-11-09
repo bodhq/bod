@@ -1,52 +1,35 @@
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import { useShallow } from "zustand/react/shallow";
+import type { User } from "./api";
 
-import { getMe, type User } from "./api";
+import { create } from "zustand";
 
 interface AuthState {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  // Akce
-  checkAuth: () => Promise<void>;
+  sessionVersion: number;
   setUser: (user: User | null) => void;
+  setSessionUser: (user: User | null) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  devtools(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
-      isLoading: true, // Na začátku vždy true, než se zeptáme API
-
-      checkAuth: async () => {
-        try {
-          const user = await getMe();
-          set({ user, isAuthenticated: !!user, isLoading: false }, false, "auth/checkAuth");
-        } catch {
-          set(
-            { user: null, isAuthenticated: false, isLoading: false },
-            false,
-            "auth/checkAuthError",
-          );
-        }
-      },
-
-      setUser: (user) => set({ user, isAuthenticated: !!user }, false, "auth/setUser"),
-    }),
-    { name: "AuthStore" },
-  ),
-);
-
-// Atomické selektory pro prevenci zbytečných re-renderů
-export const useAuthUser = () => useAuthStore(useShallow((state) => state.user));
-export const useAuthIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
-export const useAuthIsLoading = () => useAuthStore((state) => state.isLoading);
-export const useAuthActions = () =>
-  useAuthStore(
-    useShallow((state) => ({
-      checkAuth: state.checkAuth,
-      setUser: state.setUser,
-    })),
+export function hasSameAuthContext(previous: User | null, next: User | null): boolean {
+  const previousPermissions = previous?.permissions ?? [];
+  const nextPermissions = next?.permissions ?? [];
+  return (
+    previous?.id === next?.id &&
+    previous?.active_role === next?.active_role &&
+    previousPermissions.length === nextPermissions.length &&
+    previousPermissions.every((permission) => nextPermissions.includes(permission))
   );
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  sessionVersion: 0,
+  setUser: (user) =>
+    set((state) => ({
+      user,
+      sessionVersion: state.sessionVersion + Number(!hasSameAuthContext(state.user, user)),
+    })),
+  // A new login is a new session even when it belongs to the same account and role.
+  setSessionUser: (user) => set((state) => ({ user, sessionVersion: state.sessionVersion + 1 })),
+}));
+
+export const useAuthUser = () => useAuthStore((state) => state.user);

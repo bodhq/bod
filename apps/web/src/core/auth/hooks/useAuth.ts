@@ -1,96 +1,62 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
-import { Logger } from "@/core/logger";
-import { toast } from "@/core/ui/toast";
+import { isUnauthenticated } from "@/core/api/api-errors";
+import { toast } from "@/core/ui/feedback/toast";
 
 import { login as apiLogin, logout as apiLogout } from "../api";
+import { replaceAuthUser } from "../session";
 import { useAuthStore } from "../store";
 
-/**
- * VRSTVA 2: LOGIKA (Hooks)
- * Tento hook abstrahuje veškerou asynchronní logiku od UI komponent.
- * UI komponenta nesmí vědět, jak probíhá login, jen zavolá `login(email, password)`.
- */
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated, isLoading, setUser } = useAuthStore(
-    useShallow((state) => ({
-      user: state.user,
-      isAuthenticated: state.isAuthenticated,
-      isLoading: state.isLoading,
-      setUser: state.setUser,
-    })),
-  );
-
   const [error, setError] = useState<string | null>(null);
+  const version = () => useAuthStore.getState().sessionVersion;
 
-  // TanStack Query Mutation pro Login
   const loginMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      return await apiLogin(username, password);
+    onMutate: version,
+    mutationFn: ({ username, password }: { username: string; password: string }) =>
+      apiLogin(username, password),
+    onSuccess: async (user, _variables, startedVersion) => {
+      if (!(await replaceAuthUser(queryClient, user, startedVersion))) return;
+      router.replace("/app");
+      router.refresh();
     },
-    onSuccess: (userData) => {
-      setUser(userData);
-
-      // Invalidate queries that might depend on auth
-      queryClient.invalidateQueries();
-
-      router.push("/app");
-    },
-    onError: (err: Error) => {
-      const msg = err.message || "Neočekávaná chyba při přihlašování.";
-      setError(msg);
-      toast.error(msg);
+    onError: (err: Error, _variables, startedVersion) => {
+      if (version() !== startedVersion) return;
+      setError(err.message || "Neočekávaná chyba při přihlašování.");
     },
   });
 
-  // TanStack Query Mutation pro Logout
   const logoutMutation = useMutation({
+    onMutate: version,
     mutationFn: async () => {
-      await apiLogout();
+      try {
+        await apiLogout();
+      } catch (error) {
+        if (!isUnauthenticated(error)) throw error;
+      }
     },
-    onSuccess: () => {
-      setUser(null);
-      queryClient.clear(); // Smažeme celou cache při odhlášení
-      router.push("/login");
+    onSuccess: async (_data, _variables, startedVersion) => {
+      if (!(await replaceAuthUser(queryClient, null, startedVersion))) return;
+      router.replace("/login");
+      router.refresh();
     },
-    onError: (err) => {
-      Logger.error("Chyba při odhlašování", err);
-      toast.error("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
+    onError: (_error, _variables, startedVersion) => {
+      if (version() === startedVersion)
+        toast.error("Nepodařilo se odhlásit. Zkuste to prosím znovu.");
     },
   });
-
-  const login = (username: string, pass: string) => {
-    setError(null);
-    loginMutation.mutate({ username, password: pass });
-  };
-
-  const logout = () => {
-    logoutMutation.mutate();
-  };
-
-  const loginAsync = async (username: string, pass: string) => {
-    setError(null);
-    return loginMutation.mutateAsync({ username, password: pass });
-  };
-
-  const logoutAsync = async () => {
-    return logoutMutation.mutateAsync();
-  };
 
   return {
-    user,
-    isAuthenticated,
-    isLoading, // Globální načítání při startu aplikace (nyní přes server komponenty)
     isPending: loginMutation.isPending || logoutMutation.isPending,
     error,
-    login,
-    loginAsync,
-    logout,
-    logoutAsync,
+    loginAsync: (username: string, password: string) => {
+      setError(null);
+      return loginMutation.mutateAsync({ username, password });
+    },
+    logoutAsync: () => logoutMutation.mutateAsync(),
   };
 }

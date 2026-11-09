@@ -1,0 +1,75 @@
+@import "../../core/ui/styles/layers.css";
+
+@layer components {
+  .login-view {
+    isolation: isolate;
+  }
+  .login-pattern {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to right, transparent, black 14%, black 86%, transparent);
+  }
+  .login-pattern__tiles {
+    position: absolute;
+    top: -12vw;
+    left: -12vh;
+    width: calc(100% + 24vh);
+    height: calc(100% + 24vw);
+    transform: rotate(-12deg);
+  }
+  .login-pattern__tiles::before,
+  .login-pattern__tiles::after {
+    content: "";
+    position: absolute;
+    inset: 0 -4rem;
+    background-color: var(--color-text-primary);
+    opacity: 0.04;
+    mask-image: url("/brand/login-tile.svg");
+    mask-size: 128px 160px;
+    mask-repeat: repeat;
+    mask-mode: alpha;
+    animation-duration: 20s;
+    animation-timing-function: linear;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+  .login-pattern__tiles::before {
+    animation-name: login-pattern-forward;
+  }
+  .login-pattern__tiles::after {
+    mask-position: 0 80px;
+    animation-name: login-pattern-reverse;
+    animation-duration: 24s;
+  }
+  @keyframes login-pattern-forward {
+    from {
+      transform: translateX(-4rem);
+    }
+    to {
+      transform: translateX(4rem);
+    }
+  }
+  @keyframes login-pattern-reverse {
+    from {
+      transform: translateX(4rem);
+    }
+    to {
+      transform: translateX(-4rem);
+    }
+  }
+}
+
+@layer accessibility {
+  @media (prefers-reduced-motion: reduce) {
+    .login-pattern__tiles::before,
+    .login-pattern__tiles::after {
+      animation: none;
+    }
+  }
+  :root[data-reduce-motion="true"] .login-pattern__tiles::before,
+  :root[data-reduce-motion="true"] .login-pattern__tiles::after {
+    animation: none;
+  }
+}

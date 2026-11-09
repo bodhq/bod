@@ -46,3 +46,9 @@ describe("parseApiError", () => {
     expect(error.code).toBe("VALIDATION_ERROR");
   });
 });
+
+it("does not use inherited object properties as error translations", () => {
+  const error = parseApiError({ error: { code: "constructor" } });
+  expect(error.message).toBe("Neočekávaná chyba při komunikaci se serverem.");
+  expect(error).toMatchObject({ code: "constructor" });
+});

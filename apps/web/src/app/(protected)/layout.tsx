@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getMe } from "@/core/auth/api";
 import { AuthProvider } from "@/core/auth/components/AuthProvider";
 import { env } from "@/core/env";
-import { AppSidebar } from "@/core/ui/navigation/AppSidebar";
+import { AppShell } from "@/core/shell/AppShell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // Resolve the session before rendering the protected shell.
@@ -36,12 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthProvider initialUser={user}>
-      <div className="flex h-dvh w-full overflow-hidden bg-(--color-background) text-(--color-foreground)">
-        <AppSidebar />
-        <main className="min-h-0 min-w-0 flex-1 overscroll-contain overflow-x-hidden overflow-y-auto bg-(--color-background)">
-          <div className="min-h-full w-full">{children}</div>
-        </main>
-      </div>
+      <AppShell>{children}</AppShell>
     </AuthProvider>
   );
 }

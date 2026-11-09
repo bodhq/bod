@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Button, type ButtonProps } from "@/core/ui/Button";
+import { Button, type ButtonProps } from "@/core/ui/actions/Button";
 
 import { useAuth } from "../hooks/useAuth";
 

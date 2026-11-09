@@ -1,3 +1,1 @@
-export default function DashboardPage() {
-  return null;
-}
+export { default } from "@/modules/overview/views/OverviewView";
