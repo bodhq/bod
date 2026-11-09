@@ -244,7 +244,7 @@ def test_batch_limits_headers_cookie_and_avatar_filename(admin):
 def test_exported_contract_matches_live_api_and_documents_upload_limits():
     live = app.openapi()
     exported = json.loads(
-        (Path(__file__).parents[1] / "schema/openapi.json").read_text(encoding="utf-8")
+        (Path(__file__).parents[3] / "apps/api/schema/openapi.json").read_text(encoding="utf-8")
     )
     assert exported == live, "Regenerate apps/api/schema/openapi.json."
     for schema in live["components"]["schemas"].values():

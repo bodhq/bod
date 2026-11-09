@@ -39,7 +39,8 @@ měsíčně, se sedmidenním cooldownem. Bezpečnostní aktualizace mají vlastn
 skupiny. Automatické slučování není nastavené.
 
 React/React DOM a Vitest/coverage se aktualizují společně;
-shodu verzí ověřuje `pnpm deps:check`. Verze a lockfiles měň ve stejném PR.
+kompatibilitu hlídají peer dependencies při instalaci a testy.
+Verze a lockfiles měň ve stejném PR.
 
 ## Dokumentace
 

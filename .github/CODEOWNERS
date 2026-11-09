@@ -8,5 +8,5 @@
 /apps/api/      @zorkonator
 /apps/web/      @ejaprrr
 /.github/       @ejaprrr
-/infra/         @ejaprrr
+/deploy/         @ejaprrr
 /packages/      @ejaprrr

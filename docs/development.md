@@ -77,27 +77,11 @@ SQLite slouží testům; provozní databází je PostgreSQL.
 
 ## Lokální produkční ověření
 
-Tento postup sestavuje obrazy pro vývoj. Školní instalace používá
-[hotový distribuční balíček](deployment.md).
-
-Compose pro ověření má oddělený projekt, porty 18080/18443 na loopbacku
-a vlastní zálohovací volume. Připrav `/tmp/bod-verify.env` podle `.env.example`:
-
-- Nastav vlastní `POSTGRES_*` a odpovídající `DOCKER_DATABASE_URL` na `db:5432`.
-- Nastav `ALLOWED_ORIGINS=["https://localhost:18443"]`.
-
 ```sh
-docker compose --env-file /tmp/bod-verify.env -p bod-verify \
-  -f infra/docker-compose.yml -f infra/docker-compose.verify.yml up -d --build --wait
-curl --fail --insecure https://localhost:18443/health
+scripts/ci production
 ```
 
-Po ověření odstraň pouze tuto testovací instalaci:
-
-```sh
-docker compose --env-file /tmp/bod-verify.env -p bod-verify \
-  -f infra/docker-compose.yml -f infra/docker-compose.verify.yml down --volumes
-```
-
-Ve školním provozu volumes nemaž. Další ověření popisují
-[prohlížečové testy](testing.md#prohlížeč) a [nasazovací nástroje](testing.md#nasazovací-nástroje).
+Příkaz sestaví obrazy a ověří HTTPS, statické soubory, přihlášení, SSR,
+zálohu a obnovu v dočasných Docker projektech. Potřebuje běžící Docker.
+Po běhu odstraní pouze vlastní testovací kontejnery a volumes.
+Produkční instalace používá [hotové obrazy](deployment.md).

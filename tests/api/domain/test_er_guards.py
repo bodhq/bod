@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-from test_er_workflows import post, publish, setup_plan
+from .test_er_workflows import post, publish, setup_plan
 
 from server.main import app
 

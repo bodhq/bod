@@ -69,3 +69,9 @@ playwright/.cache/
 /docs/*-audit-*.md
 /docs/reviews/*audit*.md
 /docs/reviews/change-report-*
+
+# Lokální provoz a pracovní podklady
+/deploy/config.env
+/deploy/.initialized
+/deploy/.lock
+.local-notes/

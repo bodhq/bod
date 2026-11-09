@@ -21,4 +21,9 @@
 **/.env
 **/.env.*
 !.env.example
-backups/
+**/backups
+
+.local-notes/
+deploy/config.env
+deploy/.initialized
+deploy/.lock
