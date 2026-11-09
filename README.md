@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="./docs/assets/logo.svg" alt="bod" width="160">
-  <h1>bod</h1>
+  <p>
+    <img src="./docs/assets/banner.svg" alt="bod" width="100%">
+  </p>
   <p>
     <strong>Nová generace školních systémů.</strong><br>
-    Navrženo pro lepší školu.<br>
-    Od studentů, pro studenty.
+    Navrženo pro lepší školu. Od studentů, pro studenty.
   </p>
-  <p><strong>#myslimenabudoucnost</strong></p>
+  <p><sub>#myslimenabudoucnost</sub></p>
   <p>
     <a href="https://github.com/bodhq/bod/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/bodhq/bod/ci.yml?branch=main&amp;style=flat-square&amp;label=CI&amp;labelColor=202329" alt="CI — main"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-202329?style=flat-square" alt="Licence MIT"></a>
@@ -73,7 +73,7 @@ Vedoucí: @haut. Oponent: @svitek1. Konzultant: @olsavska.
 - [Vizuální identita a UI](docs/design-system.md).
 - [Pravidla spolupráce](CONTRIBUTING.md) a [sprint reviews](docs/project/sprint-reviews/README.md).
 
-Školní instalace používá hotové obrazy. Požadavky a naměřenou spotřebu
+Školní instalace používá hotové obrazy. Požadavky a správu instalace
 popisuje [nasazení](docs/deployment.md#příprava).
 
 | Maturitní zadání | PDF | DOCX |
