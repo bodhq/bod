@@ -122,5 +122,6 @@ GitLab vyžaduje Linux shell runner označený `bod-linux`, s Node.js podle
 nedůvěryhodné projekty nesmí sdílet provozní školní server.
 Samotný mirror repozitáře runner nezřizuje.
 
-Publikování obrazů a draftů vydání zajišťuje GitHub. GitLab spouští ověření,
-aby nevznikala dvě nezávislá vydání stejných verzí.
+Publikování ověřených obrazů a draftů vydání zajišťuje GitHub. GitLab navíc
+provádí nasazení na chráněném runneru `bod-deploy`; tento runner nespouští
+buildy ani testy. Nastavení popisuje [nasazení](deployment.md#automatické-nasazení).
