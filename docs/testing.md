@@ -104,23 +104,29 @@ mechanismus, nikoli migraci mezi dvěma skutečnými vydáními. Nejde o kapacit
 
 ## GitHub a GitLab
 
-Obě konfigurace spouštějí stejný [`scripts/ci`](../scripts/ci):
+Oba poskytovatelé spouštějí stejný [`scripts/ci`](../scripts/ci):
 
 | Příkaz | Účel |
 | --- | --- |
-| `scripts/ci install` | Závislosti podle lockfiles |
-| `scripts/ci check` | Kontrakt, klient, audit závislostí a úplná kontrola |
-| `scripts/ci integration` | PostgreSQL/Redis testy v izolovaných Docker službách |
-| `scripts/ci production` | Sestavení a provozní smoke test |
+| `metadata` | Názvy větví a PR/MR: stejné prefixy, scopes a Conventional Commits |
+| `install` | Závislosti podle lockfiles |
+| `check` | Kontrakt, generování klienta, audit, lint, typy, testy a build |
+| `integration` | PostgreSQL/Redis testy v izolovaných službách |
+| `production` | Docker build a provozní smoke test |
+| `package` | Offline instalační archiv z právě ověřených obrazů |
+| `docs` | Společné PDF maturitní dokumentace |
 
-Integrace si vytvoří vlastní databáze. Existující testovací služby můžeš
-předat oběma proměnnými `TEST_POSTGRES_URL` a `TEST_REDIS_URL`.
-Nepředávej adresy školní instalace.
+Metadata používají `BOD_BRANCH` a `BOD_TITLE`. Balíček vyžaduje
+`BOD_VERSION`: tag `vX.Y.Z` nebo plný SHA commitu. Ruční pipeline připraví
+archiv s checksumem; běžné PR/MR zbytečně neukládají velké instalační artefakty.
 
-GitLab vyžaduje Linux shell runner označený `bod-linux`, s Node.js podle
-`.nvmrc`, Corepackem, uv, Docker Compose a přístupem k Dockeru. Runner pro
-nedůvěryhodné projekty nesmí sdílet provozní školní server.
-Samotný mirror repozitáře runner nezřizuje.
+GitHub navíc publikuje obrazy (`publish`), připravuje drafty vydání (`release`)
+a synchronizuje stabilní větve do školního GitLabu (`mirror`). Vydání používá
+stejné obrazy, které prošly smoke testem. Produkční build se neopakuje.
 
-Publikování obrazů a draftů vydání zajišťuje GitHub. GitLab spouští ověření,
-aby nevznikala dvě nezávislá vydání stejných verzí.
+GitLab vyžaduje Linux shell runner `bod-linux`, Node.js podle `.nvmrc`,
+Corepack, uv, Python 3.12 a Docker Compose. Runner pro ověřování nesdílí
+provozní školní server. Mirror sám runner nezřizuje.
+
+Instalace na VPS je [ruční](deployment.md). CI nepotřebuje školní VPN,
+přístupové údaje k serveru ani nasazovací runner ve školní síti.
