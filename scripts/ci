@@ -6,6 +6,14 @@ pnpm() { corepack pnpm "$@"; }
 export DATABASE_URL=sqlite:// DEBUG=false
 
 case "${1:-check}" in
+  docs)
+    mkdir -p dist/docs
+    docker run --rm --platform linux/amd64 --network none --user "$(id -u):$(id -g)" -e HOME=/tmp --entrypoint bash \
+      -v "$PWD/docs:/work/docs:ro" -v "$PWD/scripts/docs:/work/scripts/docs:ro" \
+      -v "$PWD/dist/docs:/work/dist/docs" -w /work \
+      ghcr.io/xu-cheng/texlive-full:20260701@sha256:11383430b9a3e48c0b79339f34d8092f942f897d91ab3749d4899d06731fea7f \
+      scripts/docs
+    ;;
   install)
     pnpm install --frozen-lockfile
     uv sync --all-packages --all-groups --frozen
@@ -88,5 +96,5 @@ case "${1:-check}" in
     tar -czf "dist/bod-$BOD_TAG.tar.gz" -C dist deploy
     (cd dist && sha256sum "bod-$BOD_TAG.tar.gz" > "bod-$BOD_TAG.sha256")
     ;;
-  *) echo 'Usage: scripts/ci {install|check|integration|production|release|development}' >&2; exit 2 ;;
+  *) echo 'Usage: scripts/ci {install|check|integration|production|release|development|docs}' >&2; exit 2 ;;
 esac

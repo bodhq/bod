@@ -12,6 +12,6 @@ První spuštění: [Lokální vývoj](development.md).
 | Nasadit aplikaci, zálohovat nebo obnovit data | [Nasazení](deployment.md) |
 | Připravit větev, PR nebo dokumentaci | [Spolupráce](../CONTRIBUTING.md) |
 
-Projektové podklady: [zadání](project/assignments/) a
+Projektové podklady: [maturitní dokumentace v LaTeXu](project/thesis/), [zadání](project/assignments/) a
 [sprint reviews](project/sprint-reviews/README.md).
 Pravidla psaní jsou v [CONTRIBUTING](../CONTRIBUTING.md#dokumentace).

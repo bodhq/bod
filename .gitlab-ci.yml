@@ -14,6 +14,23 @@ check:
   script:
     - scripts/ci install
     - scripts/ci check
+documentation:
+  stage: check
+  timeout: 15m
+  rules:
+    - changes:
+        - docs/project/thesis/**/*
+        - docs/project/assignments/*.pdf
+        - scripts/docs
+        - scripts/ci
+        - .gitlab-ci.yml
+  script:
+    - scripts/ci docs
+  artifacts:
+    name: maturitni-dokumentace
+    paths:
+      - dist/docs/bod-dokumentace.pdf
+    expire_in: 30 days
 integration:
   stage: check
   timeout: 15m

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Build the joint thesis from the shared structure and both authors' chapters.
+set -euo pipefail
+root=$(cd "$(dirname "$0")/.." && pwd)
+command -v latexmk >/dev/null || { echo 'Chybí latexmk (TeX Live).' >&2; exit 1; }
+command -v biber >/dev/null || { echo 'Chybí Biber.' >&2; exit 1; }
+mkdir -p "$root/dist/docs"
+cd "$root/docs/project/thesis"
+latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error \
+  -jobname=bod-dokumentace -outdir="$root/dist/docs" main.tex
