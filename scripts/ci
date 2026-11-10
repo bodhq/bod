@@ -39,9 +39,20 @@ case "${1:-check}" in
     docker build -f apps/web/Dockerfile -t bod-ci-web:verify .
     uv run python tests/deploy/smoke.py
     ;;
-  release)
+  release|development)
+    if [[ "$1" == development ]]; then
+      : "${GITHUB_SHA:?Missing commit SHA}"
+      [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
+      : "${GITHUB_REPOSITORY:?Missing GitHub repository}"
+      head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/develop" --jq .object.sha)
+      if [[ "$head" != "$GITHUB_SHA" ]]; then
+        echo 'Novější commit už čeká na sestavení; tuto verzi nezveřejňuji.'
+        exit 0
+      fi
+      BOD_TAG="v0.0.0-dev-$GITHUB_SHA"
+    fi
     : "${BOD_TAG:?Set the version tag, for example v0.1.0}"
-    [[ "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
+    [[ "$1" == development || "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
     : "${BOD_REGISTRY:=ghcr.io/bodhq/bod}"
     rm -rf dist/deploy
     mkdir -p dist/deploy
@@ -57,8 +68,25 @@ case "${1:-check}" in
       printf '%s_IMAGE=%s\n' "$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')" "$digest" >> dist/deploy/images.env
     done
     cp deploy/bod.py deploy/compose.yml deploy/Caddyfile dist/deploy/
+    if [[ "$1" == development ]]; then
+      cp deploy/development.py dist/deploy/
+      tar -czf dist/development.tar.gz -C dist deploy
+      if ! gh release view development --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+        gh release create development --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+          --prerelease --latest=false --title 'Vývojová verze' \
+          --notes 'Automaticky ověřené sestavení větve develop. Určeno pro vývojové prostředí.'
+      fi
+      gh release upload development dist/development.tar.gz --repo "$GITHUB_REPOSITORY" --clobber
+      gh api "repos/$GITHUB_REPOSITORY/git/refs/tags/development" --method PATCH \
+        -f sha="$GITHUB_SHA" -F force=true >/dev/null
+      gh release edit development --repo "$GITHUB_REPOSITORY" \
+        --notes "Ověřený commit: $GITHUB_SHA. Sestavení: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+      # Publish the complete image pair last; the VPS never consumes a half-published pair.
+      gh release upload development dist/deploy/images.env --repo "$GITHUB_REPOSITORY" --clobber
+      exit 0
+    fi
     tar -czf "dist/bod-$BOD_TAG.tar.gz" -C dist deploy
     (cd dist && sha256sum "bod-$BOD_TAG.tar.gz" > "bod-$BOD_TAG.sha256")
     ;;
-  *) echo 'Usage: scripts/ci {install|check|integration|production|release}' >&2; exit 2 ;;
+  *) echo 'Usage: scripts/ci {install|check|integration|production|release|development}' >&2; exit 2 ;;
 esac
