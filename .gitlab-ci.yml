@@ -1,14 +1,17 @@
 # Shell runner: Linux, Node from .nvmrc, Corepack, uv and access to Docker.
-# Both providers execute the same scripts; image publication is owned by GitHub.
+# GitHub publishes verified images; the protected VPS runner only deploys them.
 default:
   tags: [bod-linux]
-stages: [check, production]
+stages: [check, production, deploy]
 workflow:
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "api" && $CI_COMMIT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true" && $BOD_DEPLOY_SHA == $CI_COMMIT_SHA'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
     - if: '$CI_COMMIT_TAG =~ /^v/'
 check:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "api"'
   stage: check
   timeout: 30m
   script:
@@ -18,6 +21,8 @@ documentation:
   stage: check
   timeout: 15m
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+      when: never
     - changes:
         - docs/project/thesis/**/*
         - docs/project/assignments/*.pdf
@@ -32,13 +37,29 @@ documentation:
       - dist/docs/bod-dokumentace.pdf
     expire_in: 30 days
 integration:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "api"'
   stage: check
   timeout: 15m
   script:
     - uv sync --all-packages --all-groups --frozen
     - scripts/ci integration
 production:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "api"'
   stage: production
   timeout: 30m
   script:
     - scripts/ci production
+deploy:
+  stage: deploy
+  tags: [bod-deploy]
+  resource_group: school-development
+  timeout: 15m
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "api" && $CI_COMMIT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true" && $BOD_DEPLOY_SHA == $CI_COMMIT_SHA'
+  environment:
+    name: development
+    url: https://10.202.30.201
+  script:
+    - scripts/deploy

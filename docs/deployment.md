@@ -91,52 +91,76 @@ Ověření a podmínky GitLab runneru popisuje [testování](testing.md).
 Výběrová instalace modulů zatím není podporovaná; stav uvádí
 [architektura](architecture.md#moduly).
 
-## Automatické vývojové nasazení
+## Automatické nasazení
 
-Vývojová instance je oddělená od školních instalací. Push do `develop`
-projde kontrolami a integračními testy. Produkční job sestaví a ověří obrazy,
-publikuje je do GHCR a jako poslední krok zveřejní jejich společný manifest
-ve vývojovém prerelease `development`. Při neúspěšných kontrolách se verze
-nezmění. Opožděný běh staršího commitu vývojové vydání nepřepíše.
+GitHub provede kontroly, sestaví obrazy a ověří jejich spuštění. Stejné obrazy
+publikuje do Container Registry školního GitLabu pod tagem `sha-<commit>`.
+Potom synchronizuje commit a přes GitLab API spustí deploy pipeline.
+Chráněný runner na VPS stáhne oba obrazy a nasadí je přes Docker Compose.
+Na VPS se aplikace nesestavuje.
 
-VPS si manifest stahuje samo. Nepotřebuje přístup z GitHub runneru do
-školní sítě, SSH heslo v CI ani GitHub token. Přijímá pouze dvojici obrazů
-`bod/api` a `bod/web` podle digestu. Updater nepřijme školní instalaci jako
-vývojovou. Před aktualizací používá stejnou zálohu a kontrolu zdraví jako
-`bod.py update`.
+GitLab přijme deploy jen pro chráněnou větev a shodný `BOD_DEPLOY_SHA`.
+Joby se řadí přes `resource_group`; opožděný commit se přeskočí.
+Před aktualizací vzniká záloha a úspěch vyžaduje zdravé služby.
+Neúspěšná migrace nevrací automaticky starý obraz nad změněnou databázi.
 
-### První příprava
+### Přístup a větev
 
-V GHCR musí být balíčky `bod/api` a `bod/web` veřejné, stejně jako pro
-běžné vydávání. CI používá vlastní `GITHUB_TOKEN` s oprávněními
-`contents: write` a `packages: write`; další SSH tajemství se nenastavují.
+- V GitLabu zapni Container Registry a chraň nasazovanou větev.
+- GitHub secret `GITLAB_TOKEN`, používaný také pro mirror, potřebuje přístup
+  k projektu s rolí Maintainer a scopes `api`, `read_registry`, `write_registry`.
+  Pro dlouhodobý provoz použij projektový token omezený na tento projekt.
+- V GitLab CI/CD settings povol pipeline variables alespoň roli Maintainer.
+- GitHub repository variable `DEPLOY_BRANCH` určuje nasazovanou větev.
+  Výchozí hodnota je `develop`; pro přechod na `main` změň pouze tuto proměnnou.
 
-Po prvním úspěšném CI stáhni z vývojového prerelease `development.tar.gz`,
-rozbal jej do samostatného adresáře a nastav adresu instance:
+Registry může zůstat soukromé. Runner používá dočasný `CI_JOB_TOKEN` a po jobu
+odstraní Docker přihlášení. Osobní token se na VPS neukládá.
+
+### Runner na VPS
+
+Runner je vyhrazený tomuto projektu a nasazení: tag `bod-deploy`, zapnuté
+`Protected`, vypnuté `Run untagged jobs`. Používá shell executor pod účtem
+`student`, který má přístup k Dockeru a instalačnímu adresáři. Buildy a testy
+na tomto runneru nespouštěj.
+
+Na Alpine nainstaluj oficiální balíčky a připrav pracovní adresář:
 
 ```sh
-mkdir -p ~/bod-development
-cd ~/bod-development
-wget https://github.com/bodhq/bod/releases/download/development/development.tar.gz
-tar -xzf development.tar.gz --strip-components=1
-python3 development.py init --origin https://10.202.30.201
-python3 development.py update
+sudo apk add gitlab-runner gitlab-runner-openrc bash git
+mkdir -p ~/bod-runner ~/.gitlab-runner
+chmod 700 ~/bod-runner ~/.gitlab-runner
+gitlab-runner register --url https://gitlab.spseplzen.cz --executor shell --name bod-development
 ```
 
-Na Alpine stačí Docker s Compose a Python 3.12 nebo novější. Dokumentace
-ani aplikační obrazy se na VPS nesestavují. Konfigurace se při opakovaném
-`init` nepřepisuje. Údaje prvního správce jsou v `.first-admin.txt`; soubor
-má přístup jen pro vlastníka a po změně hesla jej odstraň.
+Registrační token z GitLab UI vlož do interaktivní výzvy. Nepatří do
+repozitáře ani historie příkazů. Pro OpenRC nastav `/etc/conf.d/gitlab-runner`:
 
-Updater lze spouštět každé dvě minuty z cronu účtu s přístupem k Dockeru:
-
-```cron
-*/2 * * * * cd /home/student/bod-development && /usr/bin/python3 development.py update >> development.log 2>&1
+```sh
+command_user="student:student"
+cfgfile="/home/student/.gitlab-runner/config.toml"
+datadir="/home/student/bod-runner"
+log_syslog=yes
 ```
 
-Shodné obrazy znovu nenasazuje. Před aktualizací vyžaduje alespoň 3 GiB
-volného místa. Zálohy a staré obrazy nemaže automaticky; průběžně kontroluj
-jejich velikost. Pro delší provoz rozšiř disk alespoň na výchozích 30 GB.
+Službu zapni příkazy `sudo rc-update add gitlab-runner default` a
+`sudo rc-service gitlab-runner start`. V GitLabu ověř stav online a ochranu
+runneru. Starý cron spouštějící `development.py update` odstraň; nasazení
+řídí CI job, ne polling vydání.
+
+### První nasazení
+
+Po úspěšném CI vybrané větve proběhne první instalace do
+`/home/student/bod-development`. Existující `config.env` se zachová.
+Údaje prvního správce jsou v `.first-admin.txt`, přístupném jen vlastníkovi;
+po přihlášení změň heslo a soubor odstraň. Heslo se nevypisuje do CI logu.
+
+Adresář lze změnit GitLab proměnnou `BOD_DEPLOY_DIR`; doménu první instalace
+proměnnou `BOD_DEPLOY_DOMAIN`. Změna domény existující instalace vyžaduje
+úpravu jejího `config.env`.
+
+Před aktualizací je potřeba alespoň 3 GiB volného místa. Zálohy a staré
+obrazy se nemažou automaticky. Pro delší provoz rozšiř disk na alespoň 30 GB.
 
 ### Adresa a přístup
 
@@ -163,6 +187,5 @@ HTTPS pro privátní server musí řešit školní proxy nebo DNS ověření dom
 samotný veřejný DNS záznam nestačí. Přechod adresy vyžaduje úpravu
 `SITE_ADDRESS`, `ALLOWED_ORIGINS`, portů a `COOKIE_SECURE` v konfiguraci.
 
-Aktualizace mění obrazy, ne instalační skripty. Pokud vydání mění Compose,
-Caddyfile nebo updater, převezmi příslušné soubory z nového archivu podle
-jeho pokynů; existující `config.env` a data zachovej.
+Deploy přebírá `bod.py`, Compose a Caddyfile ze stejného ověřeného commitu.
+Existující `config.env`, databáze a média zůstávají zachované.
