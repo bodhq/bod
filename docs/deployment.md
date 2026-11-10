@@ -90,3 +90,79 @@ Veřejnost Git repozitáře nestačí. Draft zkontroluje a zveřejní vydavatel.
 Ověření a podmínky GitLab runneru popisuje [testování](testing.md).
 Výběrová instalace modulů zatím není podporovaná; stav uvádí
 [architektura](architecture.md#moduly).
+
+## Automatické vývojové nasazení
+
+Vývojová instance je oddělená od školních instalací. Push do `develop`
+projde kontrolami a integračními testy. Produkční job sestaví a ověří obrazy,
+publikuje je do GHCR a jako poslední krok zveřejní jejich společný manifest
+ve vývojovém prerelease `development`. Při neúspěšných kontrolách se verze
+nezmění. Opožděný běh staršího commitu vývojové vydání nepřepíše.
+
+VPS si manifest stahuje samo. Nepotřebuje přístup z GitHub runneru do
+školní sítě, SSH heslo v CI ani GitHub token. Přijímá pouze dvojici obrazů
+`bod/api` a `bod/web` podle digestu. Updater nepřijme školní instalaci jako
+vývojovou. Před aktualizací používá stejnou zálohu a kontrolu zdraví jako
+`bod.py update`.
+
+### První příprava
+
+V GHCR musí být balíčky `bod/api` a `bod/web` veřejné, stejně jako pro
+běžné vydávání. CI používá vlastní `GITHUB_TOKEN` s oprávněními
+`contents: write` a `packages: write`; další SSH tajemství se nenastavují.
+
+Po prvním úspěšném CI stáhni z vývojového prerelease `development.tar.gz`,
+rozbal jej do samostatného adresáře a nastav adresu instance:
+
+```sh
+mkdir -p ~/bod-development
+cd ~/bod-development
+wget https://github.com/bodhq/bod/releases/download/development/development.tar.gz
+tar -xzf development.tar.gz --strip-components=1
+python3 development.py init --origin https://10.202.30.201
+python3 development.py update
+```
+
+Na Alpine stačí Docker s Compose a Python 3.12 nebo novější. Dokumentace
+ani aplikační obrazy se na VPS nesestavují. Konfigurace se při opakovaném
+`init` nepřepisuje. Údaje prvního správce jsou v `.first-admin.txt`; soubor
+má přístup jen pro vlastníka a po změně hesla jej odstraň.
+
+Updater lze spouštět každé dvě minuty z cronu účtu s přístupem k Dockeru:
+
+```cron
+*/2 * * * * cd /home/student/bod-development && /usr/bin/python3 development.py update >> development.log 2>&1
+```
+
+Shodné obrazy znovu nenasazuje. Před aktualizací vyžaduje alespoň 3 GiB
+volného místa. Zálohy a staré obrazy nemaže automaticky; průběžně kontroluj
+jejich velikost. Pro delší provoz rozšiř disk alespoň na výchozích 30 GB.
+
+### Adresa a přístup
+
+Cílová adresa první instance je `https://10.202.30.201`, dostupná jen
+ze školní sítě nebo VPN. Caddy pro privátní IP používá vlastní certifikační
+autoritu. Její veřejný kořenový certifikát musíš jednou ověřit a přidat do
+důvěryhodných na testovacích počítačích. Nestačí jen přeskočit varování
+prohlížeče; některé editory potřebují důvěryhodný HTTPS kontext.
+
+Po prvním spuštění exportuj pouze veřejný certifikát, nikoliv soukromý klíč:
+
+```sh
+docker cp bod-development-caddy-1:/data/caddy/pki/authorities/local/root.crt ./development-root.crt
+```
+
+Soubor přenes přes ověřené SSH spojení, porovnej jeho otisk a důvěru nastav
+ručně ve správě certifikátů systému či prohlížeče. HTTPS ponechává `Secure`
+cookies zapnuté. HTTP je v updateru dostupné pro samostatné lokální použití,
+ale nezajišťuje funkčnost všech editorů při přístupu přes síť.
+
+Pro stálou adresu použij `dev.bodhq.cz`. Záznam A na `10.202.30.201`
+zjednoduší název, ale nezajistí přístup z internetu ani veřejný certifikát.
+HTTPS pro privátní server musí řešit školní proxy nebo DNS ověření domény;
+samotný veřejný DNS záznam nestačí. Přechod adresy vyžaduje úpravu
+`SITE_ADDRESS`, `ALLOWED_ORIGINS`, portů a `COOKIE_SECURE` v konfiguraci.
+
+Aktualizace mění obrazy, ne instalační skripty. Pokud vydání mění Compose,
+Caddyfile nebo updater, převezmi příslušné soubory z nového archivu podle
+jeho pokynů; existující `config.env` a data zachovej.

@@ -58,12 +58,14 @@ class Operations(unittest.TestCase):
                 {
                     "POSTGRES_PASSWORD": "other",
                     "COMPOSE_PROJECT_NAME": "unrelated-school",
+                    "COOKIE_SECURE": "false",
                 },
             ),
             patch.object(bod.subprocess, "run") as run,
         ):
             self.school.compose("ps")
         self.assertNotIn("POSTGRES_PASSWORD", run.call_args.kwargs["env"])
+        self.assertNotIn("COOKIE_SECURE", run.call_args.kwargs["env"])
         command = run.call_args.args[0]
         self.assertEqual(command[command.index("-p") + 1], "bod-original")
 

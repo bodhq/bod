@@ -1,0 +1,104 @@
+\begin{document}
+\MakeTitlePage
+\pagenumbering{gobble}
+\setcounter{page}{2}
+\includepdf[pages=-]{../assignments/prochazkaelias23-zadani.pdf}
+\includepdf[pages=-]{../assignments/nagyfilip23-zadani.pdf}
+
+\section*{Anotace}
+Práce se zabývá návrhem modulárního školního informačního systému bod se
+zaměřením na správu rozvrhu, učeben a výukových skupin. Zahrnuje návrh
+uživatelského rozhraní, backendu a databáze. Dokument je pracovní osnovou; popis implementace,
+výsledky testování a závěry budou doplňovány podle skutečného stavu projektu.
+
+\section*{Klíčová slova}
+školní informační systém, rozvrh, výukové skupiny, učebny, webová aplikace
+
+\section*{Annotation}
+The project concerns the design of bod, a modular school information system
+focused on timetables, classrooms and teaching groups. It covers the design
+of the user interface, backend and database. This document is a working outline;
+implementation details, test results and conclusions will be added as the
+project progresses.
+
+\section*{Key words}
+school information system, timetable, teaching groups, classrooms, web application
+
+\newpage
+\section*{Prohlášení}
+\begin{citacePlain}
+Prohlašujeme, že jsme tuto práci vypracovali společně a že byly využity pouze
+literární prameny a informační zdroje uvedené v seznamu použité literatury a zdrojů.
+
+Prohlašujeme, že při zpracování práce byly nástroje umělé inteligence využity
+v souladu s principy akademické integrity a že jejich použití je v práci
+vhodným způsobem uvedeno.
+
+Prohlašujeme, že odevzdané verze, jedna v tištěné podobě a elektronická verze
+na GitLabu jsou stejné.
+
+Souhlasíme s využitím této práce pro výukové účely VOŠ a SPŠE Plzeň.
+\end{citacePlain}
+\vspace{1cm}
+\noindent V Plzni dne: \dotfill
+\vspace{1cm}
+
+\noindent\begin{tabular}{@{}p{0.46\textwidth}p{0.46\textwidth}@{}}
+\dotfill & \dotfill \\
+Eliáš Jan Procházka & Filip Nagy
+\end{tabular}
+
+\clearpage
+\tableofcontents
+\clearpage
+\edef\FirstTextPage{\arabic{page}}
+\pagenumbering{arabic}
+\setcounter{page}{\FirstTextPage}
+
+\tocchapter{Úvod}
+Školní informační systém propojuje správu uživatelů, výukových skupin,
+učeben a rozvrhu. Projekt bod vzniká jako týmová dlouhodobá maturitní práce.
+Cílem je navrhnout a implementovat propojené uživatelské rozhraní, API
+systému a datový model podle přiložených zadání.
+
+\chapter{Analýza požadavků}
+\section{Práce rozvrháře}
+Kapitola bude obsahovat popis přípravy úvazků, dělení skupin a kontroly
+kolizí. Poznatky z konzultací budou odlišeny od implementovaných funkcí.
+
+\section{Rozdělení práce}
+Eliáš Jan Procházka zpracovává frontend a uživatelské rozhraní
+(kapitola~\ref{chap:frontend}). Filip Nagy zpracovává backend a databázi
+(kapitola~\ref{chap:backend}). Analýza požadavků a návrh architektury jsou společné.
+
+\chapter{Návrh řešení}
+Kapitola bude popisovat hranice modulů, vazbu frontendu a API a způsob
+správy dat. Diagramy musí odpovídat skutečné implementaci.
+
+\input{prochazkaelias23}
+\input{nagyfilip23}
+
+\chapter{Testování a vyhodnocení}
+Kapitola bude obsahovat reprodukovatelné postupy a skutečné výsledky.
+Naměřené hodnoty budou uvedeny s verzí aplikace a podmínkami měření.
+
+\tocchapter{Závěr}
+Závěr bude doplněn po vyhodnocení stanovených cílů. Pracovní osnova
+nepředstavuje tvrzení o dokončení zadání.
+
+\printbibliography[heading=bibintoc]
+\tocchapter{Seznam zkratek}
+\begin{description}
+  \item[API] Aplikační programové rozhraní.
+  \item[CI/CD] Průběžná integrace a nasazování.
+  \item[IS] Informační systém.
+\end{description}
+
+\tocchapter{Přílohy}
+\StartAppendices
+\chapter{Použité nástroje}
+Dokument je sestaven ze školní šablony pro dlouhodobé maturitní práce.
+K inicializaci struktury dokumentace a sestavovacích skriptů byl použit
+asistent OpenAI Codex. Odborný text, zdroje a výsledky musí ověřit autoři.
+Další využití asistivních nástrojů bude popsáno podle skutečné práce autorů.
+\end{document}

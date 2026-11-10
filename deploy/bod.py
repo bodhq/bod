@@ -49,6 +49,7 @@ class School:
     def compose(self, *args, project=None, config=None, images=None, **kwargs):
         # Ambient development variables must never override the school's files.
         env = dict(os.environ)
+        env.pop("COOKIE_SECURE", None)
         for path in (config or self.config, images or self.images):
             for key in read_env(path):
                 env.pop(key, None)

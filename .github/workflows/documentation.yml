@@ -1,0 +1,36 @@
+name: Documentation
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'docs/project/thesis/**'
+      - 'docs/project/assignments/*.pdf'
+      - 'scripts/docs'
+      - 'scripts/ci'
+      - '.github/workflows/documentation.yml'
+  pull_request:
+    paths:
+      - 'docs/project/thesis/**'
+      - 'docs/project/assignments/*.pdf'
+      - 'scripts/docs'
+      - 'scripts/ci'
+      - '.github/workflows/documentation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  documentation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/ci docs
+      - uses: actions/upload-artifact@v7
+        with:
+          name: maturitni-dokumentace
+          path: dist/docs/bod-dokumentace.pdf
+          if-no-files-found: error
+          retention-days: 30
