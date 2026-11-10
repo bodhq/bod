@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
-# Shared entry points for local runs, GitHub Actions and GitLab CI.
+# Shared commands for GitHub Actions, GitLab CI and local checks.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 pnpm() { corepack pnpm "$@"; }
 export DATABASE_URL=sqlite:// DEBUG=false
 
 case "${1:-check}" in
-  docs)
-    mkdir -p dist/docs
-    docker run --rm --platform linux/amd64 --network none --user "$(id -u):$(id -g)" -e HOME=/tmp --entrypoint bash \
-      -v "$PWD/docs:/work/docs:ro" -v "$PWD/scripts/docs:/work/scripts/docs:ro" \
-      -v "$PWD/dist/docs:/work/dist/docs" -w /work \
-      ghcr.io/xu-cheng/texlive-full:20260701@sha256:11383430b9a3e48c0b79339f34d8092f942f897d91ab3749d4899d06731fea7f \
-      scripts/docs
+  metadata)
+    branch=${BOD_BRANCH:?Missing source branch}
+    title=${BOD_TITLE:?Missing pull request title}
+    branch_pattern='^(feat|fix|docs|chore|refactor|test|infra)/[a-z0-9-]+$'
+    title_pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)\((api|web|e2e|deps|deps-dev|chore|docs|infra)\)!?: [^A-Z].*$'
+    if [[ "$branch" != main && "$branch" != develop && "$branch" != dependabot/* ]]; then
+      [[ ${#branch} -ge 5 && ${#branch} -le 50 && "$branch" =~ $branch_pattern ]] || {
+        echo 'Branch: use feat/name, fix/name, docs/name, chore/name, refactor/name, test/name or infra/name (5–50 characters).' >&2
+        exit 1
+      }
+    fi
+    [[ "$title" =~ $title_pattern ]] || {
+      echo 'Title: use Conventional Commits with a scope and lowercase subject, for example feat(web): add timetable.' >&2
+      exit 1
+    }
     ;;
   install)
     pnpm install --frozen-lockfile
@@ -27,6 +35,7 @@ case "${1:-check}" in
     pnpm check
     ;;
   integration)
+    uv sync --all-packages --all-groups --frozen
     if [[ -z "${TEST_POSTGRES_URL:-}" && -z "${TEST_REDIS_URL:-}" ]]; then
       project="bod-integration-$$-$RANDOM"
       export POSTGRES_PORT=0 REDIS_PORT=0
@@ -40,61 +49,74 @@ case "${1:-check}" in
     fi
     : "${TEST_POSTGRES_URL:?Set an isolated test database URL}"
     : "${TEST_REDIS_URL:?Set an isolated test Redis URL}"
-    uv run pytest -m 'postgres or redis' --no-cov
+    uv run --frozen pytest -m 'postgres or redis' --no-cov
     ;;
   production)
     docker build -f apps/api/Dockerfile -t bod-ci-api:verify .
     docker build -f apps/web/Dockerfile -t bod-ci-web:verify .
-    uv run python tests/deploy/smoke.py
+    uv run --frozen python tests/deploy/smoke.py
     ;;
-  release|development)
-    if [[ "$1" == development ]]; then
-      : "${GITHUB_SHA:?Missing commit SHA}"
-      [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
-      : "${GITHUB_REPOSITORY:?Missing GitHub repository}"
-      head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/develop" --jq .object.sha)
-      if [[ "$head" != "$GITHUB_SHA" ]]; then
-        echo 'Novější commit už čeká na sestavení; tuto verzi nezveřejňuji.'
-        exit 0
-      fi
-      BOD_TAG="v0.0.0-dev-$GITHUB_SHA"
-    fi
-    : "${BOD_TAG:?Set the version tag, for example v0.1.0}"
-    [[ "$1" == development || "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
-    : "${BOD_REGISTRY:=ghcr.io/bodhq/bod}"
+  package)
+    : "${BOD_VERSION:?Set a release tag or commit SHA}"
+    [[ "$BOD_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ || "$BOD_VERSION" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid version' >&2; exit 1; }
     rm -rf dist/deploy
     mkdir -p dist/deploy
-    anonymous=$(mktemp -d)
-    trap 'rm -rf "$anonymous"' EXIT
+    cp deploy/bod.py deploy/compose.yml deploy/Caddyfile dist/deploy/
     for service in api web; do
-      image="$BOD_REGISTRY/$service:${BOD_TAG#v}"
+      identifier=$(docker image inspect --format '{{.Id}}' "bod-ci-$service:verify")
+      [[ "$identifier" =~ ^sha256:[0-9a-f]{64}$ ]] || exit 1
+      image="bod-$service:$BOD_VERSION-${identifier#sha256:}"
+      docker tag "bod-ci-$service:verify" "$image"
+      key="$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')_IMAGE"
+      export "$key=$image"
+      printf '%s=%s\n' "$key" "$image" >> dist/deploy/images.env
+    done
+    references=$(BOD_PROJECT=bod-release SITE_ADDRESS=localhost POSTGRES_USER=bod POSTGRES_DB=bod POSTGRES_PASSWORD=unused DOCKER_DATABASE_URL=postgresql://unused \
+      ALLOWED_ORIGINS='["https://localhost"]' docker compose --env-file dist/deploy/images.env -f deploy/compose.yml config --images)
+    images=()
+    while IFS= read -r image; do
+      docker image inspect "$image" > /dev/null 2>&1 || docker pull "$image"
+      images+=("$image")
+    done <<< "$references"
+    docker image save --output dist/deploy/images.tar "${images[@]}"
+    printf '%s\n' 'Requires Linux, Docker Compose and Python 3.12+.' \
+      'First install: python3 bod.py install --offline --domain bod.school.cz' \
+      'Update an existing installation: python3 /path/to/current/bod.py update /path/to/new/images.env --offline' > dist/deploy/README.txt
+    architecture=$(docker image inspect --format '{{.Architecture}}' bod-ci-api:verify)
+    archive="bod-$BOD_VERSION-linux-$architecture.tar.gz"
+    tar -czf "dist/$archive" -C dist deploy
+    (cd dist && sha256sum "$archive" > "$archive.sha256")
+    uv run --frozen python tests/deploy/smoke.py --bundle dist/deploy
+    ;;
+  publish)
+    : "${BOD_VERSION:?Set a release tag or commit SHA}"
+    [[ "$BOD_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ || "$BOD_VERSION" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid version' >&2; exit 1; }
+    : "${BOD_REGISTRY:=ghcr.io/bodhq/bod}"
+    for service in api web; do
+      image="$BOD_REGISTRY/$service:$BOD_VERSION"
       docker tag "bod-ci-$service:verify" "$image"
       docker push "$image"
-      digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")
-      [[ "$digest" == "$BOD_REGISTRY/$service@sha256:"* ]] || exit 1
-      docker --config "$anonymous" manifest inspect "$digest" > /dev/null
-      printf '%s_IMAGE=%s\n' "$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')" "$digest" >> dist/deploy/images.env
     done
-    cp deploy/bod.py deploy/compose.yml deploy/Caddyfile dist/deploy/
-    if [[ "$1" == development ]]; then
-      cp deploy/development.py dist/deploy/
-      tar -czf dist/development.tar.gz -C dist deploy
-      if ! gh release view development --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-        gh release create development --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-          --prerelease --latest=false --title 'Vývojová verze' \
-          --notes 'Automaticky ověřené sestavení větve develop. Určeno pro vývojové prostředí.'
-      fi
-      gh release upload development dist/development.tar.gz --repo "$GITHUB_REPOSITORY" --clobber
-      gh api "repos/$GITHUB_REPOSITORY/git/refs/tags/development" --method PATCH \
-        -f sha="$GITHUB_SHA" -F force=true >/dev/null
-      gh release edit development --repo "$GITHUB_REPOSITORY" \
-        --notes "Ověřený commit: $GITHUB_SHA. Sestavení: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-      # Publish the complete image pair last; the VPS never consumes a half-published pair.
-      gh release upload development dist/deploy/images.env --repo "$GITHUB_REPOSITORY" --clobber
-      exit 0
-    fi
-    tar -czf "dist/bod-$BOD_TAG.tar.gz" -C dist deploy
-    (cd dist && sha256sum "bod-$BOD_TAG.tar.gz" > "bod-$BOD_TAG.sha256")
     ;;
-  *) echo 'Usage: scripts/ci {install|check|integration|production|release|development|docs}' >&2; exit 2 ;;
+  release)
+    : "${BOD_VERSION:?Set a release tag}"
+    [[ "$BOD_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+    gh release create "$BOD_VERSION" dist/bod-"$BOD_VERSION"-linux-*.tar.gz dist/bod-"$BOD_VERSION"-linux-*.sha256 --draft --verify-tag --generate-notes
+    ;;
+  mirror)
+    : "${GITLAB_TOKEN:?Missing GitLab mirror token}"
+    target='gitlab.spseplzen.cz/studentske-projekty/projekty-2026-2027/mtp1/navrh-a-implementace-modularniho-skolniho-informacniho-systemu.git'
+    git push "https://oauth2:${GITLAB_TOKEN}@$target" \
+      'refs/remotes/origin/main:refs/heads/main' \
+      'refs/remotes/origin/develop:refs/heads/develop' 'refs/tags/v*:refs/tags/v*'
+    ;;
+  docs)
+    mkdir -p dist/docs
+    docker run --rm --platform linux/amd64 --network none --user "$(id -u):$(id -g)" -e HOME=/tmp --entrypoint bash \
+      -v "$PWD/docs:/work/docs:ro" -v "$PWD/scripts/docs:/work/scripts/docs:ro" \
+      -v "$PWD/dist/docs:/work/dist/docs" -w /work \
+      ghcr.io/xu-cheng/texlive-full:20260701@sha256:11383430b9a3e48c0b79339f34d8092f942f897d91ab3749d4899d06731fea7f \
+      scripts/docs
+    ;;
+  *) echo 'Usage: scripts/ci {metadata|install|check|integration|production|package|publish|release|mirror|docs}' >&2; exit 2 ;;
 esac

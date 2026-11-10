@@ -27,3 +27,5 @@
 deploy/config.env
 deploy/.initialized
 deploy/.lock
+deploy/.first-admin.txt
+deploy/images.tar

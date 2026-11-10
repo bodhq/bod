@@ -1,5 +1,6 @@
 """Run against disposable Docker projects; no registry publishing or school data."""
 
+import argparse
 import hashlib
 import http.cookiejar
 import importlib.util
@@ -29,11 +30,11 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def main():
+def main(bundle=None):
     with tempfile.TemporaryDirectory(prefix="bod-production-") as temporary:
         root = Path(temporary)
         for name in ("bod.py", "compose.yml", "Caddyfile"):
-            shutil.copyfile(ROOT / "deploy" / name, root / name)
+            shutil.copyfile((bundle or ROOT / "deploy") / name, root / name)
         school = bod.School(root)
         prefix = "bod-ci-" + secrets.token_hex(6)
         port = free_port()
@@ -54,10 +55,14 @@ def main():
                 "ALLOWED_ORIGINS": json.dumps([origin]),
             },
         )
-        bod.write_env(
-            school.images,
-            {"API_IMAGE": "bod-ci-api:verify", "WEB_IMAGE": "bod-ci-web:verify"},
-        )
+        if bundle:
+            shutil.copyfile(bundle / "images.env", school.images)
+            (root / "images.tar").symlink_to(bundle / "images.tar")
+        else:
+            bod.write_env(
+                school.images,
+                {"API_IMAGE": "bod-ci-api:verify", "WEB_IMAGE": "bod-ci-web:verify"},
+            )
         jar = http.cookiejar.CookieJar()
         client = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(jar),
@@ -113,6 +118,7 @@ def main():
                     "install",
                     "--domain",
                     "localhost",
+                    *(["--offline"] if bundle else []),
                 ],
                 capture_output=True,
                 text=True,
@@ -157,7 +163,7 @@ def main():
             media(original_media)
             update = root / "candidate-images.env"
             bod.write_env(update, bod.read_env(school.images))
-            school.update(update)
+            school.update(update, offline=bool(bundle))
             assert list((root / "backups").glob("*/.complete"))
             login(current_password)
             backup = school.backup(root / "backup")
@@ -197,4 +203,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--bundle", type=Path)
+    args = parser.parse_args()
+    main(args.bundle.resolve() if args.bundle else None)

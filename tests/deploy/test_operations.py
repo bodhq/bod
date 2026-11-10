@@ -225,6 +225,56 @@ class Operations(unittest.TestCase):
         call.assert_not_called()
         self.assertFalse(self.school.config.exists())
 
+    def test_offline_install_loads_images_and_never_pulls(self):
+        archive = self.root / "images.tar"
+        archive.touch()
+        with (
+            patch.object(bod.subprocess, "run") as run,
+            patch.object(self.school, "compose") as compose,
+        ):
+            self.school.install("school.example", False, offline=True)
+        self.assertEqual(
+            run.call_args.args[0],
+            ["docker", "image", "load", "--input", str(archive.resolve())],
+        )
+        calls = [call.args for call in compose.call_args_list]
+        self.assertFalse(any(call[0] == "pull" for call in calls))
+        self.assertIn(("--pull", "never"), [call[-2:] for call in calls])
+
+    def test_missing_offline_archive_does_not_start_services(self):
+        with (
+            patch.object(self.school, "compose") as compose,
+            patch.object(bod.subprocess, "run") as run,
+            self.assertRaisesRegex(ValueError, "images.tar"),
+        ):
+            self.school.install("school.example", False, offline=True)
+        compose.assert_not_called()
+        run.assert_not_called()
+
+    def test_offline_update_backs_up_before_switch_and_never_pulls(self):
+        candidate = self.root / "candidate"
+        candidate.mkdir()
+        bod.write_env(
+            candidate / "images.env", {"API_IMAGE": "api:new", "WEB_IMAGE": "web:new"}
+        )
+        (candidate / "images.tar").touch()
+        events = []
+        with (
+            patch.object(
+                self.school, "load_images", side_effect=lambda _: events.append("load")
+            ),
+            patch.object(
+                self.school, "backup", side_effect=lambda _: events.append("backup")
+            ),
+            patch.object(
+                self.school, "compose", side_effect=lambda *args: events.append(args)
+            ),
+        ):
+            self.school.update(candidate / "images.env", offline=True)
+        self.assertEqual(events[:2], ["load", "backup"])
+        self.assertEqual(events[2][-2:], ("--pull", "never"))
+        self.assertEqual(bod.read_env(self.school.images)["API_IMAGE"], "api:new")
+
     def test_failed_candidate_preparation_never_stops_original_services(self):
         folder = self.backup()
         calls = []
