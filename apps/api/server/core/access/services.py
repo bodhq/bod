@@ -42,6 +42,7 @@ class AccessContext:
     permissions: set[str]
     # Snapshot pro audit: při odebrání vlastní role se session může změnit.
     active_role_code: str | None
+    school_role_code: str | None = None
 
 
 class AccessService:
@@ -65,7 +66,9 @@ class AccessService:
         roles = self.repo.role_codes(user.id)
         active = session.active_role_code if session.active_role_code in roles else None
         permissions = self.repo.permission_codes(active)
-        return AccessContext(user, session, roles, permissions, active)
+        return AccessContext(
+            user, session, roles, permissions, active, self.repo.school_scope(active)
+        )
 
     def me(self, context: AccessContext) -> MeRead:
         data = self.present_user(context.user).model_dump()
@@ -90,8 +93,16 @@ class AccessService:
         self.require(fresh, permission)
         return fresh
 
-    def refresh_actor(self, actor: AccessContext) -> AccessContext:
-        self.repo.lock_management()
+    def refresh_actor(
+        self,
+        actor: AccessContext,
+        *,
+        domain: bool = False,
+    ) -> AccessContext:
+        if domain:
+            self.repo.lock_authorization()
+        else:
+            self.repo.lock_management()
         session = self.repo.session_id(actor.session.id)
         if session is None or session.expires_at <= utcnow():
             raise AccessError("unauthenticated", "Přihlášení již není platné.")
@@ -304,6 +315,7 @@ class AccessService:
             "name": role.name,
             "description": role.description,
             "permission_codes": sorted(self.repo.permission_codes(role.code)),
+            "school_role_code": self.repo.school_scope(role.code),
         }
 
     def write_role(
@@ -317,12 +329,21 @@ class AccessService:
         actor = self.manage(actor, "roles.manage")
         permissions = set(payload.permission_codes)
         self.validate_permissions(code, permissions)
+        if code in DEFAULT_ROLES and payload.school_role_code not in {
+            None,
+            code if code != "admin" else None,
+        }:
+            raise AccessError(
+                "invalid_request", "Školní identita výchozí role je neměnná."
+            )
         role = Role(code=code, name=payload.name) if create else self.repo.role(code)
         before = None if create else self.role_data(role)
         role.name, role.description = payload.name, payload.description
         self.repo.add(role)
         self.repo.flush()
         self.repo.replace_permissions(code, permissions)
+        if code not in DEFAULT_ROLES:
+            self.repo.set_school_scope(code, payload.school_role_code)
         after = self.role_data(role)
         self.repo.audit(
             actor,

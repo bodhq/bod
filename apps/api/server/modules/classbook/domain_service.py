@@ -24,11 +24,29 @@ from .models import (
 
 
 class ClassbookDomainService(DomainService):
+    def lock_mutation(self, data: dict[str, Any]) -> None:
+        name = self.resource.name
+        if name == "classbook_entries":
+            if data.get("id"):
+                self.repo.lock_records("entry:" + str(data["id"]))
+            else:
+                self.repo.lock_records(
+                    "teacher:" + str(data["actual_teacher_id"]),
+                    "group:" + str(data["group_id"]),
+                )
+        elif name in {"classbook_participants", "attendance_records"}:
+            self.repo.lock_records("entry:" + str(data["classbook_entry_id"]))
+        elif name == "absence_excuse_requests":
+            self.repo.lock_records("student:" + str(data["student_id"]))
+        elif name == "absence_excuse_items":
+            request = self.repo.one("absence_excuse_requests", id=data["request_id"])
+            self.repo.lock_records("student:" + str(request["student_id"]))
+
     def owns_student(self, actor: AccessContext, student_id: Any) -> bool:
         return (
-            actor.active_role_code == "student" and actor.user.id == student_id
+            actor.school_role_code == "student" and actor.user.id == student_id
         ) or (
-            actor.active_role_code == "parent"
+            actor.school_role_code == "parent"
             and bool(
                 self.repo.rows(
                     "parent_students", parent_id=actor.user.id, student_id=student_id
@@ -40,7 +58,7 @@ class ClassbookDomainService(DomainService):
         authorize(
             "classbook.manage" in actor.permissions
             or (
-                actor.active_role_code == "teacher"
+                actor.school_role_code == "teacher"
                 and lesson["actual_teacher_id"] == actor.user.id
             ),
             "Výuku může měnit pouze její učitel nebo správce třídnice.",
@@ -62,7 +80,27 @@ class ClassbookDomainService(DomainService):
         if name == "classbook_entries":
             self.owns_lesson(actor, data)
             if old:
+                require(
+                    data.get("expected_updated_at") is not None,
+                    "Pošli expected_updated_at z načteného zápisu.",
+                )
+                conflict(
+                    instant(data["expected_updated_at"]) != instant(old["updated_at"]),
+                    "Zápis mezitím upravil jiný uživatel. Načti aktuální verzi.",
+                )
                 self.signed_guard(actor, old)
+                if old["status"] == "signed":
+                    require(
+                        bool((data.get("correction_reason") or "").strip()),
+                        "Oprava podepsaného zápisu vyžaduje důvod.",
+                    )
+                    self.access.repo.audit(
+                        actor,
+                        "classbook.corrected",
+                        "classbook_entries",
+                        str(old["id"]),
+                        after={"reason": data["correction_reason"]},
+                    )
                 for key in (
                     "lesson_occurrence_id",
                     "group_id",
@@ -90,6 +128,31 @@ class ClassbookDomainService(DomainService):
                 year["starts_on"] <= day < year["ends_on"],
                 "Výuka je mimo školní rok skupiny.",
             )
+            require(
+                instant(data["ends_at"]).astimezone(SCHOOL_ZONE).date() == day,
+                "Výuka musí začít i skončit ve stejný školní den.",
+            )
+            if not old:
+                from .repository import ClassbookRepository
+
+                conflict(
+                    ClassbookRepository(self.repo.db).has_lesson_conflict(data),
+                    "Výuka koliduje s již uloženým zápisem učitele nebo skupiny.",
+                )
+                if not data.get("lesson_occurrence_id"):
+                    authorize(
+                        "classbook.manage" in actor.permissions
+                        or bool(
+                            self.repo.rows(
+                                "teaching_assignments",
+                                group_id=data["group_id"],
+                                teacher_id=actor.user.id,
+                                subject_id=data["subject_id"],
+                            )
+                        ),
+                        "Mimořádnou výuku lze zapsat pouze "
+                        "pro vlastní předmět a skupinu.",
+                    )
             if not old and data.get("lesson_occurrence_id"):
                 occurrence = self.repo.one(
                     "lesson_occurrences", id=data["lesson_occurrence_id"]
@@ -139,6 +202,13 @@ class ClassbookDomainService(DomainService):
                     classbook_entry_id=lesson["id"],
                     student_id=data["student_id"],
                 )
+                if data["status"] == "absent" and data.get("missed_minutes") is None:
+                    data["missed_minutes"] = int(
+                        (
+                            instant(lesson["ends_at"]) - instant(lesson["starts_at"])
+                        ).total_seconds()
+                        / 60
+                    )
                 self.validate_attendance(data, lesson)
                 if old and old["is_excused"]:
                     require(
@@ -163,6 +233,15 @@ class ClassbookDomainService(DomainService):
             )
             if old:
                 conflict(old["status"] != "open", "Žádost už je uzavřená.")
+                conflict(
+                    any(
+                        item["decision"] != "pending"
+                        for item in self.repo.rows(
+                            "absence_excuse_items", request_id=old["id"]
+                        )
+                    ),
+                    "Důvod žádosti s rozhodnutými položkami již nelze měnit.",
+                )
                 require(
                     old["student_id"] == data["student_id"]
                     and old["requested_by"] == data["requested_by"],
@@ -207,6 +286,14 @@ class ClassbookDomainService(DomainService):
             data["status"] != "released_early" or missed > 0,
             "Předčasný odchod vyžaduje zameškané minuty.",
         )
+        require(
+            data["status"] != "absent" or missed == duration,
+            "Celá absence musí odpovídat délce výuky.",
+        )
+        require(
+            data["status"] != "late" or missed == 0,
+            "Zpoždění eviduj pouze ve zpožděných minutách.",
+        )
 
     def validate_delete(self, old: dict[str, Any], actor: AccessContext) -> None:
         if self.resource.name in {"absence_excuse_requests", "absence_excuse_items"}:
@@ -216,6 +303,24 @@ class ClassbookDomainService(DomainService):
         if self.resource.name == "classbook_entries":
             self.signed_guard(actor, old)
             conflict(old["status"] == "signed", "Podepsaný zápis nelze odstranit.")
+            conflict(
+                bool(
+                    self.repo.rows("attendance_records", classbook_entry_id=old["id"])
+                ),
+                "Zápis má docházku a nelze jej odstranit.",
+            )
+            for row in self.repo.rows(
+                "classbook_participants", classbook_entry_id=old["id"]
+            ):
+                participant = self.repo.entity(
+                    ClassbookParticipants,
+                    {
+                        "classbook_entry_id": old["id"],
+                        "student_id": row["student_id"],
+                    },
+                )
+                self.repo.remove(participant)
+            self.repo.flush()
         else:
             lesson = self.repo.one("classbook_entries", id=old["classbook_entry_id"])
             self.signed_guard(actor, lesson)
@@ -240,6 +345,7 @@ class ClassbookDomainService(DomainService):
 
     def sign(self, actor: AccessContext, entry_id: Any) -> Any:
         def action(fresh: AccessContext) -> Any:
+            self.repo.lock_records("entry:" + str(entry_id))
             entity = self.repo.entity(ClassbookEntries, {"id": entry_id})
             old = entity.model_dump()
             self.owns_lesson(fresh, old)
@@ -259,20 +365,24 @@ class ClassbookDomainService(DomainService):
 
         return self.transaction(actor, "classbook.write", action)
 
-    def mark(self, actor: AccessContext, entry_id: Any, payload: BaseModel) -> Any:
+    def mark(
+        self,
+        actor: AccessContext,
+        entry_id: Any,
+        payload: BaseModel,
+        *,
+        _actor: AccessContext | None = None,
+    ) -> Any:
         from .resources import RESOURCES
 
         # The same audited CRUD path validates teacher ownership and roster membership.
         data = payload.model_dump()
         data["classbook_entry_id"] = entry_id
-        resource = next(
-            r
-            for r in RESOURCES
-            if r.name == "attendance_records"
-        )
+        resource = next(r for r in RESOURCES if r.name == "attendance_records")
         service = ClassbookDomainService(self.repo.db, resource)
 
         def action(fresh: AccessContext) -> Any:
+            self.repo.lock_records("entry:" + str(entry_id))
             rows = self.repo.rows(
                 "attendance_records",
                 classbook_entry_id=entry_id,
@@ -283,7 +393,7 @@ class ClassbookDomainService(DomainService):
                 old = entity.model_dump()
                 merged = old | data
                 service.validate(merged, old, fresh)
-                for key, value in data.items():
+                for key, value in merged.items():
                     setattr(entity, key, value)
                 service.touch(entity, fresh)
                 operation = "updated"
@@ -298,6 +408,25 @@ class ClassbookDomainService(DomainService):
             service.audit(fresh, entity, operation, old)
             return entity
 
+        if _actor is not None:
+            return action(_actor)
+        return self.transaction(actor, "attendance.mark", action)
+
+    def mark_many(
+        self,
+        actor: AccessContext,
+        entry_id: Any,
+        payloads: list[BaseModel],
+    ) -> list[Any]:
+        students = [payload.model_dump()["student_id"] for payload in payloads]
+        require(len(students) == len(set(students)), "Žák je v dávce vícekrát.")
+
+        def action(fresh: AccessContext) -> list[Any]:
+            return [
+                self.mark(actor, entry_id, payload, _actor=fresh)
+                for payload in payloads
+            ]
+
         return self.transaction(actor, "attendance.mark", action)
 
     def request_excuse(
@@ -308,6 +437,7 @@ class ClassbookDomainService(DomainService):
         record_ids: list[Any],
     ) -> Any:
         def action(fresh: AccessContext) -> Any:
+            self.repo.lock_records("student:" + str(student_id))
             require(
                 self.owns_student(fresh, student_id),
                 "Žádost může podat žák nebo jeho rodič.",
@@ -323,6 +453,13 @@ class ClassbookDomainService(DomainService):
             self.repo.flush()
             for record_id in record_ids:
                 attendance = self.repo.one("attendance_records", id=record_id)
+                lesson = self.repo.one(
+                    "classbook_entries", id=attendance["classbook_entry_id"]
+                )
+                require(
+                    lesson["status"] == "signed",
+                    "Žádost vyžaduje docházku z podepsané hodiny.",
+                )
                 require(
                     attendance["student_id"] == student_id
                     and attendance["status"] != "present"
@@ -363,6 +500,12 @@ class ClassbookDomainService(DomainService):
         note: str | None,
     ) -> Any:
         def action(fresh: AccessContext) -> Any:
+            request_data = self.repo.one("absence_excuse_requests", id=request_id)
+            record_data = self.repo.one("attendance_records", id=record_id)
+            self.repo.lock_records(
+                "student:" + str(request_data["student_id"]),
+                "entry:" + str(record_data["classbook_entry_id"]),
+            )
             request = self.repo.entity(AbsenceExcuseRequests, {"id": request_id})
             require(request.status == "open", "Žádost už je uzavřená.")
             item = self.repo.entity(
@@ -387,7 +530,7 @@ class ClassbookDomainService(DomainService):
             )
             authorize(
                 "classbook.manage" in fresh.permissions
-                or (fresh.active_role_code == "teacher" and allowed),
+                or (fresh.school_role_code == "teacher" and allowed),
                 "Absenci může omluvit třídní učitel žáka.",
             )
             require(
@@ -429,6 +572,8 @@ class ClassbookDomainService(DomainService):
 
     def withdraw(self, actor: AccessContext, request_id: Any) -> Any:
         def action(fresh: AccessContext) -> Any:
+            request_data = self.repo.one("absence_excuse_requests", id=request_id)
+            self.repo.lock_records("student:" + str(request_data["student_id"]))
             entity = self.repo.entity(AbsenceExcuseRequests, {"id": request_id})
             require(
                 entity.requested_by == fresh.user.id,

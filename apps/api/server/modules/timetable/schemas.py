@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import Field, StrictBool, StrictInt
 
+from server.core.domain.router import Pagination
 from server.core.domain.schemas import DomainInput, DomainRead
 
 
@@ -294,7 +295,15 @@ class TimetableEntriesCreate(DomainInput):
     is_locked: StrictBool = Field(default=False)
 
 
+class TimetableEntryState(TimetableEntriesCreate):
+    id: UUID
+
+
 class TimetableEntriesPatch(DomainInput):
+    expected_state: TimetableEntryState | None = Field(
+        default=None,
+        description="Úplný naposledy načtený stav položky pro ochranu souběhu.",
+    )
     timetable_version_id: UUID | None = Field(default=None)
     teaching_assignment_id: UUID | None = Field(default=None)
     cycle_week_id: UUID | None = Field(default=None)
@@ -389,3 +398,35 @@ class LessonChangesRead(DomainRead):
     updated_by: UUID
     created_at: datetime
     updated_at: datetime
+
+
+class TeachingPlansFilter(Pagination):
+    school_year_id: UUID | None = None
+
+
+class TeachingAssignmentsFilter(Pagination):
+    teaching_plan_id: UUID | None = None
+    group_id: UUID | None = None
+    teacher_id: UUID | None = None
+
+
+class TimetableVersionsFilter(Pagination):
+    teaching_plan_id: UUID | None = None
+    status: Literal["draft", "published", "archived"] | None = None
+
+
+class TimetableEntriesFilter(Pagination):
+    timetable_version_id: UUID | None = None
+    cycle_week_id: UUID | None = None
+
+
+class TimeSlotsFilter(Pagination):
+    time_grid_id: UUID | None = None
+
+
+class TeachingCycleWeeksFilter(Pagination):
+    teaching_plan_id: UUID | None = None
+
+
+class TeachingAssignmentWeeksFilter(Pagination):
+    teaching_assignment_id: UUID | None = None

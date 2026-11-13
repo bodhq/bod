@@ -170,46 +170,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "requested_by": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested By"
-          },
-          "status": {
-            "anyOf": [
-              {
-                "enum": [
-                  "open",
-                  "closed",
-                  "withdrawn"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status"
-          },
-          "student_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Student Id"
           }
         },
         "title": "AbsenceExcuseRequestsPatch",
@@ -281,6 +241,70 @@
         "title": "AbsenceExcuseRequestsRead",
         "type": "object"
       },
+      "AssignmentOverview": {
+        "properties": {
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "group_name": {
+            "title": "Group Name",
+            "type": "string"
+          },
+          "required_room_type_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Room Type Code"
+          },
+          "subject_code": {
+            "title": "Subject Code",
+            "type": "string"
+          },
+          "subject_id": {
+            "format": "uuid",
+            "title": "Subject Id",
+            "type": "string"
+          },
+          "subject_name": {
+            "title": "Subject Name",
+            "type": "string"
+          },
+          "teacher_id": {
+            "format": "uuid",
+            "title": "Teacher Id",
+            "type": "string"
+          },
+          "teacher_name": {
+            "title": "Teacher Name",
+            "type": "string"
+          },
+          "teaching_assignment_id": {
+            "format": "uuid",
+            "title": "Teaching Assignment Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "teaching_assignment_id",
+          "group_id",
+          "group_name",
+          "subject_id",
+          "subject_code",
+          "subject_name",
+          "teacher_id",
+          "teacher_name",
+          "required_room_type_code"
+        ],
+        "title": "AssignmentOverview",
+        "type": "object"
+      },
       "AttendanceRecordsCreate": {
         "additionalProperties": false,
         "properties": {
@@ -349,18 +373,6 @@
       "AttendanceRecordsPatch": {
         "additionalProperties": false,
         "properties": {
-          "classbook_entry_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Classbook Entry Id"
-          },
           "late_minutes": {
             "anyOf": [
               {
@@ -410,18 +422,6 @@
               }
             ],
             "title": "Status"
-          },
-          "student_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Student Id"
           }
         },
         "title": "AttendanceRecordsPatch",
@@ -752,6 +752,25 @@
         "title": "BatchCreate",
         "type": "object"
       },
+      "ChildRead": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "student_id",
+          "name"
+        ],
+        "title": "ChildRead",
+        "type": "object"
+      },
       "ClassEnrollmentsCreate": {
         "additionalProperties": false,
         "properties": {
@@ -986,15 +1005,6 @@
             "title": "Starts At",
             "type": "string"
           },
-          "status": {
-            "default": "draft",
-            "enum": [
-              "draft",
-              "signed"
-            ],
-            "title": "Status",
-            "type": "string"
-          },
           "subject_id": {
             "format": "uuid",
             "title": "Subject Id",
@@ -1049,7 +1059,20 @@
             ],
             "title": "Actual Teacher Id"
           },
-          "ends_at": {
+          "correction_reason": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Reason"
+          },
+          "expected_updated_at": {
             "anyOf": [
               {
                 "format": "date-time",
@@ -1059,31 +1082,7 @@
                 "type": "null"
               }
             ],
-            "title": "Ends At"
-          },
-          "group_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Group Id"
-          },
-          "lesson_occurrence_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lesson Occurrence Id"
+            "title": "Expected Updated At"
           },
           "note": {
             "anyOf": [
@@ -1095,45 +1094,6 @@
               }
             ],
             "title": "Note"
-          },
-          "starts_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Starts At"
-          },
-          "status": {
-            "anyOf": [
-              {
-                "enum": [
-                  "draft",
-                  "signed"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status"
-          },
-          "subject_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Subject Id"
           },
           "topic": {
             "anyOf": [
@@ -1528,6 +1488,91 @@
         "title": "Decision",
         "type": "object"
       },
+      "EntryOverview": {
+        "properties": {
+          "cycle_week_id": {
+            "format": "uuid",
+            "title": "Cycle Week Id",
+            "type": "string"
+          },
+          "day_of_week": {
+            "title": "Day Of Week",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_locked": {
+            "title": "Is Locked",
+            "type": "boolean"
+          },
+          "room_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Code"
+          },
+          "room_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Id"
+          },
+          "room_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Name"
+          },
+          "teaching_assignment_id": {
+            "format": "uuid",
+            "title": "Teaching Assignment Id",
+            "type": "string"
+          },
+          "time_slot_id": {
+            "format": "uuid",
+            "title": "Time Slot Id",
+            "type": "string"
+          },
+          "timetable_version_id": {
+            "format": "uuid",
+            "title": "Timetable Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "timetable_version_id",
+          "teaching_assignment_id",
+          "cycle_week_id",
+          "day_of_week",
+          "time_slot_id",
+          "room_id",
+          "is_locked",
+          "room_code",
+          "room_name"
+        ],
+        "title": "EntryOverview",
+        "type": "object"
+      },
       "ErrorCode": {
         "enum": [
           "AUTH_INVALID_CREDENTIALS",
@@ -1590,6 +1635,129 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "ExcuseDetail": {
+        "properties": {
+          "closed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExcuseItemDetail"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "requested_by": {
+            "format": "uuid",
+            "title": "Requested By",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "closed",
+              "withdrawn"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          },
+          "student_name": {
+            "title": "Student Name",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "student_id",
+          "requested_by",
+          "reason",
+          "status",
+          "created_at",
+          "updated_at",
+          "closed_at",
+          "student_name",
+          "items"
+        ],
+        "title": "ExcuseDetail",
+        "type": "object"
+      },
+      "ExcuseItemDetail": {
+        "properties": {
+          "attendance": {
+            "$ref": "#/components/schemas/AttendanceRecordsRead"
+          },
+          "can_decide": {
+            "title": "Can Decide",
+            "type": "boolean"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "item": {
+            "$ref": "#/components/schemas/AbsenceExcuseItemsRead"
+          },
+          "lesson_id": {
+            "format": "uuid",
+            "title": "Lesson Id",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "subject_name": {
+            "title": "Subject Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item",
+          "attendance",
+          "lesson_id",
+          "starts_at",
+          "ends_at",
+          "subject_name",
+          "can_decide"
+        ],
+        "title": "ExcuseItemDetail",
         "type": "object"
       },
       "ExcuseRequest": {
@@ -2228,6 +2396,26 @@
         "title": "LessonChangesRead",
         "type": "object"
       },
+      "LessonDetail": {
+        "properties": {
+          "lesson": {
+            "$ref": "#/components/schemas/ClassbookEntriesRead"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/LessonStudent"
+            },
+            "title": "Participants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lesson",
+          "participants"
+        ],
+        "title": "LessonDetail",
+        "type": "object"
+      },
       "LessonOccurrencesCreate": {
         "additionalProperties": false,
         "properties": {
@@ -2306,6 +2494,36 @@
         "title": "LessonOccurrencesRead",
         "type": "object"
       },
+      "LessonStudent": {
+        "properties": {
+          "attendance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceRecordsRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "student_id": {
+            "format": "uuid",
+            "title": "Student Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "student_id",
+          "name",
+          "attendance"
+        ],
+        "title": "LessonStudent",
+        "type": "object"
+      },
       "LoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2362,6 +2580,7 @@
           "note": {
             "anyOf": [
               {
+                "maxLength": 10000,
                 "type": "string"
               },
               {
@@ -2391,6 +2610,25 @@
           "status"
         ],
         "title": "MarkAttendance",
+        "type": "object"
+      },
+      "MarkAttendanceBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/MarkAttendance"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Records",
+            "type": "array"
+          }
+        },
+        "required": [
+          "records"
+        ],
+        "title": "MarkAttendanceBatch",
         "type": "object"
       },
       "ParentStudentsCreate": {
@@ -2564,6 +2802,45 @@
         "title": "ProfilePatch",
         "type": "object"
       },
+      "PublicationCheck": {
+        "properties": {
+          "can_publish": {
+            "title": "Can Publish",
+            "type": "boolean"
+          },
+          "issues": {
+            "description": "Prvn\u00ed blokuj\u00edc\u00ed probl\u00e9m. Po oprav\u011b spus\u0165 kontrolu znovu.",
+            "items": {
+              "$ref": "#/components/schemas/PublicationIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          }
+        },
+        "required": [
+          "can_publish",
+          "issues"
+        ],
+        "title": "PublicationCheck",
+        "type": "object"
+      },
+      "PublicationIssue": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "PublicationIssue",
+        "type": "object"
+      },
       "RoleCreate": {
         "additionalProperties": false,
         "properties": {
@@ -2606,6 +2883,23 @@
             "title": "Permission Codes",
             "type": "array",
             "uniqueItems": true
+          },
+          "school_role_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "student",
+                  "parent",
+                  "teacher"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u0160koln\u00ed identita vlastn\u00ed role; neroz\u0161i\u0159uje opr\u00e1vn\u011bn\u00ed.",
+            "title": "School Role Code"
           }
         },
         "required": [
@@ -2654,6 +2948,23 @@
             "title": "Permission Codes",
             "type": "array",
             "uniqueItems": true
+          },
+          "school_role_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "student",
+                  "parent",
+                  "teacher"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u0160koln\u00ed identita vlastn\u00ed role; neroz\u0161i\u0159uje opr\u00e1vn\u011bn\u00ed.",
+            "title": "School Role Code"
           }
         },
         "required": [
@@ -2715,6 +3026,23 @@
             "title": "Permission Codes",
             "type": "array",
             "uniqueItems": true
+          },
+          "school_role_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "student",
+                  "parent",
+                  "teacher"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u0160koln\u00ed identita vlastn\u00ed role; neroz\u0161i\u0159uje opr\u00e1vn\u011bn\u00ed.",
+            "title": "School Role Code"
           }
         },
         "required": [
@@ -3282,6 +3610,21 @@
       },
       "ScheduleLesson": {
         "properties": {
+          "change_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "modified",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Type"
+          },
           "ends_at": {
             "format": "date-time",
             "title": "Ends At",
@@ -3290,6 +3633,10 @@
           "group_id": {
             "format": "uuid",
             "title": "Group Id",
+            "type": "string"
+          },
+          "group_name": {
+            "title": "Group Name",
             "type": "string"
           },
           "lesson_occurrence_id": {
@@ -3304,6 +3651,44 @@
             ],
             "title": "Lesson Occurrence Id"
           },
+          "original_ends_at": {
+            "format": "date-time",
+            "title": "Original Ends At",
+            "type": "string"
+          },
+          "original_room_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Room Id"
+          },
+          "original_starts_at": {
+            "format": "date-time",
+            "title": "Original Starts At",
+            "type": "string"
+          },
+          "original_teacher_id": {
+            "format": "uuid",
+            "title": "Original Teacher Id",
+            "type": "string"
+          },
+          "room_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Code"
+          },
           "room_id": {
             "anyOf": [
               {
@@ -3316,6 +3701,17 @@
             ],
             "title": "Room Id"
           },
+          "room_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Name"
+          },
           "scheduled_date": {
             "format": "date",
             "title": "Scheduled Date",
@@ -3326,14 +3722,26 @@
             "title": "Starts At",
             "type": "string"
           },
+          "subject_code": {
+            "title": "Subject Code",
+            "type": "string"
+          },
           "subject_id": {
             "format": "uuid",
             "title": "Subject Id",
             "type": "string"
           },
+          "subject_name": {
+            "title": "Subject Name",
+            "type": "string"
+          },
           "teacher_id": {
             "format": "uuid",
             "title": "Teacher Id",
+            "type": "string"
+          },
+          "teacher_name": {
+            "title": "Teacher Name",
             "type": "string"
           },
           "timetable_entry_id": {
@@ -3345,6 +3753,17 @@
             "format": "uuid",
             "title": "Timetable Version Id",
             "type": "string"
+          },
+          "unresolved_reasons": {
+            "items": {
+              "enum": [
+                "teacher_unavailable",
+                "room_unavailable"
+              ],
+              "type": "string"
+            },
+            "title": "Unresolved Reasons",
+            "type": "array"
           }
         },
         "required": [
@@ -3357,7 +3776,19 @@
           "teacher_id",
           "room_id",
           "starts_at",
-          "ends_at"
+          "ends_at",
+          "group_name",
+          "subject_code",
+          "subject_name",
+          "teacher_name",
+          "room_code",
+          "room_name",
+          "change_type",
+          "original_teacher_id",
+          "original_room_id",
+          "original_starts_at",
+          "original_ends_at",
+          "unresolved_reasons"
         ],
         "title": "ScheduleLesson",
         "type": "object"
@@ -5495,6 +5926,17 @@
             ],
             "title": "Day Of Week"
           },
+          "expected_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimetableEntryState"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u00dapln\u00fd naposledy na\u010dten\u00fd stav polo\u017eky pro ochranu soub\u011bhu."
+          },
           "is_locked": {
             "anyOf": [
               {
@@ -5617,6 +6059,67 @@
           "is_locked"
         ],
         "title": "TimetableEntriesRead",
+        "type": "object"
+      },
+      "TimetableEntryState": {
+        "additionalProperties": false,
+        "properties": {
+          "cycle_week_id": {
+            "format": "uuid",
+            "title": "Cycle Week Id",
+            "type": "string"
+          },
+          "day_of_week": {
+            "title": "Day Of Week",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_locked": {
+            "default": false,
+            "title": "Is Locked",
+            "type": "boolean"
+          },
+          "room_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room Id"
+          },
+          "teaching_assignment_id": {
+            "format": "uuid",
+            "title": "Teaching Assignment Id",
+            "type": "string"
+          },
+          "time_slot_id": {
+            "format": "uuid",
+            "title": "Time Slot Id",
+            "type": "string"
+          },
+          "timetable_version_id": {
+            "format": "uuid",
+            "title": "Timetable Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "timetable_version_id",
+          "teaching_assignment_id",
+          "cycle_week_id",
+          "day_of_week",
+          "time_slot_id",
+          "id"
+        ],
+        "title": "TimetableEntryState",
         "type": "object"
       },
       "TimetablePreferencesCreate": {
@@ -6608,6 +7111,110 @@
           "type"
         ],
         "title": "ValidationIssue",
+        "type": "object"
+      },
+      "VersionOverview": {
+        "properties": {
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentOverview"
+            },
+            "title": "Assignments",
+            "type": "array"
+          },
+          "cycle_weeks": {
+            "items": {
+              "$ref": "#/components/schemas/TeachingCycleWeeksRead"
+            },
+            "title": "Cycle Weeks",
+            "type": "array"
+          },
+          "editable": {
+            "description": "Verze je n\u00e1vrh a lze m\u011bnit jej\u00ed polo\u017eky.",
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryOverview"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/TeachingPlansRead"
+          },
+          "plan_editable": {
+            "description": "Pl\u00e1n v\u00fduky dosud nen\u00ed zmrazen\u00fd.",
+            "title": "Plan Editable",
+            "type": "boolean"
+          },
+          "time_slots": {
+            "items": {
+              "$ref": "#/components/schemas/TimeSlotsRead"
+            },
+            "title": "Time Slots",
+            "type": "array"
+          },
+          "version": {
+            "$ref": "#/components/schemas/TimetableVersionsRead"
+          },
+          "workloads": {
+            "items": {
+              "$ref": "#/components/schemas/WorkloadOverview"
+            },
+            "title": "Workloads",
+            "type": "array"
+          }
+        },
+        "required": [
+          "version",
+          "plan",
+          "editable",
+          "plan_editable",
+          "cycle_weeks",
+          "time_slots",
+          "assignments",
+          "workloads",
+          "entries"
+        ],
+        "title": "VersionOverview",
+        "type": "object"
+      },
+      "WorkloadOverview": {
+        "properties": {
+          "cycle_week_id": {
+            "format": "uuid",
+            "title": "Cycle Week Id",
+            "type": "string"
+          },
+          "remaining_periods": {
+            "description": "Kladn\u00e9 \u010d\u00edslo: chyb\u011bj\u00edc\u00ed hodiny; z\u00e1porn\u00e9: hodiny nad \u00favazek.",
+            "title": "Remaining Periods",
+            "type": "integer"
+          },
+          "required_periods": {
+            "title": "Required Periods",
+            "type": "integer"
+          },
+          "scheduled_periods": {
+            "title": "Scheduled Periods",
+            "type": "integer"
+          },
+          "teaching_assignment_id": {
+            "format": "uuid",
+            "title": "Teaching Assignment Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "teaching_assignment_id",
+          "cycle_week_id",
+          "required_periods",
+          "scheduled_periods",
+          "remaining_periods"
+        ],
+        "title": "WorkloadOverview",
         "type": "object"
       }
     }
@@ -10234,178 +10841,6 @@
       }
     },
     "/api/v1/classbook/absence-excuse-items/{request_id}/{attendance_record_id}": {
-      "delete": {
-        "operationId": "delete_absence_excuse_items_api_v1_classbook_absence_excuse_items__request_id___attendance_record_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "request_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Request Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "attendance_record_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Attendance Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
-            "in": "header",
-            "name": "origin",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 2048,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
-              "title": "Origin"
-            }
-          },
-          {
-            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
-            "in": "header",
-            "name": "X-Requested-With",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 64,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
-              "examples": [
-                "bod"
-              ],
-              "title": "X-Requested-With"
-            }
-          },
-          {
-            "description": "SSR: skip validates without extending DB or cookie expiry.",
-            "in": "header",
-            "name": "X-Session-Refresh",
-            "required": false,
-            "schema": {
-              "default": "allow",
-              "description": "SSR: skip validates without extending DB or cookie expiry.",
-              "enum": [
-                "allow",
-                "skip"
-              ],
-              "title": "X-Session-Refresh",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
-            "in": "cookie",
-            "name": "session_id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 128,
-                  "minLength": 1,
-                  "pattern": "^[A-Za-z0-9_-]+$",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        },
-        "summary": "Delete Absence Excuse Items",
-        "tags": [
-          "classbook"
-        ]
-      },
       "get": {
         "operationId": "get_absence_excuse_items_api_v1_classbook_absence_excuse_items__request_id___attendance_record_id__get",
         "parameters": [
@@ -11134,168 +11569,6 @@
       }
     },
     "/api/v1/classbook/absence-excuse-requests/{id}": {
-      "delete": {
-        "operationId": "delete_absence_excuse_requests_api_v1_classbook_absence_excuse_requests__id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
-            "in": "header",
-            "name": "origin",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 2048,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
-              "title": "Origin"
-            }
-          },
-          {
-            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
-            "in": "header",
-            "name": "X-Requested-With",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 64,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
-              "examples": [
-                "bod"
-              ],
-              "title": "X-Requested-With"
-            }
-          },
-          {
-            "description": "SSR: skip validates without extending DB or cookie expiry.",
-            "in": "header",
-            "name": "X-Session-Refresh",
-            "required": false,
-            "schema": {
-              "default": "allow",
-              "description": "SSR: skip validates without extending DB or cookie expiry.",
-              "enum": [
-                "allow",
-                "skip"
-              ],
-              "title": "X-Session-Refresh",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
-            "in": "cookie",
-            "name": "session_id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 128,
-                  "minLength": 1,
-                  "pattern": "^[A-Za-z0-9_-]+$",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        },
-        "summary": "Delete Absence Excuse Requests",
-        "tags": [
-          "classbook"
-        ]
-      },
       "get": {
         "operationId": "get_absence_excuse_requests_api_v1_classbook_absence_excuse_requests__id__get",
         "parameters": [
@@ -14448,6 +14721,195 @@
         ]
       }
     },
+    "/api/v1/classbook/excuse-inbox": {
+      "get": {
+        "operationId": "excuse_inbox_api_v1_classbook_excuse_inbox_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AbsenceExcuseRequestsRead"
+                  },
+                  "title": "Response Excuse Inbox Api V1 Classbook Excuse Inbox Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Excuse Inbox",
+        "tags": [
+          "classbook workflows"
+        ]
+      }
+    },
     "/api/v1/classbook/excuse-requests": {
       "post": {
         "operationId": "request_excuse_api_v1_classbook_excuse_requests_post",
@@ -14614,6 +15076,177 @@
           }
         },
         "summary": "Request Excuse",
+        "tags": [
+          "classbook workflows"
+        ]
+      }
+    },
+    "/api/v1/classbook/excuse-requests/{request_id}": {
+      "get": {
+        "operationId": "read_excuse_api_v1_classbook_excuse_requests__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExcuseDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Read Excuse",
         "tags": [
           "classbook workflows"
         ]
@@ -15153,6 +15786,337 @@
       }
     },
     "/api/v1/classbook/lessons/{entry_id}": {
+      "delete": {
+        "operationId": "delete_lesson_api_v1_classbook_lessons__entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Lesson",
+        "tags": [
+          "classbook workflows"
+        ]
+      },
+      "get": {
+        "operationId": "read_lesson_api_v1_classbook_lessons__entry_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Read Lesson",
+        "tags": [
+          "classbook workflows"
+        ]
+      },
       "patch": {
         "operationId": "patch_lesson_api_v1_classbook_lessons__entry_id__patch",
         "parameters": [
@@ -15333,6 +16297,191 @@
         ]
       }
     },
+    "/api/v1/classbook/lessons/{entry_id}/attendance": {
+      "put": {
+        "operationId": "mark_batch_api_v1_classbook_lessons__entry_id__attendance_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkAttendanceBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AttendanceRecordsRead"
+                  },
+                  "title": "Response Mark Batch Api V1 Classbook Lessons  Entry Id  Attendance Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Mark Batch",
+        "tags": [
+          "classbook workflows"
+        ]
+      }
+    },
     "/api/v1/classbook/my-attendance": {
       "get": {
         "operationId": "my_attendance_api_v1_classbook_my_attendance_get",
@@ -15352,6 +16501,64 @@
                 }
               ],
               "title": "Student Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
             }
           },
           {
@@ -15515,10 +16722,220 @@
         ]
       }
     },
+    "/api/v1/classbook/my-children": {
+      "get": {
+        "operationId": "my_children_api_v1_classbook_my_children_get",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChildRead"
+                  },
+                  "title": "Response My Children Api V1 Classbook My Children Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "My Children",
+        "tags": [
+          "classbook workflows"
+        ]
+      }
+    },
     "/api/v1/classbook/my-excuse-requests": {
       "get": {
         "operationId": "my_excuses_api_v1_classbook_my_excuse_requests_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "closed",
+                    "withdrawn"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
           {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
@@ -15684,6 +17101,64 @@
       "get": {
         "operationId": "my_lessons_api_v1_classbook_my_lessons_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
           {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
@@ -31642,6 +33117,16 @@
             }
           },
           {
+            "in": "query",
+            "name": "include_cancelled",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Cancelled",
+              "type": "boolean"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -32701,6 +34186,23 @@
             }
           },
           {
+            "in": "query",
+            "name": "teaching_assignment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Teaching Assignment Id"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -33598,6 +35100,57 @@
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "teaching_plan_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Teaching Plan Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "teacher_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Teacher Id"
             }
           },
           {
@@ -37111,6 +38664,23 @@
             }
           },
           {
+            "in": "query",
+            "name": "teaching_plan_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Teaching Plan Id"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -39781,6 +41351,23 @@
             }
           },
           {
+            "in": "query",
+            "name": "school_year_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "School Year Id"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -41696,6 +43283,23 @@
             }
           },
           {
+            "in": "query",
+            "name": "time_grid_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Time Grid Id"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -42563,6 +44167,40 @@
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "timetable_version_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Timetable Version Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cycle_week_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cycle Week Id"
             }
           },
           {
@@ -44306,6 +45944,44 @@
             }
           },
           {
+            "in": "query",
+            "name": "teaching_plan_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Teaching Plan Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "draft",
+                    "published",
+                    "archived"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
             "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
             "in": "header",
             "name": "origin",
@@ -45506,6 +47182,350 @@
         "summary": "Close",
         "tags": [
           "timetable workflows"
+        ]
+      }
+    },
+    "/api/v1/timetable/timetable-versions/{version_id}/overview": {
+      "get": {
+        "description": "\u00dapln\u00fd p\u0159ehled jedn\u00e9 varianty v\u010detn\u011b \u00favazk\u016f a popisk\u016f pro editor rozvrhu.",
+        "operationId": "overview_api_v1_timetable_timetable_versions__version_id__overview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionOverview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "timetable management"
+        ]
+      }
+    },
+    "/api/v1/timetable/timetable-versions/{version_id}/publication-check": {
+      "get": {
+        "description": "Ov\u011b\u0159\u00ed aktu\u00e1ln\u00ed n\u00e1vrh bez z\u00e1pisu, auditu \u010di zmrazen\u00ed z\u00e1vislost\u00ed.\n\nV\u00fdsledek plat\u00ed pro aktu\u00e1ln\u00ed data. Publikov\u00e1n\u00ed kontrolu provede znovu\nv transakci a samostatn\u011b vy\u017eaduje timetable.publish.",
+        "operationId": "publication_check_api_v1_timetable_timetable_versions__version_id__publication_check_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationCheck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Publication Check",
+        "tags": [
+          "timetable management"
         ]
       }
     },

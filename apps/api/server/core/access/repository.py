@@ -12,7 +12,7 @@ from server.core.auth.models import AuthSession
 from server.core.exceptions import AppException, ErrorCode
 from server.core.users.models import User
 
-from .models import Permission, Role, RolePermission, UserRole
+from .models import Permission, Role, RolePermission, RoleSchoolScope, UserRole
 
 if TYPE_CHECKING:
     from .services import AccessContext
@@ -41,6 +41,13 @@ class AccessRepository:
         # Serializuje změny administrátorů, aby nešlo souběžně odebrat oba poslední.
         self.execute(text("SELECT pg_advisory_xact_lock(7463812041)"))
 
+    def lock_authorization(self) -> None:
+        """Domain writes share authorization; role changes remain exclusive."""
+        if self.db.get_bind().dialect.name != "postgresql":
+            self.lock_management()
+            return
+        self.execute(text("SELECT pg_advisory_xact_lock_shared(7463812041)"))
+
     def user(self, user_id: UUID, *, lock: bool = False) -> User:
         query = select(User).where(col(User.id) == user_id)
         if lock:
@@ -58,6 +65,23 @@ class AccessRepository:
                 .order_by(col(UserRole.role_code))
             ).all()
         )
+
+    def school_scope(self, code: str | None) -> str | None:
+        if code in {"student", "parent", "teacher"}:
+            return code
+        if code is None:
+            return None
+        scope = self.db.get(RoleSchoolScope, code, populate_existing=True)
+        return scope.school_role_code if scope else None
+
+    def set_school_scope(self, code: str, school_role: str | None) -> None:
+        existing = self.db.get(RoleSchoolScope, code)
+        if existing is not None:
+            self.db.delete(existing)
+            self.flush()
+        if school_role is not None:
+            self.db.add(RoleSchoolScope(role_code=code, school_role_code=school_role))
+            self.flush()
 
     def permission_codes(self, role_code: str | None) -> set[str]:
         if role_code is None:

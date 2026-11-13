@@ -19,20 +19,15 @@ class ClassbookEntriesCreate(DomainInput):
     ends_at: datetime = Field(default=...)
     topic: str | None = Field(default=None)
     note: str | None = Field(default=None)
-    status: Literal["draft", "signed"] = Field(default="draft")
 
 
 class ClassbookEntriesPatch(DomainInput):
-    lesson_occurrence_id: UUID | None = Field(default=None)
-    group_id: UUID | None = Field(default=None)
-    subject_id: UUID | None = Field(default=None)
     actual_teacher_id: UUID | None = Field(default=None)
     actual_room_id: UUID | None = Field(default=None)
-    starts_at: datetime | None = Field(default=None)
-    ends_at: datetime | None = Field(default=None)
     topic: str | None = Field(default=None)
     note: str | None = Field(default=None)
-    status: Literal["draft", "signed"] | None = Field(default=None)
+    expected_updated_at: datetime | None = None
+    correction_reason: str | None = Field(default=None, min_length=1, max_length=10000)
 
 
 class ClassbookEntriesRead(DomainRead):
@@ -79,8 +74,6 @@ class AttendanceRecordsCreate(DomainInput):
 
 
 class AttendanceRecordsPatch(DomainInput):
-    classbook_entry_id: UUID | None = Field(default=None)
-    student_id: UUID | None = Field(default=None)
     status: Literal["present", "absent", "late", "released_early"] | None = Field(
         default=None
     )
@@ -114,10 +107,7 @@ class AbsenceExcuseRequestsCreate(DomainInput):
 
 
 class AbsenceExcuseRequestsPatch(DomainInput):
-    student_id: UUID | None = Field(default=None)
-    requested_by: UUID | None = Field(default=None)
     reason: str | None = Field(default=None, min_length=1)
-    status: Literal["open", "closed", "withdrawn"] | None = Field(default=None)
 
 
 class AbsenceExcuseRequestsRead(DomainRead):
@@ -148,3 +138,34 @@ class AbsenceExcuseItemsRead(DomainRead):
     decision_note: str | None
     decided_by: UUID | None
     decided_at: datetime | None
+
+
+class LessonStudent(DomainRead):
+    student_id: UUID
+    name: str
+    attendance: AttendanceRecordsRead | None
+
+
+class LessonDetail(DomainRead):
+    lesson: ClassbookEntriesRead
+    participants: list[LessonStudent]
+
+
+class ExcuseItemDetail(DomainRead):
+    item: AbsenceExcuseItemsRead
+    attendance: AttendanceRecordsRead
+    lesson_id: UUID
+    starts_at: datetime
+    ends_at: datetime
+    subject_name: str
+    can_decide: bool
+
+
+class ExcuseDetail(AbsenceExcuseRequestsRead):
+    student_name: str
+    items: list[ExcuseItemDetail]
+
+
+class ChildRead(DomainRead):
+    student_id: UUID
+    name: str

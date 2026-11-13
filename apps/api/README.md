@@ -126,6 +126,111 @@ zaslané hodnoty ani tělo požadavku se v chybě nevracejí. Doménové chyby
 používají `error.message` a mohou `details` vynechat.
 
 Instalaci, generování klienta a spuštění popisuje [vývoj](../../docs/development.md),
-rozsah sad včetně PostgreSQL/Redis integrací a vyřazených starých testů
+rozsah sad včetně PostgreSQL/Redis integrací a regresních scénářů
 [testování](../../docs/testing.md). Provoz školního serveru popisuje
 [nasazení](../../docs/deployment.md).
+
+## Správa rozvrhů pro editor
+
+`GET /api/v1/timetable/timetable-versions/{id}/overview` vrací úplný přehled
+jedné varianty: verzi, plán, typy týdnů, seřazené zvonění, zadání výuky
+s názvy skupin, předmětů a učitelů, položky s označením učeben a úvazky.
+U každého zadání a typu týdne vrací `required_periods`, `scheduled_periods`
+a `remaining_periods`. Kladný zbytek znamená chybějící hodiny, záporný hodiny
+navíc. Chybějící úvazek pro typ týdne se počítá jako nula. `editable` popisuje
+možnost změny položek varianty, `plan_editable` možnost změny jejího plánu.
+Publikovaný plán může být zmrazený i pro další návrh varianty; pro změnu
+zadání použij existující operaci klonování.
+
+`GET /api/v1/timetable/timetable-versions/{id}/publication-check` provede
+stejnou doménovou kontrolu jako publikování a vrátí `can_publish` a první
+blokující problém v `issues` (`code`, česká `message`). Po opravě opakuj
+kontrolu. Operace nemění rozvrh, audit ani zmrazení závislostí. Výsledek
+popisuje aktuální stav dat; publikování jej znovu ověří v transakci.
+Oba přehledy vyžadují `timetable.edit`; publikování dál samostatně vyžaduje
+`timetable.publish`. `can_publish` vyjadřuje připravenost dat, nikoli oprávnění
+aktuálního uživatele publikovat.
+
+Seznamy podporují následující volitelné filtry. Kombinují se pomocí AND a
+aplikují se **před** `offset` a `limit`; bez filtrů zůstává původní chování.
+
+| Kolekce pod `/api/v1/timetable` | Filtry |
+| --- | --- |
+| `teaching-plans` | `school_year_id` |
+| `teaching-assignments` | `teaching_plan_id`, `group_id`, `teacher_id` |
+| `teaching-cycle-weeks` | `teaching_plan_id` |
+| `teaching-assignment-weeks` | `teaching_assignment_id` |
+| `timetable-versions` | `teaching_plan_id`, `status` (`draft`, `published`, `archived`) |
+| `timetable-entries` | `timetable_version_id`, `cycle_week_id` |
+| `time-slots` | `time_grid_id` |
+
+Například `GET /api/v1/timetable/timetable-entries?timetable_version_id=UUID&cycle_week_id=UUID`.
+Odpovědi seznamů zůstávají pole; pořadí je stabilní podle primárního klíče.
+
+Přehledy využívají vazby ER modelu mezi `teaching_plans`,
+`teaching_assignments`, `timetable_versions`, `timetable_entries`, `time_slots`
+a katalogy. Nemění databázové tabulky. Současné rozšíření modelu o cykly týdnů
+zůstává zachované: hodinové úvazky jsou v `teaching_assignment_weeks`, nikoli
+v jednom `weekly_periods` na zadání, a položky nesou `cycle_week_id`.
+
+Testy těchto rozšíření lze spustit z kořene repozitáře:
+`uv run python -m pytest tests/api/domain/test_timetable_management.py --no-cov`.
+Používají izolované databázové fixtures ze společné backendové sady.
+
+## Dokončené postupy třídnice a suplování
+
+- `GET /classbook/lessons/{id}` vrací zápis, historický seznam účastníků,
+  jejich jména a docházku. Učitel čte vlastní hodinu, správce všechny. Žák a
+  propojený rodič vidí jen podepsanou hodinu a své účastníky. Pole `note` je
+  interní: veřejné přehledy je vracejí jako `null`.
+- `PUT /classbook/lessons/{id}/attendance` přijímá `records` (1–500 položek)
+  a uloží celou dávku atomicky. Duplicitní žáci a žáci mimo seznam se odmítnou.
+  Celá absence má délku hodiny; vynechané `missed_minutes` ji automaticky doplní.
+- `DELETE /classbook/lessons/{id}` odstraní vlastní prázdný návrh i s odvozenými
+  účastníky. Zápis s docházkou a podepsanou výuku nelze smazat.
+- `GET /classbook/excuse-inbox` stránkuje otevřené žádosti s položkami čekajícími
+  na rozhodnutí přihlášeného třídního učitele. `GET /classbook/excuse-requests/{id}`
+  vrací oprávněnému žadateli nebo učiteli detail položek, absencí a rozhodnutí.
+  Učitel v detailu vidí pouze položky, ke kterým má vztah třídního učitele.
+- `GET /classbook/my-children` vrací identifikátory a jména propojených dětí.
+- `my-lessons` a `my-attendance` podporují `date_from`, výlučný `date_to`,
+  `offset` a `limit`. Docházka žáka se zveřejní až s podpisem hodiny.
+  `my-excuse-requests` podporuje stránkování a filtr `status`.
+
+`PATCH /classbook/lessons/{id}` i obecný PATCH zápisu vyžadují
+`expected_updated_at` z posledního načtení. Oprava podepsaného zápisu navíc
+vyžaduje `classbook.correct` a `correction_reason`; důvod se ukládá do auditu.
+Identitu, termín a stav zápisu nelze poslat běžným PATCH. Založení mimořádné
+výuky vyžaduje vlastní zadání pro předmět a skupinu nebo `classbook.manage`.
+Překryv vlastního učitele nebo skupiny se odmítne.
+
+PATCH položky rozvrhu vyžaduje `expected_state`, tedy úplný naposledy načtený
+objekt položky včetně `id`. Zastaralý stav vrátí 409; klient musí načíst aktuální
+data. Pouhé opakování požadavku nesmí přepsat mezitím uloženou změnu.
+
+`GET /timetable/schedule` obsahuje také názvy skupin, předmětů, učitelů a učeben,
+původní termín, učitele a místnost a `change_type`. `include_cancelled=true`
+zahrne zrušené hodiny; výchozí chování je dál vynechává. Rozsah se uplatní při
+rozvíjení rozvrhu a zohlední i hodiny přesunuté z jiného období.
+`unresolved_reasons` označuje nedostupného učitele nebo místnost. Nedostupnost
+lze uložit před vyřešením suplování; nová publikace stále vyžaduje její vyřešení.
+Změna konkrétní hodiny ověřuje dostupnost jejího výsledného obsazení. Zadání
+s požadovaným typem místnosti nelze publikovat bez přiřazené učebny.
+
+Nové instalace mají provozní oprávnění třídnice u výchozích rolí. Existující
+ručně upravené role se nepřepisují. Vlastní roli lze přes API přiřadit
+`school_role_code` (`student`, `parent`, `teacher`); identita určuje školní
+vztahy, oprávnění dál pocházejí výhradně z aktivní role. Oprávnění
+`timetable.generate` bylo odstraněno, protože generátor není implementovaný.
+Preference a graf vzdáleností jsou zatím uložené podklady pro budoucí výpočet.
+
+Migrace `20261113_07_annual_intervals` ohraničí dříve otevřená zařazení,
+členství a verze rozvrhu koncem jejich školního roku. Nové zápisy používají
+stejné pravidlo. `20261113_08_domain_locks` odděluje sdílený autorizační zámek
+od zámku školních dat; nezávislé zápisy třídnice používají vlastní zámky hodin.
+Změny rolí zůstávají exkluzivní vůči probíhajícím zápisům.
+`20261113_09_role_scopes` přidává školní identitu vlastních rolí a odstraňuje
+neimplementované oprávnění generování. Všechny kroky jsou transakční.
+
+Změna katalogových údajů nevyhodnocuje historickou výuku podle současné
+kapacity nebo aktivity místnosti. Kontroly budoucí výuky zůstávají zachované.

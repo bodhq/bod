@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Any, Self
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
 from pydantic import (
@@ -187,6 +187,10 @@ class RoleSwitch(InputModel):
 
 
 class RoleWrite(InputModel):
+    school_role_code: Literal["student", "parent", "teacher"] | None = Field(
+        default=None,
+        description="Školní identita vlastní role; nerozšiřuje oprávnění.",
+    )
     name: Annotated[ProfileName, StringConstraints(strip_whitespace=True)]
     description: str | None = Field(
         default=None, max_length=4000, pattern=r"^[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]*$"

@@ -2,6 +2,7 @@ from typing import Any
 
 from server.core.access.services import AccessContext
 from server.core.domain.services import DomainService, conflict
+from server.core.users.models import utcnow
 
 
 class RoomsDomainService(DomainService):
@@ -42,4 +43,9 @@ class RoomsDomainService(DomainService):
     ) -> None:
         from server.modules.timetable.services import validate_published
 
-        validate_published(self.repo)
+        if self.resource.name == "rooms":
+            from server.modules.timetable.repository import SCHOOL_ZONE
+
+            validate_published(
+                self.repo, date_from=utcnow().astimezone(SCHOOL_ZONE).date()
+            )

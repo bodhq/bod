@@ -314,7 +314,7 @@ def test_custom_roles_and_technical_permissions(admin):
             json={
                 "code": "scheduler",
                 "name": "Rozvrhář",
-                "permission_codes": ["timetable.generate"],
+                "permission_codes": ["timetable.edit"],
             },
         ).status_code
         == 201
@@ -438,8 +438,9 @@ def test_active_role_is_session_local_and_permissions_are_not_combined(admin):
             "profile.self.read"
         ]
         assert teacher.get("/api/v1/auth/me").json()["active_role"] == "teacher"
-        assert parent.get("/api/v1/timetable/1").status_code == 403
-        assert teacher.get("/api/v1/timetable/1").status_code == 404
+        params = {"date_from": "2026-09-01", "date_to": "2026-09-02"}
+        assert parent.get("/api/v1/timetable/schedule", params=params).status_code == 403
+        assert teacher.get("/api/v1/timetable/schedule", params=params).status_code == 200
         assert (
             parent.patch("/api/v1/users/me", json={"phone": "123"}).status_code == 403
         )

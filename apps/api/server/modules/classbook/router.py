@@ -246,16 +246,6 @@ def patch_absence_excuse_requests(
     ).patch(context, {"id": id}, payload)
 
 
-@router.delete("/absence-excuse-requests/{id}", status_code=204)
-def delete_absence_excuse_requests(
-    id: UUID, context: CurrentContextDep, session: SessionDep
-) -> Response:
-    ClassbookDomainService(
-        session, next(r for r in RESOURCES if r.name == "absence_excuse_requests")
-    ).delete(context, {"id": id})
-    return Response(status_code=204)
-
-
 @router.get(
     "/absence-excuse-items", response_model=list[schemas.AbsenceExcuseItemsRead]
 )
@@ -320,21 +310,3 @@ def patch_absence_excuse_items(
         {"request_id": request_id, "attendance_record_id": attendance_record_id},
         payload,
     )
-
-
-@router.delete(
-    "/absence-excuse-items/{request_id}/{attendance_record_id}", status_code=204
-)
-def delete_absence_excuse_items(
-    request_id: UUID,
-    attendance_record_id: UUID,
-    context: CurrentContextDep,
-    session: SessionDep,
-) -> Response:
-    ClassbookDomainService(
-        session, next(r for r in RESOURCES if r.name == "absence_excuse_items")
-    ).delete(
-        context,
-        {"request_id": request_id, "attendance_record_id": attendance_record_id},
-    )
-    return Response(status_code=204)

@@ -1,6 +1,7 @@
 from typing import Any, ClassVar
 from uuid import UUID
 
+from sqlalchemy import CheckConstraint
 from sqlmodel import Field, SQLModel
 
 
@@ -32,3 +33,19 @@ class RolePermission(SQLModel, table=True):
     permission_code: str = Field(
         primary_key=True, foreign_key="permissions.code", index=True
     )
+
+
+class RoleSchoolScope(SQLModel, table=True):
+    """A custom role's school identity, independent of its permission grants."""
+
+    __tablename__: ClassVar[Any] = "role_school_scopes"
+    __table_args__ = (
+        CheckConstraint(
+            "school_role_code IN ('student','parent','teacher')",
+            name="role_school_scope_valid",
+        ),
+    )
+    role_code: str = Field(
+        primary_key=True, foreign_key="roles.code", ondelete="CASCADE"
+    )
+    school_role_code: str = Field(max_length=16)

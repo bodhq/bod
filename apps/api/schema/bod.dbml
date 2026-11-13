@@ -112,7 +112,18 @@ Table permissions {
   code varchar(100) [pk]
   description text [not null]
 
-  Note: 'Například profile.self.update, users.manage, roles.manage, timetable.read, timetable.edit, timetable.generate, timetable.publish, timetable.substitute, classbook.write, classbook.correct, attendance.mark, attendance.excuse.'
+  Note: 'Například profile.self.update, users.manage, roles.manage, timetable.read, timetable.edit, timetable.publish, timetable.substitute, classbook.write, classbook.correct, attendance.mark, attendance.excuse.'
+}
+
+Table role_school_scopes {
+  role_code varchar(64) [pk]
+  school_role_code varchar(16) [not null]
+
+  checks {
+    `school_role_code IN ('student','parent','teacher')` [name: 'role_school_scope_valid']
+  }
+
+  Note: 'Školní identita vlastní role. Neuděluje oprávnění. Výchozí student, parent a teacher mají identitu implicitně.'
 }
 
 Table user_roles {
@@ -912,6 +923,7 @@ Ref: user_roles.user_id > users.id [delete: cascade]
 Ref: user_roles.role_code > roles.code
 
 Ref: role_permissions.role_code > roles.code [delete: cascade]
+Ref: role_school_scopes.role_code > roles.code [delete: cascade]
 Ref: role_permissions.permission_code > permissions.code [delete: cascade]
 
 Ref: auth_sessions.user_id > users.id [delete: cascade]

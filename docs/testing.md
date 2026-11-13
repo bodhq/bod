@@ -42,15 +42,18 @@ API testy mají jednu kořenovou konfiguraci `pytest.ini` a společné místo:
 | --- | --- |
 | `tests/api/core` | Účty, relace, oprávnění, média a limity přihlášení |
 | `tests/api/domain` | Školní agendy, jejich pravidla a kontrakt |
-| `tests/api/legacy` | Dva vyřazené testy odstraněného prototypu |
 
-Konfigurace zachovává také dosavadní výjimku scénáře
-`test_active_role_is_session_local_and_permissions_are_not_combined`.
-Přesun nemění tyto výjimky ani obsah scénářů. Jejich migrace patří backendu;
-zelený běh neznamená, že vyřazené testy prošly.
+Test aktivních rolí používá aktuální rozvrhové API a běží bez výjimky.
+Testy editoru rozvrhu i regresní scénáře školních workflow jsou v
+`tests/api/domain`; běžný příkaz je automaticky zahrnuje. Duplicitní testy
+odstraněného prototypu byly odstraněny; validace a přístup k rozvrhu se ověřují
+nad současnými UUID identitami a verzovaným API.
 
 Běžné testy používají dočasné SQLite a lokální limiter. Pokrytí API má práh
-80 %. SQLite nenahrazuje ověření PostgreSQL zámků, triggerů a migrací.
+80 %. SQLite adaptér převádí zapisované časy do UTC a datum výuky do školního
+pásma, aby neztrácel význam offsetů. Nenahrazuje ověření PostgreSQL zámků,
+triggerů a migrací. Scénáře s markerem `postgres` ověřují i nezávislé zápisy
+docházky a převod dříve neukončených intervalů.
 Společný příkaz `scripts/ci integration` vytvoří vlastní PostgreSQL a Redis,
 spustí integrační scénáře a testovací služby odstraní.
 

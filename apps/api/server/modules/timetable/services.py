@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import date, timedelta
 from typing import Any
 
 from server.core.access.services import AccessContext
@@ -14,10 +15,16 @@ from server.core.users.models import utcnow
 
 from .cycles import cycle_type, mondays
 from .models import TeachingPlanCalendarWeeks
-from .repository import resolved_lessons
+from .repository import SCHOOL_ZONE, filtered_page, resolved_lessons
 
 
-def validate_collisions(repo: DomainRepository, lessons: list[dict[str, Any]]) -> None:
+def validate_collisions(
+    repo: DomainRepository,
+    lessons: list[dict[str, Any]],
+    *,
+    check_unavailability: bool = True,
+    check_resources: bool = True,
+) -> None:
     rooms = {r["id"]: r for r in repo.rows("rooms")}
     assignments = {a["id"]: a for a in repo.rows("teaching_assignments")}
     entry_assignments = {
@@ -27,16 +34,21 @@ def validate_collisions(repo: DomainRepository, lessons: list[dict[str, Any]]) -
     room_unavailable = repo.rows("room_unavailability")
     ordered = sorted(lessons, key=lambda row: row["starts_at"])
     for index, row in enumerate(ordered):
-        if row["room_id"]:
+        assignment = assignments[entry_assignments[row["timetable_entry_id"]]]
+        required_type = assignment["required_room_type_code"]
+        require(
+            not check_resources or required_type is None or row["room_id"] is not None,
+            "Výuka s požadovaným typem místnosti musí mít přiřazenou místnost.",
+        )
+        if row["room_id"] and check_resources:
             room = rooms[row["room_id"]]
+            require(room["is_active"], "Místnost není aktivní.")
             require(room["capacity"] >= len(row["students"]), "Místnost nemá kapacitu.")
-            assignment = assignments[entry_assignments[row["timetable_entry_id"]]]
-            required_type = assignment["required_room_type_code"]
             require(
                 required_type is None or room["room_type_code"] == required_type,
                 "Nesprávný typ místnosti.",
             )
-        for absence in teacher_unavailable:
+        for absence in teacher_unavailable if check_unavailability else []:
             conflict(
                 absence["teacher_id"] == row["teacher_id"]
                 and overlaps(
@@ -47,7 +59,7 @@ def validate_collisions(repo: DomainRepository, lessons: list[dict[str, Any]]) -
                 ),
                 "Učitel je v tomto termínu nedostupný.",
             )
-        for absence in room_unavailable:
+        for absence in room_unavailable if check_unavailability else []:
             conflict(
                 row["room_id"] is not None
                 and absence["room_id"] == row["room_id"]
@@ -74,7 +86,15 @@ def validate_collisions(repo: DomainRepository, lessons: list[dict[str, Any]]) -
             next_index += 1
 
 
-def validate_published(repo: DomainRepository) -> None:
+def validate_published(
+    repo: DomainRepository,
+    *,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    check_resources: bool = True,
+) -> None:
+    if date_from is None:
+        date_from = utcnow().astimezone(SCHOOL_ZONE).date()
     published_plans = {
         v["teaching_plan_id"]
         for v in repo.rows("timetable_versions")
@@ -89,10 +109,21 @@ def validate_published(repo: DomainRepository) -> None:
                 == plans[assignment["teaching_plan_id"]]["school_year_id"],
                 "Skupina publikovaného plánu má jiný školní rok.",
             )
-    validate_collisions(repo, resolved_lessons(repo))
+    validate_collisions(
+        repo,
+        resolved_lessons(repo, date_from=date_from, date_to=date_to),
+        check_unavailability=False,
+        check_resources=check_resources,
+    )
 
 
 class TimetableService(DomainService):
+    def list_filtered(
+        self, actor: AccessContext, offset: int, limit: int, **filters: Any
+    ) -> list[Any]:
+        self.access.require(actor, self.resource.permission)
+        return filtered_page(self.repo, self.resource.model, offset, limit, **filters)
+
     def plan_for(self, name: str, data: dict[str, Any]) -> dict[str, Any] | None:
         if name == "teaching_plans":
             return data
@@ -218,6 +249,10 @@ class TimetableService(DomainService):
                     "Sloty zvonění se překrývají.",
                 )
         if name == "timetable_versions":
+            if data.get("valid_to") is None:
+                plan = self.repo.one("teaching_plans", id=data["teaching_plan_id"])
+                year = self.repo.one("school_years", id=plan["school_year_id"])
+                data["valid_to"] = year["ends_on"]
             require(data.get("status", "draft") == "draft", "Použij akci publikování.")
             require(
                 data.get("based_on_version_id") != data.get("id")
@@ -235,6 +270,15 @@ class TimetableService(DomainService):
                     "Původní verze má jiný školní rok.",
                 )
         if name == "timetable_entries":
+            if old:
+                require(
+                    data.get("expected_state") is not None,
+                    "Pošli expected_state z načtené položky rozvrhu.",
+                )
+                conflict(
+                    data["expected_state"] != old,
+                    "Položku mezitím změnil jiný uživatel. Načti aktuální verzi.",
+                )
             self.validate_entry(data)
         if name == "timetable_preferences":
             require(
@@ -392,8 +436,33 @@ class TimetableService(DomainService):
             for plan_id in plan_ids:
                 if self.repo.rows("teaching_plans", id=plan_id):
                     self.regenerate_calendar(plan_id, allow_incomplete=True)
-        if name in {"lesson_changes", "teacher_unavailability"}:
-            validate_published(self.repo)
+        if name == "lesson_changes":
+            # Absence is a fact that may have unresolved substitutions. Keep
+            # timetable collisions strict without rejecting unrelated absences.
+            change = data or old
+            assert change is not None
+            occurrence = self.repo.one(
+                "lesson_occurrences", id=change["lesson_occurrence_id"]
+            )
+            dates = {occurrence["scheduled_date"]}
+            dates.update(
+                row["replacement_date"]
+                for row in (data, old)
+                if row and row.get("replacement_date") is not None
+            )
+            lessons = resolved_lessons(
+                self.repo, date_from=min(dates), date_to=max(dates) + timedelta(days=1)
+            )
+            validate_collisions(
+                self.repo, lessons, check_unavailability=False, check_resources=False
+            )
+            if data and data["change_type"] != "cancelled":
+                affected = [
+                    row
+                    for row in lessons
+                    if row["lesson_occurrence_id"] == occurrence["id"]
+                ]
+                validate_collisions(self.repo, affected)
 
     def regenerate_calendar(
         self, plan_id: Any, *, allow_incomplete: bool = False
@@ -526,7 +595,13 @@ class TimetableService(DomainService):
             for v in self.repo.rows("timetable_versions")
             if v["status"] != "draft" and v["id"] != version["id"]
         ]
-        validate_collisions(self.repo, resolved_lessons(self.repo, [*others, version]))
+        validate_collisions(self.repo, resolved_lessons(self.repo, [version]))
+        validate_collisions(
+            self.repo,
+            resolved_lessons(self.repo, [*others, version]),
+            check_unavailability=False,
+            check_resources=False,
+        )
 
     def publish(self, actor: AccessContext, key: dict[str, Any]) -> Any:
         def action(fresh: AccessContext) -> Any:

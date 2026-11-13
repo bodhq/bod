@@ -9,6 +9,7 @@ from server.modules.rooms.router import router as rooms_router
 from server.modules.school.actions import router as school_actions
 from server.modules.school.router import router as school_router
 from server.modules.timetable.actions import router as timetable_actions
+from server.modules.timetable.management import router as timetable_management
 from server.modules.timetable.router import router as timetable_router
 
 api_router = APIRouter()
@@ -16,6 +17,7 @@ api_router = APIRouter()
 api_router.include_router(school_actions)
 api_router.include_router(school_router)
 api_router.include_router(rooms_router)
+api_router.include_router(timetable_management)
 api_router.include_router(timetable_actions)
 api_router.include_router(timetable_router)
 api_router.include_router(classbook_actions)

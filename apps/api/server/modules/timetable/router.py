@@ -28,11 +28,13 @@ router = APIRouter(
 def list_teaching_plans(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TeachingPlansFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "teaching_plans")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context, page.offset, page.limit, school_year_id=page.school_year_id
+    )
 
 
 @router.get("/teaching-plans/{id}", response_model=schemas.TeachingPlansRead)
@@ -85,11 +87,18 @@ def delete_teaching_plans(
 def list_teaching_assignments(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TeachingAssignmentsFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "teaching_assignments")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context,
+        page.offset,
+        page.limit,
+        teaching_plan_id=page.teaching_plan_id,
+        group_id=page.group_id,
+        teacher_id=page.teacher_id,
+    )
 
 
 @router.get(
@@ -148,11 +157,13 @@ def delete_teaching_assignments(
 def list_teaching_cycle_weeks(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TeachingCycleWeeksFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "teaching_cycle_weeks")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context, page.offset, page.limit, teaching_plan_id=page.teaching_plan_id
+    )
 
 
 @router.get("/teaching-cycle-weeks/{id}", response_model=schemas.TeachingCycleWeeksRead)
@@ -439,11 +450,16 @@ def delete_teaching_plan_calendar_days(
 def list_teaching_assignment_weeks(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TeachingAssignmentWeeksFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "teaching_assignment_weeks")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context,
+        page.offset,
+        page.limit,
+        teaching_assignment_id=page.teaching_assignment_id,
+    )
 
 
 @router.get(
@@ -782,11 +798,11 @@ def delete_time_grids(
 def list_time_slots(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TimeSlotsFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "time_slots")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(context, page.offset, page.limit, time_grid_id=page.time_grid_id)
 
 
 @router.get("/time-slots/{id}", response_model=schemas.TimeSlotsRead)
@@ -831,11 +847,17 @@ def delete_time_slots(
 def list_timetable_versions(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TimetableVersionsFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "timetable_versions")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context,
+        page.offset,
+        page.limit,
+        teaching_plan_id=page.teaching_plan_id,
+        status=page.status,
+    )
 
 
 @router.get("/timetable-versions/{id}", response_model=schemas.TimetableVersionsRead)
@@ -886,11 +908,17 @@ def delete_timetable_versions(
 def list_timetable_entries(
     context: CurrentContextDep,
     session: SessionDep,
-    page: Annotated[Pagination, Query()],
+    page: Annotated[schemas.TimetableEntriesFilter, Query()],
 ) -> object:
     return TimetableService(
         session, next(r for r in RESOURCES if r.name == "timetable_entries")
-    ).list(context, page.offset, page.limit)
+    ).list_filtered(
+        context,
+        page.offset,
+        page.limit,
+        timetable_version_id=page.timetable_version_id,
+        cycle_week_id=page.cycle_week_id,
+    )
 
 
 @router.get("/timetable-entries/{id}", response_model=schemas.TimetableEntriesRead)

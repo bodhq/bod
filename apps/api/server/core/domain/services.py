@@ -60,7 +60,18 @@ class DomainService:
         action: Callable[[AccessContext], T],
     ) -> T:
         try:
-            fresh = self.access.manage(actor, permission)
+            fresh = self.access.refresh_actor(actor, domain=True)
+            self.access.require(fresh, permission)
+            self.repo.lock_school(
+                shared=self.resource.name
+                in {
+                    "classbook_entries",
+                    "classbook_participants",
+                    "attendance_records",
+                    "absence_excuse_requests",
+                    "absence_excuse_items",
+                }
+            )
             result = action(fresh)
             self.repo.commit()
             return result
@@ -82,6 +93,9 @@ class DomainService:
         self.access.require(actor, self.resource.permission)
         return self.repo.page(self.resource.model, offset, limit)
 
+    def lock_mutation(self, data: dict[str, Any]) -> None:
+        """Modules may protect their independent records under the school read lock."""
+
     def get(self, actor: AccessContext, key: dict[str, Any]) -> SQLModel:
         self.access.require(actor, self.resource.permission)
         return self.repo.entity(self.resource.model, key)
@@ -89,6 +103,7 @@ class DomainService:
     def create(self, actor: AccessContext, payload: BaseModel) -> SQLModel:
         def action(fresh: AccessContext) -> SQLModel:
             data = payload.model_dump()
+            self.lock_mutation(data)
             fields = self.resource.model.model_fields
             for field in ("created_by", "updated_by", "recorded_by"):
                 if field in fields:
@@ -109,9 +124,17 @@ class DomainService:
         key: dict[str, Any],
         payload: BaseModel,
     ) -> SQLModel:
-        require(bool(payload.model_fields_set), "Pošli alespoň jedno pole.")
+        require(
+            bool(
+                payload.model_fields_set
+                & self.resource.create_schema.model_fields.keys()
+            ),
+            "Pošli alespoň jedno měnitelné pole.",
+        )
 
         def action(fresh: AccessContext) -> SQLModel:
+            entity = self.repo.entity(self.resource.model, key)
+            self.lock_mutation(entity.model_dump())
             entity = self.repo.entity(self.resource.model, key)
             old = entity.model_dump()
             data = old | payload.model_dump(exclude_unset=True)
@@ -120,8 +143,10 @@ class DomainService:
                 {key: value for key, value in data.items() if key in writable}
             )
             self.validate(data, old, fresh)
-            for field in payload.model_fields_set:
-                setattr(entity, field, data[field])
+            # Validation may normalize dependent values (e.g. interval ends).
+            for field in self.resource.create_schema.model_fields:
+                if field in data:
+                    setattr(entity, field, data[field])
             self.touch(entity, fresh)
             self.repo.flush()
             self.after_write(entity.model_dump(), old, fresh)
@@ -132,6 +157,8 @@ class DomainService:
 
     def delete(self, actor: AccessContext, key: dict[str, Any]) -> None:
         def action(fresh: AccessContext) -> None:
+            entity = self.repo.entity(self.resource.model, key)
+            self.lock_mutation(entity.model_dump())
             entity = self.repo.entity(self.resource.model, key)
             old = entity.model_dump()
             self.validate_delete(old, fresh)
@@ -223,6 +250,9 @@ class DomainService:
         user = self.repo.one("users", id=user_id)
         require(user["is_active"], "Účet musí být aktivní.")
         require(
-            bool(self.repo.rows("user_roles", user_id=user_id, role_code=role)),
+            any(
+                self.access.repo.school_scope(row["role_code"]) == role
+                for row in self.repo.rows("user_roles", user_id=user_id)
+            ),
             f"Účet musí mít roli {role}.",
         )

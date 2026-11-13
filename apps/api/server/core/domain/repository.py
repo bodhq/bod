@@ -2,7 +2,7 @@
 
 from typing import Any, TypeVar
 
-from sqlalchemy import Table, delete, select
+from sqlalchemy import Table, delete, select, text
 from sqlmodel import Session, SQLModel
 
 from server.core.access.repository import AccessError
@@ -16,6 +16,21 @@ class DomainRepository:
 
     def table(self, name: str) -> Table:
         return SQLModel.metadata.tables[name]
+
+    def lock_school(self, *, shared: bool) -> None:
+        if self.db.get_bind().dialect.name == "postgresql":
+            function = (
+                "pg_advisory_xact_lock_shared" if shared else "pg_advisory_xact_lock"
+            )
+            self.db.execute(text(f"SELECT {function}(7463812042)"))
+
+    def lock_records(self, *keys: str) -> None:
+        if self.db.get_bind().dialect.name == "postgresql":
+            for key in sorted(set(keys)):
+                self.db.execute(
+                    text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"),
+                    {"key": "bod:classbook:" + key},
+                )
 
     def rows(self, name: str, **filters: Any) -> list[dict[str, Any]]:
         table = self.table(name)

@@ -1,6 +1,6 @@
 from dataclasses import replace
 from datetime import date, datetime, timedelta
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -14,11 +14,11 @@ from server.core.auth.dependencies import (
 )
 from server.core.domain.router import ERROR_RESPONSES
 from server.core.domain.schemas import DomainInput, DomainRead
-from server.core.domain.services import authorize, require
+from server.core.domain.services import authorize, instant, overlaps, require
 from server.modules.classbook.domain_service import ClassbookDomainService
 from server.modules.classbook.resources import RESOURCES as CLASSBOOK
 
-from .repository import resolved_lessons
+from .repository import referenced_rows, resolved_lessons
 from .resources import RESOURCES
 from .schemas import (
     LessonOccurrencesCreate,
@@ -56,6 +56,18 @@ class ScheduleLesson(DomainRead):
     room_id: UUID | None
     starts_at: datetime
     ends_at: datetime
+    group_name: str
+    subject_code: str
+    subject_name: str
+    teacher_name: str
+    room_code: str | None
+    room_name: str | None
+    change_type: Literal["modified", "cancelled"] | None
+    original_teacher_id: UUID
+    original_room_id: UUID | None
+    original_starts_at: datetime
+    original_ends_at: datetime
+    unresolved_reasons: list[Literal["teacher_unavailable", "room_unavailable"]]
 
 
 def service(session: Any, name: str) -> TimetableService:
@@ -130,6 +142,7 @@ def schedule(
     date_from: Annotated[date, Query()],
     date_to: Annotated[date, Query()],
     student_id: UUID | None = None,
+    include_cancelled: bool = False,
 ) -> object:
     current = service(session, "timetable_versions")
     current.access.require(actor, "timetable.read")
@@ -148,11 +161,16 @@ def schedule(
             p["student_id"]
             for p in current.repo.rows("parent_students", parent_id=actor.user.id)
         }
-        if actor.active_role_code == "parent"
+        if actor.school_role_code == "parent"
         else set()
     )
     result = []
-    for lesson in resolved_lessons(current.repo):
+    for lesson in resolved_lessons(
+        current.repo,
+        date_from=date_from,
+        date_to=date_to,
+        include_cancelled=include_cancelled,
+    ):
         actual_day = lesson["starts_at"].date()
         if not date_from <= actual_day < date_to:
             continue
@@ -162,11 +180,11 @@ def schedule(
             else (
                 manager
                 or (
-                    actor.active_role_code == "teacher"
+                    actor.school_role_code == "teacher"
                     and lesson["teacher_id"] == actor.user.id
                 )
                 or (
-                    actor.active_role_code == "student"
+                    actor.school_role_code == "student"
                     and actor.user.id in lesson["students"]
                 )
                 or bool(children & lesson["students"])
@@ -174,6 +192,53 @@ def schedule(
         )
         if visible:
             result.append(lesson)
+    groups = referenced_rows(
+        current.repo, "teaching_groups", {r["group_id"] for r in result}
+    )
+    subjects = referenced_rows(
+        current.repo, "subjects", {r["subject_id"] for r in result}
+    )
+    teachers = referenced_rows(current.repo, "users", {r["teacher_id"] for r in result})
+    rooms = referenced_rows(
+        current.repo, "rooms", {r["room_id"] for r in result if r["room_id"]}
+    )
+    teacher_absences = current.repo.rows("teacher_unavailability")
+    room_absences = current.repo.rows("room_unavailability")
+    for lesson in result:
+        subject, teacher = (
+            subjects[lesson["subject_id"]],
+            teachers[lesson["teacher_id"]],
+        )
+        room = rooms.get(lesson["room_id"], {})
+        reasons = []
+        if lesson["change_type"] != "cancelled":
+            for name, absences, key in (
+                ("teacher_unavailable", teacher_absences, "teacher_id"),
+                ("room_unavailable", room_absences, "room_id"),
+            ):
+                if any(
+                    lesson[key] is not None
+                    and a[key] == lesson[key]
+                    and overlaps(
+                        lesson["starts_at"],
+                        lesson["ends_at"],
+                        instant(a["starts_at"]),
+                        instant(a["ends_at"]),
+                    )
+                    for a in absences
+                ):
+                    reasons.append(name)
+        lesson.update(
+            group_name=groups[lesson["group_id"]]["name"],
+            subject_code=subject["code"],
+            subject_name=subject["name"],
+            teacher_name=teacher["display_name"]
+            or " ".join(p for p in (teacher["first_name"], teacher["last_name"]) if p)
+            or teacher["username"],
+            room_code=room.get("code"),
+            room_name=room.get("name"),
+            unresolved_reasons=reasons,
+        )
     return sorted(result, key=lambda row: row["starts_at"])
 
 
@@ -201,7 +266,7 @@ def materialize(
         authorize(
             "classbook.manage" in fresh.permissions
             or (
-                fresh.active_role_code == "teacher"
+                fresh.school_role_code == "teacher"
                 and lesson["teacher_id"] == fresh.user.id
             ),
             "Hodina patří jinému učiteli.",

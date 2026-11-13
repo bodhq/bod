@@ -5,6 +5,7 @@ from contextlib import ExitStack
 from datetime import UTC, datetime, timedelta
 from threading import Lock
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -46,6 +47,14 @@ def restore_utc(target, context, attrs=None):
     for key, value in vars(target).copy().items():
         if isinstance(value, datetime) and value.tzinfo is None:
             attributes.set_committed_value(target, key, value.replace(tzinfo=UTC))
+
+
+def normalize_utc(session, flush_context, instances):
+    # SQLite drops offsets without converting to UTC; mirror PostgreSQL semantics.
+    for entity in session.new | session.dirty:
+        for key, value in vars(entity).copy().items():
+            if isinstance(value, datetime) and value.tzinfo is not None:
+                setattr(entity, key, value.astimezone(UTC))
 
 
 @pytest.fixture(autouse=True)
@@ -110,6 +119,17 @@ def engine(tmp_path, monkeypatch, request):
         def setup(connection, record):
             connection.execute("PRAGMA foreign_keys=ON")
             connection.create_function("btrim", 1, lambda value: value.strip(" "))
+            connection.create_function(
+                "school_date",
+                1,
+                lambda value: (
+                    datetime.fromisoformat(value)
+                    .replace(tzinfo=UTC)
+                    .astimezone(ZoneInfo("Europe/Prague"))
+                    .date()
+                    .isoformat()
+                ),
+            )
 
         lock = Lock()
 
@@ -126,6 +146,7 @@ def engine(tmp_path, monkeypatch, request):
 
         monkeypatch.setattr(AccessRepository, "lock_management", lock_management)
         event.listen(Session, "after_transaction_end", release)
+        event.listen(Session, "before_flush", normalize_utc)
         SQLModel.metadata.create_all(current)
     models = list(SQLModel._sa_registry.mappers)
     for mapper in models:
@@ -147,6 +168,7 @@ def engine(tmp_path, monkeypatch, request):
             event.remove(mapper.class_, "refresh", restore_utc)
         if not postgres_url:
             event.remove(Session, "after_transaction_end", release)
+            event.remove(Session, "before_flush", normalize_utc)
         if not control:
             current.dispose()
 
