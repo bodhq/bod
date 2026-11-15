@@ -47,20 +47,45 @@ case "${1:-check}" in
     docker build -f apps/web/Dockerfile -t bod-ci-web:verify .
     uv run python tests/deploy/smoke.py
     ;;
-  release|development)
-    if [[ "$1" == development ]]; then
-      : "${GITHUB_SHA:?Missing commit SHA}"
-      [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
-      : "${GITHUB_REPOSITORY:?Missing GitHub repository}"
-      head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/develop" --jq .object.sha)
-      if [[ "$head" != "$GITHUB_SHA" ]]; then
-        echo 'Novější commit už čeká na sestavení; tuto verzi nezveřejňuji.'
-        exit 0
-      fi
-      BOD_TAG="v0.0.0-dev-$GITHUB_SHA"
+  publish)
+    : "${GITLAB_TOKEN:?Set the GitLab project access token}"
+    : "${GITHUB_SHA:?Missing commit SHA}"
+    : "${GITHUB_REF_NAME:?Missing branch}"
+    [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
+    head=$(git ls-remote origin "refs/heads/$GITHUB_REF_NAME" | cut -f1)
+    if [[ "$head" != "$GITHUB_SHA" ]]; then
+      echo 'Novější commit už čeká na sestavení; tuto verzi nenasazuji.'
+      exit 0
     fi
+    project='studentske-projekty/projekty-2026-2027/mtp1/navrh-a-implementace-modularniho-skolniho-informacniho-systemu'
+    api="https://gitlab.spseplzen.cz/api/v4"
+    endpoint="$api/projects/${project//\//%2F}"
+    temporary=$(mktemp -d)
+    trap 'rm -rf "$temporary"' EXIT
+    export DOCKER_CONFIG="$temporary/docker"
+    mkdir -p "$DOCKER_CONFIG"
+    printf 'header = "PRIVATE-TOKEN: %s"\n' "$GITLAB_TOKEN" > "$temporary/auth"
+    chmod 600 "$temporary/auth"
+    metadata=$(curl --fail --silent --show-error --connect-timeout 10 --max-time 30 --config "$temporary/auth" "$endpoint")
+    registry=$(jq -er '.container_registry_image_prefix | select(type == "string" and length > 0)' <<< "$metadata")
+    username=$(curl --fail --silent --show-error --connect-timeout 10 --max-time 30 --config "$temporary/auth" "$api/user" | jq -er .username)
+    printf '%s' "$GITLAB_TOKEN" | docker login "${registry%%/*}" --username "$username" --password-stdin
+    for service in api web; do
+      image="$registry/$service:sha-$GITHUB_SHA"
+      docker tag "bod-ci-$service:verify" "$image"
+      docker push "$image"
+    done
+    # Synchronize this exact commit before triggering the protected deploy job.
+    git push "https://oauth2:${GITLAB_TOKEN}@gitlab.spseplzen.cz/$project.git" "HEAD:refs/heads/$GITHUB_REF_NAME"
+    payload=$(jq -n --arg ref "$GITHUB_REF_NAME" --arg sha "$GITHUB_SHA" \
+      '{ref: $ref, variables: [{key: "BOD_DEPLOY_SHA", value: $sha}]}')
+    curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
+      --config "$temporary/auth" --header 'Content-Type: application/json' \
+      --request POST --data "$payload" "$endpoint/pipeline" | jq -er .web_url
+    ;;
+  release)
     : "${BOD_TAG:?Set the version tag, for example v0.1.0}"
-    [[ "$1" == development || "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
+    [[ "$BOD_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
     : "${BOD_REGISTRY:=ghcr.io/bodhq/bod}"
     rm -rf dist/deploy
     mkdir -p dist/deploy
@@ -72,29 +97,17 @@ case "${1:-check}" in
       docker push "$image"
       digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")
       [[ "$digest" == "$BOD_REGISTRY/$service@sha256:"* ]] || exit 1
-      docker --config "$anonymous" manifest inspect "$digest" > /dev/null
       printf '%s_IMAGE=%s\n' "$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')" "$digest" >> dist/deploy/images.env
     done
+    while IFS='=' read -r _ image; do
+      docker --config "$anonymous" manifest inspect "$image" > /dev/null || {
+        echo "Obraz $image není anonymně dostupný. Zkontroluj veřejnou viditelnost balíčku v GHCR a opakuj job." >&2
+        exit 1
+      }
+    done < dist/deploy/images.env
     cp deploy/bod.py deploy/compose.yml deploy/Caddyfile dist/deploy/
-    if [[ "$1" == development ]]; then
-      cp deploy/development.py dist/deploy/
-      tar -czf dist/development.tar.gz -C dist deploy
-      if ! gh release view development --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-        gh release create development --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-          --prerelease --latest=false --title 'Vývojová verze' \
-          --notes 'Automaticky ověřené sestavení větve develop. Určeno pro vývojové prostředí.'
-      fi
-      gh release upload development dist/development.tar.gz --repo "$GITHUB_REPOSITORY" --clobber
-      gh api "repos/$GITHUB_REPOSITORY/git/refs/tags/development" --method PATCH \
-        -f sha="$GITHUB_SHA" -F force=true >/dev/null
-      gh release edit development --repo "$GITHUB_REPOSITORY" \
-        --notes "Ověřený commit: $GITHUB_SHA. Sestavení: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-      # Publish the complete image pair last; the VPS never consumes a half-published pair.
-      gh release upload development dist/deploy/images.env --repo "$GITHUB_REPOSITORY" --clobber
-      exit 0
-    fi
     tar -czf "dist/bod-$BOD_TAG.tar.gz" -C dist deploy
     (cd dist && sha256sum "bod-$BOD_TAG.tar.gz" > "bod-$BOD_TAG.sha256")
     ;;
-  *) echo 'Usage: scripts/ci {install|check|integration|production|release|development|docs}' >&2; exit 2 ;;
+  *) echo 'Usage: scripts/ci {install|check|integration|production|publish|release|docs}' >&2; exit 2 ;;
 esac

@@ -74,6 +74,5 @@ playwright/.cache/
 /deploy/config.env
 /deploy/.initialized
 /deploy/.lock
-/deploy/.development-applied.env
 /deploy/.first-admin.txt
 .local-notes/
