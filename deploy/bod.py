@@ -88,7 +88,16 @@ class School:
                 "Před změnou instalace uvolni alespoň 3 GiB na instalačním disku."
             )
 
-    def install(self, domain, proxy):
+    def load_images(self, archive):
+        if not archive.is_file():
+            raise ValueError("Chybí images.tar z instalačního balíčku.")
+        subprocess.run(
+            ["docker", "image", "load", "--input", str(archive)],
+            check=True,
+            timeout=300,
+        )
+
+    def install(self, domain, proxy, offline=False):
         self.require_space()
         if (self.root / "installation.json").exists():
             raise ValueError("Starší offline instalace vyžaduje samostatný převod.")
@@ -125,8 +134,18 @@ class School:
                     ),
                 },
             )
-        self.compose("pull", "--policy", "missing")
-        self.compose("up", "-d", "--wait", "--wait-timeout", "180")
+        if offline:
+            self.load_images(self.root / "images.tar")
+        else:
+            self.compose("pull", "--policy", "missing")
+        self.compose(
+            "up",
+            "-d",
+            "--wait",
+            "--wait-timeout",
+            "180",
+            *(["--pull", "never"] if offline else []),
+        )
         marker = self.root / ".initialized"
         if not marker.exists():
             self.compose(
@@ -293,7 +312,7 @@ class School:
                 )
         print("Obnova dokončena. Původní volumes zůstaly zachované.")
 
-    def update(self, images):
+    def update(self, images, offline=False):
         self.require_space()
         images = images.resolve()
         if images == self.images:
@@ -303,12 +322,22 @@ class School:
         refs = read_env(images)
         if set(refs) != {"API_IMAGE", "WEB_IMAGE"}:
             raise ValueError("images.env musí obsahovat pouze API_IMAGE a WEB_IMAGE.")
-        self.compose("pull", "--policy", "missing", "api", "web", images=images)
+        if offline:
+            self.load_images(images.parent / "images.tar")
+        else:
+            self.compose("pull", "--policy", "missing", "api", "web", images=images)
         folder = self.root / "backups" / datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
         self.backup(folder)
         write_env(self.images, refs)
         try:
-            self.compose("up", "-d", "--wait", "--wait-timeout", "180")
+            self.compose(
+                "up",
+                "-d",
+                "--wait",
+                "--wait-timeout",
+                "180",
+                *(["--pull", "never"] if offline else []),
+            )
         except subprocess.CalledProcessError:
             raise ValueError(
                 f"Aktualizace selhala. Nové obrazy zůstávají zvolené; záloha: {folder}"
@@ -323,10 +352,12 @@ def main():
     installer = commands.add_parser("install")
     installer.add_argument("--domain")
     installer.add_argument("--proxy", action="store_true")
+    installer.add_argument("--offline", action="store_true")
     commands.add_parser("status")
     commands.add_parser("backup").add_argument("destination", type=Path)
     updater = commands.add_parser("update")
     updater.add_argument("images", type=Path)
+    updater.add_argument("--offline", action="store_true")
     restorer = commands.add_parser("restore")
     restorer.add_argument("source", type=Path)
     restorer.add_argument("--yes", action="store_true")
@@ -338,11 +369,11 @@ def main():
         else:
             with school.lock():
                 if args.command == "install":
-                    school.install(args.domain, args.proxy)
+                    school.install(args.domain, args.proxy, args.offline)
                 elif args.command == "backup":
                     school.backup(args.destination)
                 elif args.command == "update":
-                    school.update(args.images)
+                    school.update(args.images, args.offline)
                 elif args.command == "restore":
                     if (
                         not args.yes

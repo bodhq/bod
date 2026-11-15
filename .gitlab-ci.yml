@@ -1,5 +1,4 @@
-# Shell runner: Linux, Node from .nvmrc, Corepack, uv and access to Docker.
-# Both providers execute the same scripts; image publication is owned by GitHub.
+# Linux shell runner with Node from .nvmrc, Corepack, uv and Docker Compose.
 default:
   tags: [bod-linux]
 stages: [check, production]
@@ -8,12 +7,26 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
     - if: '$CI_COMMIT_TAG =~ /^v/'
+metadata:
+  stage: check
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    BOD_BRANCH: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    BOD_TITLE: $CI_MERGE_REQUEST_TITLE
+  script:
+    - scripts/ci metadata
 check:
   stage: check
   timeout: 30m
   script:
     - scripts/ci install
     - scripts/ci check
+integration:
+  stage: check
+  timeout: 15m
+  script:
+    - scripts/ci integration
 documentation:
   stage: check
   timeout: 15m
@@ -28,17 +41,26 @@ documentation:
     - scripts/ci docs
   artifacts:
     name: maturitni-dokumentace
-    paths:
-      - dist/docs/bod-dokumentace.pdf
+    paths: [dist/docs/bod-dokumentace.pdf]
     expire_in: 30 days
-integration:
-  stage: check
-  timeout: 15m
-  script:
-    - uv sync --all-packages --all-groups --frozen
-    - scripts/ci integration
 production:
   stage: production
   timeout: 30m
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_COMMIT_TAG'
+      when: never
+    - when: on_success
   script:
     - scripts/ci production
+package:
+  stage: production
+  timeout: 30m
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_COMMIT_TAG'
+  script:
+    - scripts/ci production
+    - BOD_VERSION="${CI_COMMIT_TAG:-$CI_COMMIT_SHA}" scripts/ci package
+  artifacts:
+    name: deployment-$CI_COMMIT_SHA
+    paths: [dist/bod-*.tar.gz, dist/bod-*.sha256]
+    expire_in: 1 day
