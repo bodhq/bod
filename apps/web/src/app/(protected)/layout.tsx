@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getMe } from "@/core/auth/api";
 import { AuthProvider } from "@/core/auth/components/AuthProvider";
 import { env } from "@/core/env";
-import { AppShell } from "@/core/shell/AppShell";
+import { ModuleProvider } from "@/modules/ModuleProvider";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // Resolve the session before rendering the protected shell.
@@ -36,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthProvider initialUser={user}>
-      <AppShell>{children}</AppShell>
+      <ModuleProvider>{children}</ModuleProvider>
     </AuthProvider>
   );
 }

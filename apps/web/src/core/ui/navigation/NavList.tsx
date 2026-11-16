@@ -1,11 +1,14 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { cn } from "@/core/utils";
+
+import { ResponsiveNavigation } from "./ResponsiveNavigation";
 
 export interface NavItem {
   title: string;
@@ -29,7 +32,29 @@ export function NavList({
   orientation?: "vertical" | "horizontal";
 }) {
   const pathname = usePathname();
-  return (
+  const router = useRouter();
+  const wrap = (content: ReactNode) =>
+    orientation === "horizontal" ? (
+      <ResponsiveNavigation
+        label={ariaLabel ?? "Agenda"}
+        options={items.map((item) => ({ value: item.href, label: item.title }))}
+        value={
+          items.find((item) => (item.isActive ? item.isActive(pathname) : pathname === item.href))
+            ?.href ??
+          items[0]?.href ??
+          ""
+        }
+        onChange={(href) => {
+          router.push(href);
+          onNavigate?.();
+        }}
+      >
+        {content}
+      </ResponsiveNavigation>
+    ) : (
+      content
+    );
+  return wrap(
     <nav
       aria-label={ariaLabel}
       className={cn("nav-list", className)}
@@ -59,6 +84,6 @@ export function NavList({
           </Link>
         );
       })}
-    </nav>
+    </nav>,
   );
 }

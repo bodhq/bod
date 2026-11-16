@@ -6,6 +6,7 @@
     width: 100%;
     height: 100dvh;
     overflow: hidden;
+    background: var(--theme-surface-0);
     transition: grid-template-columns var(--sidebar-motion);
   }
   .app-shell[data-sidebar-collapsed="true"] {
@@ -27,6 +28,9 @@
     background: var(--theme-surface-100);
     border-right: 1px solid var(--theme-border-subtle);
     overflow: hidden;
+    transition:
+      background-color var(--bod-motion-surface) ease,
+      border-color var(--bod-motion-surface) ease;
   }
   .sidebar-brand {
     display: flex;
@@ -96,7 +100,7 @@
     transform: translateX(0);
   }
   .sidebar-caption {
-    max-height: 24px;
+    max-height: 4rem;
     flex-shrink: 0;
     overflow: hidden;
     margin: 8px 12px 0;
@@ -108,7 +112,7 @@
       margin var(--sidebar-motion),
       opacity var(--bod-motion-fast),
       transform var(--sidebar-motion);
-    font-size: 0.68rem;
+    font-size: var(--bod-type-caption);
     letter-spacing: 0.08em;
     font-weight: 650;
     color: var(--color-text-secondary);
@@ -200,7 +204,7 @@
     place-items: center;
     border-radius: 50%;
     background: var(--theme-surface-200);
-    font-size: 0.8rem;
+    font-size: var(--bod-type-caption);
     font-weight: 650;
   }
   .sidebar-name {
@@ -208,13 +212,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.8rem;
+    font-size: var(--bod-type-caption);
     font-weight: 600;
   }
   .sidebar-role {
     display: block;
     color: var(--color-text-secondary);
-    font-size: 0.7rem;
+    font-size: var(--bod-type-caption);
   }
   .sidebar-identity,
   .sidebar-logout-label {
@@ -264,46 +268,30 @@
     opacity: 0;
     transform: translateX(-4px);
   }
-  .app-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    gap: 16px;
-    min-height: 60px;
-    padding: 10px var(--page-padding);
-    border-bottom: 1px solid var(--theme-border-subtle);
-    background: var(--theme-surface-100);
-  }
-  .app-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    color: var(--color-text-secondary);
-    font-size: 0.8rem;
-  }
-  .app-breadcrumb > span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--color-text-primary);
-    font-weight: 500;
-  }
-  .app-breadcrumb > a {
-    white-space: nowrap;
-    text-decoration: none;
-  }
-  .app-breadcrumb > a:hover {
-    color: var(--color-text-primary);
-  }
   .app-main {
+    --texture-dot: color-mix(in oklch, var(--color-text-secondary) 8%, transparent);
     flex: 1;
     min-width: 0;
     min-height: 0;
     overflow: auto;
     overscroll-behavior: contain;
+    scroll-padding-block: 1rem 10rem;
     outline: none;
+    background-color: var(--theme-surface-0);
+    background-image:
+      radial-gradient(ellipse at center, transparent 56%, var(--theme-surface-0) 100%),
+      radial-gradient(
+        ellipse at 12% 0%,
+        color-mix(in oklch, var(--color-brand-base) 5%, transparent),
+        transparent 48%
+      ),
+      radial-gradient(circle at 1px 1px, var(--texture-dot) 0.65px, transparent 0.9px);
+    background-size:
+      auto,
+      auto,
+      18px 18px;
+    background-repeat: no-repeat, no-repeat, repeat;
+    transition: background-color var(--bod-motion-surface) ease;
   }
   .mobile-menu.ui-button {
     display: none;
@@ -327,10 +315,15 @@
     width: min(320px, 88vw);
     height: 100dvh;
     max-height: 100dvh;
+    overflow: hidden;
     max-width: none;
     padding: 0;
     margin: 0;
     border-radius: 0;
+  }
+  .mobile-navigation[open] {
+    display: flex;
+    flex-direction: column;
   }
   .mobile-navigation > h2 {
     position: absolute;
@@ -340,8 +333,20 @@
     clip-path: inset(50%);
   }
   .mobile-navigation .app-sidebar {
-    height: 100%;
+    flex: 1;
+    height: auto;
     border-right: 0;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .mobile-navigation .sidebar-brand,
+  .mobile-navigation .sidebar-bottom {
+    flex-shrink: 0;
+  }
+  .mobile-navigation .app-sidebar > .nav-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
   @media (max-width: 1023px) {
     .app-shell {
@@ -355,15 +360,6 @@
     }
     .mobile-menu.ui-button {
       display: inline-flex;
-    }
-    .app-breadcrumb > a {
-      display: none;
-    }
-    .breadcrumb-separator {
-      display: none;
-    }
-    .app-topbar {
-      padding-inline: 16px;
     }
   }
 }

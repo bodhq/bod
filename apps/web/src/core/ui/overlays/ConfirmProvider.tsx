@@ -40,6 +40,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         onClose={close}
         title={request?.title ?? "Potvrzení"}
         description={request?.description}
+        busy={busy}
       >
         {error && <ErrorState className="mt-4" message={error} />}
         <div className="mt-6 flex flex-wrap justify-end gap-3">

@@ -93,6 +93,14 @@ describe("session renewal", () => {
     expect(version()).toBe(before);
   });
 
+  it("clears school data when the active role changes", async () => {
+    const updated = { ...user, active_role: "parent" };
+    vi.mocked(getMe).mockResolvedValue(updated);
+    await refreshAuthUser(client);
+    expect(client.getQueryData(["private"])).toBeUndefined();
+    expect(useAuthStore.getState().user?.active_role).toBe("parent");
+  });
+
   it("cancels in-flight queries before replacing the account", async () => {
     let signal: AbortSignal | undefined;
     const query = client

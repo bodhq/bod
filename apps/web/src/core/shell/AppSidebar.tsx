@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { useAppearanceStore } from "@/core/appearance/preferences";
 import { LogoutButton } from "@/core/auth/components/LogoutButton";
-import { roleLabel } from "@/core/auth/roles";
+import { roleLabel, schoolRole } from "@/core/auth/roles";
 import { useAuthUser } from "@/core/auth/store";
 import { Button } from "@/core/ui/actions/Button";
 import { Logo } from "@/core/ui/brand/Logo";
@@ -69,9 +69,6 @@ export function AppSidebar({
           )}
         </Button>
       </div>
-      <p className="sidebar-caption" aria-hidden={collapsed || undefined}>
-        Pracovní prostor
-      </p>
       <NavList
         items={items}
         isMinimized={collapsed}
@@ -97,7 +94,9 @@ export function AppSidebar({
             </span>
             <span className="sidebar-identity" aria-hidden={collapsed || undefined}>
               <strong className="sidebar-name">{displayName}</strong>
-              <span className="sidebar-role">{roleLabel(user?.active_role)}</span>
+              <span className="sidebar-role">
+                {roleLabel(schoolRole(user) ?? user?.active_role)}
+              </span>
             </span>
           </Link>
           <LogoutButton

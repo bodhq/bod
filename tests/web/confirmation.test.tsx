@@ -74,6 +74,7 @@ describe("contextual confirmations", () => {
     setup(action);
     fireEvent.click(screen.getByRole("button", { name: "Odstranit alice" }));
     expect(screen.getByRole("button", { name: "Zrušit" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Zavřít", exact: true })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Provádím změnu…" }));
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(screen.getByRole("dialog")).toBeVisible();

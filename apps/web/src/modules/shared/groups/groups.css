@@ -1,0 +1,17 @@
+@layer components {
+  .visual-overlap {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .visual-overlap > div {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--color-surface-300);
+    overflow: hidden;
+  }
+  .visual-overlap span {
+    display: block;
+    height: 100%;
+    background: var(--color-destructive);
+  }
+}

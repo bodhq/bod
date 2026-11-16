@@ -35,7 +35,7 @@ interface ToastOptions {
 }
 
 function show(message: string, variant: ToastVariant, opts?: ToastOptions) {
-  const duration = opts?.duration ?? 5000;
+  const duration = opts?.duration ?? (variant === "error" ? 0 : 10000);
   return useToastStore.getState().addToast({
     message,
     variant,

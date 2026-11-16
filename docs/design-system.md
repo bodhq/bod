@@ -45,9 +45,41 @@ Moduly skládají společná primitiva; nevytvářejí jejich kopie.
 Běžné ovládání je neutrální. Vystouplý 3D povrch mají hlavní CTA a potvrzení
 závažné operace. Stavové barvy označují význam, nevytvářejí další rodinu ovládání.
 Komponenty sdílejí velikosti, fokus, chyby a nápovědu. Rozestupy vycházejí ze
-čtyřbodové stupnice. Hustoty mění výšku polí a běžných tlačítek na 34 / 40 / 46 px;
+čtyřbodové stupnice. Hustoty mění výšku polí a běžných tlačítek na 40 / 44 / 48 px;
 mobil zachovává alespoň 44px ovládací plochy.
 
 Pozadí přihlášení je součástí identity: jemné nakloněné řady loga s pomalým
 střídavým pohybem. Vykresluje je opakovaná SVG textura ve dvou CSS vrstvách,
 nikoli jednotlivá loga v DOM. Při omezeném pohybu zůstávají dlaždice statické.
+
+## Čitelnost a společné chování
+
+Výchozí text má 16 px, doplňkové popisky nejméně 14 px při běžném nastavení
+prohlížeče. Používej typografické tokeny v `rem`; pevné malé písmo obchází
+uživatelovu volbu velikosti. Utility `text-xs` a `text-sm` vycházejí ze stejné
+stupnice. Zvětšení textu i nastavení prohlížeče musí zachovat ovládání.
+
+Výšky běžných prvků jsou 40 / 44 / 48 px podle hustoty. Na mobilu a u voleb
+v `ChoiceGroup` zachovej alespoň 44 px. Jde o produktové pravidlo pro snadné
+ovládání; WCAG 2.2 AA stanovuje jiné minimum a výjimky.
+
+| Společný vzor | Komponenta | Chování |
+| --- | --- | --- |
+| Vstup a nápověda | `Input`, `Select`, `Textarea`, `Field` | Viditelný popisek, popis chyby propojený s polem, jednotný fokus |
+| Výběr jedné možnosti | `ChoiceGroup` | Nativní rádia, šipky na klávesnici, celá plocha popisku aktivní, stav poznatelný i bez barvy |
+| Uložení | `FormActions`, `SaveStatus` | Stejné pořadí akcí; viditelný průběh, neuložené změny, úspěch a chyba |
+| Dialog | `Dialog`, `RecordDialog`, `ConfirmProvider` | Viditelné Zavřít, Escape, návrat fokusu, potvrzení zahození rozepsaných údajů |
+| Výsledek operace | `ErrorState`, oznámení | Chyba zůstává u formuláře; chybové oznámení zůstává do zavření |
+
+`core/ui` řeší vizuální a přístupné primitivy bez znalosti API a oprávnění.
+Sdílené formuláře v `modules/shared` skládají primitiva a datové agendy dodávají
+pouze obsah, oprávnění a požadavky. Modulové CSS řeší rozložení; nezmenšuje
+společná tlačítka a nevytváří vlastní kopii rádia nebo vstupního pole.
+
+Tabulková třídnice zůstává seznamem se společným uložením. Při nedostatku místa
+se řádky přeskupí podle šířky obsahu. Stav uložení je viditelný i na telefonu.
+Formuláře nabízejí názvy z oprávněných odpovědí API; ruční opisování UUID není
+náhradou chybějících oprávnění. Dostupné volby z rozvrhu lze předat přes
+`ReferenceOptionsProvider`.
+
+Ověřené obrazovky, nálezy a omezení uvádí [UX audit](ux-audit.md).
