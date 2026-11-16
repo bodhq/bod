@@ -1,34 +1,21 @@
-name: Sync stable branches to GitLab
-
+name: Mirror to GitLab
 on:
   push:
     branches: [main, develop]
     tags: ["v*"]
-
 permissions:
   contents: read
-
 concurrency:
   group: gitlab-mirror
   cancel-in-progress: false
-
 jobs:
   mirror:
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
-    runs-on: ubuntu-latest
     steps:
-      - name: Mirror repository
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: scripts/ci mirror
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Clone the repository as a mirror (includes all branches and tags 1:1)
-          git clone --mirror "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" mirror.git
-          cd mirror.git
-          
-          # Add the GitLab remote using the token for authentication
-          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.spseplzen.cz/studentske-projekty/projekty-2026-2027/mtp1/navrh-a-implementace-modularniho-skolniho-informacniho-systemu.git"
-          
-          # Dlouhodobé větve a release tagy se aktualizují pouze fast-forward.
-          # GitLab-only refs se nemažou; případná divergence se řeší ručně.
-          git push gitlab 'refs/heads/main:refs/heads/main' 'refs/heads/develop:refs/heads/develop' 'refs/tags/v*:refs/tags/v*'

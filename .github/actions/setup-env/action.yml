@@ -1,37 +1,17 @@
-name: "Setup Environment"
-description: "Nainstaluje pnpm, Node.js, uv a všechny závislosti repozitáře"
-
+name: Setup environment
+description: Install Node.js, pnpm, Python and locked dependencies.
 runs:
-  using: "composite"
+  using: composite
   steps:
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-
-    - name: Setup Node
-      uses: actions/setup-node@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: "22"
-        cache: "pnpm"
-
-    - name: Setup uv
-      uses: astral-sh/setup-uv@v5
+        node-version-file: .nvmrc
+        cache: pnpm
+    - uses: astral-sh/setup-uv@v5
       with:
         version: "0.11.0"
         python-version: "3.12"
         enable-cache: true
-
-    - name: Install workspace dependencies
-      run: pnpm install --frozen-lockfile
+    - run: scripts/ci install
       shell: bash
-
-    - name: Install API dependencies
-      run: uv sync --all-packages --all-groups --frozen
-      shell: bash
-
-    - name: Cache turbo build setup
-      uses: actions/cache@v4
-      with:
-        path: .turbo
-        key: ${{ runner.os }}-turbo-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-turbo-
