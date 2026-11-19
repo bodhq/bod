@@ -74,6 +74,121 @@ def delete_room_types(
     return Response(status_code=204)
 
 
+@router.get("/buildings", response_model=list[schemas.BuildingsRead])
+def list_buildings(
+    context: CurrentContextDep,
+    session: SessionDep,
+    page: Annotated[Pagination, Query()],
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).list(context, page.offset, page.limit)
+
+
+@router.get("/buildings/{id}/layout", response_model=schemas.BuildingLayoutRead)
+def get_building_layout(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).building_layout(context, id)
+
+
+@router.get("/buildings/{id}", response_model=schemas.BuildingsRead)
+def get_buildings(id: UUID, context: CurrentContextDep, session: SessionDep) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).get(context, {"id": id})
+
+
+@router.post("/buildings", response_model=schemas.BuildingsRead, status_code=201)
+def create_buildings(
+    payload: schemas.BuildingsCreate,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).create(context, payload)
+
+
+@router.patch("/buildings/{id}", response_model=schemas.BuildingsRead)
+def patch_buildings(
+    id: UUID,
+    payload: schemas.BuildingsPatch,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).patch(context, {"id": id}, payload)
+
+
+@router.delete("/buildings/{id}", status_code=204)
+def delete_buildings(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> Response:
+    RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "buildings")
+    ).delete(context, {"id": id})
+    return Response(status_code=204)
+
+
+@router.get("/building-floors", response_model=list[schemas.BuildingFloorsRead])
+def list_building_floors(
+    context: CurrentContextDep,
+    session: SessionDep,
+    page: Annotated[Pagination, Query()],
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "building_floors")
+    ).list(context, page.offset, page.limit)
+
+
+@router.get("/building-floors/{id}", response_model=schemas.BuildingFloorsRead)
+def get_building_floors(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "building_floors")
+    ).get(context, {"id": id})
+
+
+@router.post(
+    "/building-floors", response_model=schemas.BuildingFloorsRead, status_code=201
+)
+def create_building_floors(
+    payload: schemas.BuildingFloorsCreate,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "building_floors")
+    ).create(context, payload)
+
+
+@router.patch("/building-floors/{id}", response_model=schemas.BuildingFloorsRead)
+def patch_building_floors(
+    id: UUID,
+    payload: schemas.BuildingFloorsPatch,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "building_floors")
+    ).patch(context, {"id": id}, payload)
+
+
+@router.delete("/building-floors/{id}", status_code=204)
+def delete_building_floors(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> Response:
+    RoomsDomainService(
+        session, next(r for r in RESOURCES if r.name == "building_floors")
+    ).delete(context, {"id": id})
+    return Response(status_code=204)
+
+
 @router.get("", response_model=list[schemas.RoomsRead])
 def list_rooms(
     context: CurrentContextDep,
@@ -150,7 +265,9 @@ def delete_group_home_rooms(
 
 
 @router.get(
-    "/room-distance-models", response_model=list[schemas.RoomDistanceModelsRead]
+    "/room-distance-models",
+    response_model=list[schemas.RoomDistanceModelsRead],
+    deprecated=True,
 )
 def list_room_distance_models(
     context: CurrentContextDep,
@@ -162,7 +279,11 @@ def list_room_distance_models(
     ).list(context, page.offset, page.limit)
 
 
-@router.get("/room-distance-models/{id}", response_model=schemas.RoomDistanceModelsRead)
+@router.get(
+    "/room-distance-models/{id}",
+    response_model=schemas.RoomDistanceModelsRead,
+    deprecated=True,
+)
 def get_room_distance_models(
     id: UUID, context: CurrentContextDep, session: SessionDep
 ) -> object:
@@ -175,6 +296,7 @@ def get_room_distance_models(
     "/room-distance-models",
     response_model=schemas.RoomDistanceModelsRead,
     status_code=201,
+    deprecated=True,
 )
 def create_room_distance_models(
     payload: schemas.RoomDistanceModelsCreate,
@@ -187,7 +309,9 @@ def create_room_distance_models(
 
 
 @router.patch(
-    "/room-distance-models/{id}", response_model=schemas.RoomDistanceModelsRead
+    "/room-distance-models/{id}",
+    response_model=schemas.RoomDistanceModelsRead,
+    deprecated=True,
 )
 def patch_room_distance_models(
     id: UUID,
@@ -200,7 +324,7 @@ def patch_room_distance_models(
     ).patch(context, {"id": id}, payload)
 
 
-@router.delete("/room-distance-models/{id}", status_code=204)
+@router.delete("/room-distance-models/{id}", status_code=204, deprecated=True)
 def delete_room_distance_models(
     id: UUID, context: CurrentContextDep, session: SessionDep
 ) -> Response:
@@ -210,7 +334,11 @@ def delete_room_distance_models(
     return Response(status_code=204)
 
 
-@router.get("/room-connections", response_model=list[schemas.RoomConnectionsRead])
+@router.get(
+    "/room-connections",
+    response_model=list[schemas.RoomConnectionsRead],
+    deprecated=True,
+)
 def list_room_connections(
     context: CurrentContextDep,
     session: SessionDep,
@@ -224,6 +352,7 @@ def list_room_connections(
 @router.get(
     "/room-connections/{distance_model_id}/{from_room_id}/{to_room_id}",
     response_model=schemas.RoomConnectionsRead,
+    deprecated=True,
 )
 def get_room_connections(
     distance_model_id: UUID,
@@ -245,7 +374,10 @@ def get_room_connections(
 
 
 @router.post(
-    "/room-connections", response_model=schemas.RoomConnectionsRead, status_code=201
+    "/room-connections",
+    response_model=schemas.RoomConnectionsRead,
+    status_code=201,
+    deprecated=True,
 )
 def create_room_connections(
     payload: schemas.RoomConnectionsCreate,
@@ -260,6 +392,7 @@ def create_room_connections(
 @router.patch(
     "/room-connections/{distance_model_id}/{from_room_id}/{to_room_id}",
     response_model=schemas.RoomConnectionsRead,
+    deprecated=True,
 )
 def patch_room_connections(
     distance_model_id: UUID,
@@ -283,7 +416,9 @@ def patch_room_connections(
 
 
 @router.delete(
-    "/room-connections/{distance_model_id}/{from_room_id}/{to_room_id}", status_code=204
+    "/room-connections/{distance_model_id}/{from_room_id}/{to_room_id}",
+    status_code=204,
+    deprecated=True,
 )
 def delete_room_connections(
     distance_model_id: UUID,

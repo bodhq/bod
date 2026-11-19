@@ -249,7 +249,11 @@ class TimetableService(DomainService):
                     "Sloty zvonění se překrývají.",
                 )
         if name == "timetable_versions":
-            if data.get("valid_to") is None:
+            require(
+                data.get("valid_from") is not None or data.get("valid_to") is None,
+                "Konec platnosti vyžaduje také začátek platnosti.",
+            )
+            if data.get("valid_to") is None and data.get("valid_from") is not None:
                 plan = self.repo.one("teaching_plans", id=data["teaching_plan_id"])
                 year = self.repo.one("school_years", id=plan["school_year_id"])
                 data["valid_to"] = year["ends_on"]
@@ -616,7 +620,8 @@ class TimetableService(DomainService):
                 ("time_grids", old["time_grid_id"]),
                 ("room_distance_models", old["distance_model_id"]),
             ):
-                self.freeze_parent(table, identity)
+                if identity is not None:
+                    self.freeze_parent(table, identity)
             self.repo.flush()
             self.audit(fresh, entity, "updated", old)
             return entity

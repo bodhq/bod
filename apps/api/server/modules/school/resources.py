@@ -4,6 +4,22 @@ from . import models, schemas
 
 RESOURCES = [
     Resource(
+        "study_fields",
+        models.StudyFields,
+        schemas.StudyFieldsCreate,
+        schemas.StudyFieldsPatch,
+        schemas.StudyFieldsRead,
+        "school.manage",
+    ),
+    Resource(
+        "group_study_field_rules",
+        models.GroupStudyFieldRules,
+        schemas.GroupStudyFieldRulesCreate,
+        schemas.GroupStudyFieldRulesPatch,
+        schemas.GroupStudyFieldRulesRead,
+        "school.manage",
+    ),
+    Resource(
         "school_years",
         models.SchoolYears,
         schemas.SchoolYearsCreate,

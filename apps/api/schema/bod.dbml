@@ -23,6 +23,7 @@ Enum group_membership_mode {
 Enum group_division_method {
   alphabetical
   specialization
+  study_field
   manual
 }
 
@@ -219,8 +220,16 @@ Table school_years {
   Note: 'ends_on je první den mimo školní rok.'
 }
 
+Table study_fields {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(30) [not null, unique]
+  name varchar(100) [not null]
+  is_active boolean [not null, default: true]
+}
+
 Table specializations {
   id uuid [pk, default: `gen_random_uuid()`]
+  study_field_id uuid
   code varchar(30) [not null, unique]
   name varchar(100) [not null]
   is_active boolean [not null, default: true]
@@ -243,6 +252,7 @@ Table class_enrollments {
   id uuid [pk, default: `gen_random_uuid()`]
   student_id uuid [not null]
   class_id uuid [not null]
+  study_field_id uuid
   specialization_id uuid
 
   valid_from date [not null]
@@ -352,6 +362,15 @@ Table teaching_group_memberships {
   Note: 'Pouze pro explicitní skupiny. Překryv členství stejného žáka ve stejné skupině se zakazuje. V jednom dělení může být žák současně nejvýše v jedné výsledné skupině.'
 }
 
+Table group_study_field_rules {
+  group_id uuid [not null]
+  study_field_id uuid [not null]
+
+  indexes {
+    (group_id, study_field_id) [pk]
+  }
+}
+
 Table group_specialization_rules {
   group_id uuid [not null]
   specialization_id uuid [not null]
@@ -372,10 +391,40 @@ Table room_types {
   name varchar(100) [not null]
 }
 
+Table buildings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(30) [not null, unique]
+  name varchar(100) [not null]
+  address text
+}
+
+Table building_floors {
+  id uuid [pk, default: `gen_random_uuid()`]
+  building_id uuid [not null]
+  number integer [not null]
+  name varchar(100)
+  width integer [not null, default: 1000]
+  height integer [not null, default: 1000]
+
+  indexes {
+    (building_id, number) [unique]
+  }
+
+  checks {
+    `width > 0 AND height > 0` [name: 'building_floors_size_positive']
+  }
+}
+
 Table rooms {
   id uuid [pk, default: `gen_random_uuid()`]
   code varchar(30) [not null, unique]
   name varchar(100)
+
+  floor_id uuid
+  x integer
+  y integer
+  width integer
+  height integer
 
   room_type_code varchar(50) [not null]
   capacity integer [not null]
@@ -383,10 +432,12 @@ Table rooms {
 
   indexes {
     (room_type_code, capacity)
+    floor_id
   }
 
   checks {
     `capacity > 0` [name: 'rooms_capacity_positive']
+    `(x IS NULL AND y IS NULL AND width IS NULL AND height IS NULL) OR (floor_id IS NOT NULL AND x IS NOT NULL AND y IS NOT NULL AND width IS NOT NULL AND height IS NOT NULL AND x >= 0 AND y >= 0 AND width > 0 AND height > 0)` [name: 'rooms_layout_valid']
   }
 }
 
@@ -651,7 +702,7 @@ Table timetable_versions {
   id uuid [pk, default: `gen_random_uuid()`]
   teaching_plan_id uuid [not null]
   time_grid_id uuid [not null]
-  distance_model_id uuid [not null]
+  distance_model_id uuid
 
   name varchar(150) [not null]
   status timetable_status [not null, default: 'draft']
@@ -1071,6 +1122,7 @@ TableGroup core_audit {
 
 TableGroup module_school {
   school_years
+  study_fields
   specializations
   classes
   class_enrollments
@@ -1081,9 +1133,12 @@ TableGroup module_school {
   teaching_groups
   teaching_group_memberships
   group_specialization_rules
+  group_study_field_rules
 }
 
 TableGroup module_rooms {
+  buildings
+  building_floors
   room_types
   rooms
   group_home_rooms
@@ -1123,3 +1178,10 @@ TableGroup module_classbook {
   absence_excuse_requests
   absence_excuse_items
 }
+
+Ref: specializations.study_field_id > study_fields.id
+Ref: class_enrollments.study_field_id > study_fields.id
+Ref: group_study_field_rules.study_field_id > study_fields.id
+Ref: group_study_field_rules.group_id > teaching_groups.id
+Ref: building_floors.building_id > buildings.id
+Ref: rooms.floor_id > building_floors.id

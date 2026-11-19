@@ -92,19 +92,24 @@ def generate(
             )
         )
         require(bool(enrollments), "Ve třídě nejsou k datu žádní žáci.")
+        by_field = division["method"] == "study_field"
+        rule_table = (
+            "group_study_field_rules" if by_field else "group_specialization_rules"
+        )
+        rule_key = "study_field_id" if by_field else "specialization_id"
         rules = {
-            r["specialization_id"]: r["group_id"]
-            for r in repo.rows("group_specialization_rules")
+            r[rule_key]: r["group_id"]
+            for r in repo.rows(rule_table)
             if r["group_id"] in group_ids
         }
         placements: list[tuple[dict[str, Any], Any]] = []
         for index, enrollment in enumerate(enrollments):
-            if division["method"] == "specialization":
+            if division["method"] in {"study_field", "specialization"}:
                 require(
-                    enrollment["specialization_id"] in rules,
-                    "Zaměření žáka nemá pravidlo pro cílovou skupinu.",
+                    enrollment[rule_key] in rules,
+                    "Obor nebo zaměření žáka nemá pravidlo pro cílovou skupinu.",
                 )
-                group_id = rules[enrollment["specialization_id"]]
+                group_id = rules[enrollment[rule_key]]
             else:
                 group_id = groups[index * len(groups) // len(enrollments)]["id"]
             placements.append((enrollment, group_id))

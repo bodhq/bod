@@ -23,7 +23,59 @@ class RoomTypesRead(DomainRead):
     name: str
 
 
-class RoomsCreate(DomainInput):
+class BuildingsCreate(DomainInput):
+    code: str = Field(max_length=30, min_length=1)
+    name: str = Field(max_length=100, min_length=1)
+    address: str | None = Field(default=None, max_length=1000)
+
+
+class BuildingsPatch(DomainInput):
+    code: str | None = Field(default=None, max_length=30, min_length=1)
+    name: str | None = Field(default=None, max_length=100, min_length=1)
+    address: str | None = Field(default=None, max_length=1000)
+
+
+class BuildingsRead(DomainRead):
+    id: UUID
+    code: str
+    name: str
+    address: str | None
+
+
+class BuildingFloorsCreate(DomainInput):
+    building_id: UUID
+    number: StrictInt = Field(ge=-2147483648, le=2147483647)
+    name: str | None = Field(default=None, max_length=100)
+    width: StrictInt = Field(default=1000, gt=0, le=2147483647)
+    height: StrictInt = Field(default=1000, gt=0, le=2147483647)
+
+
+class BuildingFloorsPatch(DomainInput):
+    building_id: UUID | None = None
+    number: StrictInt | None = Field(default=None, ge=-2147483648, le=2147483647)
+    name: str | None = Field(default=None, max_length=100)
+    width: StrictInt | None = Field(default=None, gt=0, le=2147483647)
+    height: StrictInt | None = Field(default=None, gt=0, le=2147483647)
+
+
+class BuildingFloorsRead(DomainRead):
+    id: UUID
+    building_id: UUID
+    number: StrictInt
+    name: str | None
+    width: StrictInt
+    height: StrictInt
+
+
+class RoomLayoutInput(DomainInput):
+    floor_id: UUID | None = None
+    x: StrictInt | None = Field(default=None, ge=0, le=2147483647)
+    y: StrictInt | None = Field(default=None, ge=0, le=2147483647)
+    width: StrictInt | None = Field(default=None, gt=0, le=2147483647)
+    height: StrictInt | None = Field(default=None, gt=0, le=2147483647)
+
+
+class RoomsCreate(RoomLayoutInput):
     code: str = Field(default=..., max_length=30, min_length=1)
     name: str | None = Field(default=None, max_length=100)
     room_type_code: str = Field(default=..., max_length=50, min_length=1)
@@ -31,7 +83,7 @@ class RoomsCreate(DomainInput):
     is_active: StrictBool = Field(default=True)
 
 
-class RoomsPatch(DomainInput):
+class RoomsPatch(RoomLayoutInput):
     code: str | None = Field(default=None, max_length=30, min_length=1)
     name: str | None = Field(default=None, max_length=100)
     room_type_code: str | None = Field(default=None, max_length=50, min_length=1)
@@ -46,6 +98,19 @@ class RoomsRead(DomainRead):
     room_type_code: str
     capacity: StrictInt
     is_active: StrictBool
+    floor_id: UUID | None
+    x: StrictInt | None
+    y: StrictInt | None
+    width: StrictInt | None
+    height: StrictInt | None
+
+
+class BuildingFloorLayoutRead(BuildingFloorsRead):
+    rooms: list[RoomsRead]
+
+
+class BuildingLayoutRead(BuildingsRead):
+    floors: list[BuildingFloorLayoutRead]
 
 
 class GroupHomeRoomsCreate(DomainInput):

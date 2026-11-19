@@ -356,7 +356,9 @@ class TimetableVersions(SQLModel, table=True):
     )
     teaching_plan_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
     time_grid_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
-    distance_model_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
+    distance_model_id: UUID | None = Field(
+        default=None, sa_column=Column(Uuid, nullable=True)
+    )
     name: str = Field(sa_column=Column(String(150), nullable=False))
     status: str = Field(
         default="draft",

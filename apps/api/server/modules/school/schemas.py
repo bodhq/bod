@@ -28,23 +28,35 @@ class SchoolYearsRead(DomainRead):
     ends_on: date
 
 
-class SpecializationsCreate(DomainInput):
+class StudyFieldsCreate(DomainInput):
     code: str = Field(default=..., max_length=30, min_length=1)
     name: str = Field(default=..., max_length=100, min_length=1)
     is_active: StrictBool = Field(default=True)
 
 
-class SpecializationsPatch(DomainInput):
+class StudyFieldsPatch(DomainInput):
     code: str | None = Field(default=None, max_length=30, min_length=1)
     name: str | None = Field(default=None, max_length=100, min_length=1)
     is_active: StrictBool | None = Field(default=None)
 
 
-class SpecializationsRead(DomainRead):
+class StudyFieldsRead(DomainRead):
     id: UUID
     code: str
     name: str
     is_active: StrictBool
+
+
+class SpecializationsCreate(StudyFieldsCreate):
+    study_field_id: UUID | None = Field(default=None)
+
+
+class SpecializationsPatch(StudyFieldsPatch):
+    study_field_id: UUID | None = Field(default=None)
+
+
+class SpecializationsRead(StudyFieldsRead):
+    study_field_id: UUID | None
 
 
 class ClassesCreate(DomainInput):
@@ -69,6 +81,7 @@ class ClassesRead(DomainRead):
 class ClassEnrollmentsCreate(DomainInput):
     student_id: UUID = Field(default=...)
     class_id: UUID = Field(default=...)
+    study_field_id: UUID | None = Field(default=None)
     specialization_id: UUID | None = Field(default=None)
     valid_from: date = Field(default=...)
     valid_to: date | None = Field(default=None)
@@ -77,6 +90,7 @@ class ClassEnrollmentsCreate(DomainInput):
 class ClassEnrollmentsPatch(DomainInput):
     student_id: UUID | None = Field(default=None)
     class_id: UUID | None = Field(default=None)
+    study_field_id: UUID | None = Field(default=None)
     specialization_id: UUID | None = Field(default=None)
     valid_from: date | None = Field(default=None)
     valid_to: date | None = Field(default=None)
@@ -86,6 +100,7 @@ class ClassEnrollmentsRead(DomainRead):
     id: UUID
     student_id: UUID
     class_id: UUID
+    study_field_id: UUID | None
     specialization_id: UUID | None
     valid_from: date
     valid_to: date | None
@@ -124,16 +139,18 @@ class SubjectsRead(DomainRead):
 class GroupDivisionsCreate(DomainInput):
     class_id: UUID = Field(default=...)
     name: str = Field(default=..., max_length=100, min_length=1)
-    method: Literal["alphabetical", "specialization", "manual"] = Field(default=...)
+    method: Literal["alphabetical", "study_field", "specialization", "manual"] = Field(
+        default=...
+    )
     effective_from: date = Field(default=...)
 
 
 class GroupDivisionsPatch(DomainInput):
     class_id: UUID | None = Field(default=None)
     name: str | None = Field(default=None, max_length=100, min_length=1)
-    method: Literal["alphabetical", "specialization", "manual"] | None = Field(
-        default=None
-    )
+    method: (
+        Literal["alphabetical", "study_field", "specialization", "manual"] | None
+    ) = Field(default=None)
     effective_from: date | None = Field(default=None)
 
 
@@ -141,7 +158,7 @@ class GroupDivisionsRead(DomainRead):
     id: UUID
     class_id: UUID
     name: str
-    method: Literal["alphabetical", "specialization", "manual"]
+    method: Literal["alphabetical", "study_field", "specialization", "manual"]
     effective_from: date
     created_by: UUID
     created_at: datetime
@@ -219,3 +236,17 @@ class GroupSpecializationRulesPatch(DomainInput):
 class GroupSpecializationRulesRead(DomainRead):
     group_id: UUID
     specialization_id: UUID
+
+
+class GroupStudyFieldRulesCreate(DomainInput):
+    group_id: UUID
+    study_field_id: UUID
+
+
+class GroupStudyFieldRulesPatch(DomainInput):
+    pass
+
+
+class GroupStudyFieldRulesRead(DomainRead):
+    group_id: UUID
+    study_field_id: UUID

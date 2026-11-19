@@ -16,6 +16,16 @@ class SchoolDomainService(DomainService):
     ) -> None:
         super().validate(data, old, actor)
         table = self.resource.name
+        if table == "class_enrollments":
+            for key, catalog in (
+                ("study_field_id", "study_fields"),
+                ("specialization_id", "specializations"),
+            ):
+                if data.get(key) and (old is None or old.get(key) != data[key]):
+                    require(
+                        self.repo.one(catalog, id=data[key])["is_active"],
+                        "Nové přiřazení vyžaduje aktivní obor nebo zaměření.",
+                    )
         if table in {"class_enrollments", "teaching_group_memberships"}:
             parent_table = (
                 "classes" if table == "class_enrollments" else "teaching_groups"
@@ -83,7 +93,7 @@ class SchoolDomainService(DomainService):
         old: dict[str, Any] | None,
         actor: AccessContext,
     ) -> None:
-        if self.resource.name not in {"subjects", "parent_students", "specializations"}:
+        if self.resource.name not in {"subjects", "parent_students", "study_fields"}:
             self.validate_school()
         if self.resource.name in {
             "class_enrollments",
@@ -124,6 +134,15 @@ class SchoolDomainService(DomainService):
         divisions = {r["id"]: r for r in self.repo.rows("group_divisions")}
         groups = {r["id"]: r for r in self.repo.rows("teaching_groups")}
         enrollments = self.repo.rows("class_enrollments")
+        specializations = {r["id"]: r for r in self.repo.rows("specializations")}
+        for enrollment in enrollments:
+            if enrollment["specialization_id"] is not None:
+                specialization = specializations[enrollment["specialization_id"]]
+                require(
+                    specialization["study_field_id"] is None
+                    or specialization["study_field_id"] == enrollment["study_field_id"],
+                    "Zaměření žáka musí patřit ke zvolenému oboru.",
+                )
         enrollments_by_student: dict[Any, list[dict[str, Any]]] = defaultdict(list)
         for enrollment in enrollments:
             enrollments_by_student[enrollment["student_id"]].append(enrollment)
@@ -230,17 +249,21 @@ class SchoolDomainService(DomainService):
                         ),
                         "Členství žáka ve skupině nebo dělení se překrývá.",
                     )
-        seen: set[tuple[Any, Any]] = set()
-        for rule in self.repo.rows("group_specialization_rules"):
-            group = groups[rule["group_id"]]
-            require(
-                group["division_id"] is not None
-                and divisions[group["division_id"]]["method"] == "specialization",
-                "Pravidlo zaměření vyžaduje dělení podle zaměření.",
-            )
-            key = (group["division_id"], rule["specialization_id"])
-            conflict(key in seen, "Zaměření už v dělení směruje do jiné skupiny.")
-            seen.add(key)
+        for table, method, field in (
+            ("group_specialization_rules", "specialization", "specialization_id"),
+            ("group_study_field_rules", "study_field", "study_field_id"),
+        ):
+            seen: set[tuple[Any, Any]] = set()
+            for rule in self.repo.rows(table):
+                group = groups[rule["group_id"]]
+                require(
+                    group["division_id"] is not None
+                    and divisions[group["division_id"]]["method"] == method,
+                    "Pravidlo musí odpovídat metodě dělení skupin.",
+                )
+                key = (group["division_id"], rule[field])
+                conflict(key in seen, "Obor nebo zaměření už směruje do jiné skupiny.")
+                seen.add(key)
 
     @staticmethod
     def within_year(start: date, end: date | None, year: dict[str, Any]) -> None:

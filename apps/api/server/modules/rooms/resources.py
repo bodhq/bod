@@ -4,6 +4,22 @@ from . import models, schemas
 
 RESOURCES = [
     Resource(
+        "buildings",
+        models.Buildings,
+        schemas.BuildingsCreate,
+        schemas.BuildingsPatch,
+        schemas.BuildingsRead,
+        "rooms.manage",
+    ),
+    Resource(
+        "building_floors",
+        models.BuildingFloors,
+        schemas.BuildingFloorsCreate,
+        schemas.BuildingFloorsPatch,
+        schemas.BuildingFloorsRead,
+        "rooms.manage",
+    ),
+    Resource(
         "room_types",
         models.RoomTypes,
         schemas.RoomTypesCreate,

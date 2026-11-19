@@ -44,9 +44,8 @@ class SchoolYears(SQLModel, table=True):
     ends_on: date = Field(sa_column=Column(Date, nullable=False))
 
 
-class Specializations(SQLModel, table=True):
-    __tablename__: ClassVar[Any] = "specializations"
-    __table_args__ = ()
+class StudyFields(SQLModel, table=True):
+    __tablename__: ClassVar[Any] = "study_fields"
     id: UUID = Field(
         default_factory=uuid4,
         sa_column=Column(
@@ -57,6 +56,32 @@ class Specializations(SQLModel, table=True):
         ),
     )
     code: str = Field(sa_column=Column(String(30), nullable=False, unique=True))
+    name: str = Field(sa_column=Column(String(100), nullable=False))
+    is_active: bool = Field(
+        default=True,
+        sa_column=Column(Boolean, nullable=False, server_default=text("true")),
+    )
+
+
+class Specializations(SQLModel, table=True):
+    __tablename__: ClassVar[Any] = "specializations"
+    __table_args__ = (
+        ForeignKeyConstraint(["study_field_id"], ["study_fields.id"]),
+        Index("ix_specializations_study_field_id", "study_field_id"),
+    )
+    id: UUID = Field(
+        default_factory=uuid4,
+        sa_column=Column(
+            Uuid,
+            nullable=False,
+            primary_key=True,
+            server_default=text("gen_random_uuid()"),
+        ),
+    )
+    code: str = Field(sa_column=Column(String(30), nullable=False, unique=True))
+    study_field_id: UUID | None = Field(
+        default=None, sa_column=Column(Uuid, nullable=True)
+    )
     name: str = Field(sa_column=Column(String(100), nullable=False))
     is_active: bool = Field(
         default=True,
@@ -92,6 +117,7 @@ class ClassEnrollments(SQLModel, table=True):
     __table_args__ = (
         ForeignKeyConstraint(["student_id"], ["users.id"]),
         ForeignKeyConstraint(["class_id"], ["classes.id"]),
+        ForeignKeyConstraint(["study_field_id"], ["study_fields.id"]),
         ForeignKeyConstraint(["specialization_id"], ["specializations.id"]),
         UniqueConstraint("student_id", "class_id", "valid_from"),
         Index("ix_class_enrollments_class_id_valid_from", "class_id", "valid_from"),
@@ -111,6 +137,9 @@ class ClassEnrollments(SQLModel, table=True):
     )
     student_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
     class_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
+    study_field_id: UUID | None = Field(
+        default=None, sa_column=Column(Uuid, nullable=True)
+    )
     specialization_id: UUID | None = Field(
         default=None, sa_column=Column(Uuid, nullable=True)
     )
@@ -156,7 +185,7 @@ class GroupDivisions(SQLModel, table=True):
         ForeignKeyConstraint(["created_by"], ["users.id"]),
         UniqueConstraint("class_id", "name"),
         CheckConstraint(
-            "method IN ('alphabetical', 'specialization', 'manual')",
+            "method IN ('alphabetical', 'study_field', 'specialization', 'manual')",
             name="ck_group_divisions_method",
         ),
     )
@@ -285,3 +314,14 @@ class GroupSpecializationRules(SQLModel, table=True):
     )
     group_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
     specialization_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
+
+
+class GroupStudyFieldRules(SQLModel, table=True):
+    __tablename__: ClassVar[Any] = "group_study_field_rules"
+    __table_args__ = (
+        ForeignKeyConstraint(["group_id"], ["teaching_groups.id"]),
+        ForeignKeyConstraint(["study_field_id"], ["study_fields.id"]),
+        PrimaryKeyConstraint("group_id", "study_field_id"),
+    )
+    group_id: UUID = Field(sa_column=Column(Uuid, nullable=False))
+    study_field_id: UUID = Field(sa_column=Column(Uuid, nullable=False))

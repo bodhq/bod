@@ -251,7 +251,7 @@ class TimeSlotsRead(DomainRead):
 class TimetableVersionsCreate(DomainInput):
     teaching_plan_id: UUID = Field(default=...)
     time_grid_id: UUID = Field(default=...)
-    distance_model_id: UUID = Field(default=...)
+    distance_model_id: UUID | None = Field(default=None)
     name: str = Field(default=..., max_length=150, min_length=1)
     status: Literal["draft", "published", "archived"] = Field(default="draft")
     based_on_version_id: UUID | None = Field(default=None)
@@ -274,7 +274,7 @@ class TimetableVersionsRead(DomainRead):
     id: UUID
     teaching_plan_id: UUID
     time_grid_id: UUID
-    distance_model_id: UUID
+    distance_model_id: UUID | None
     name: str
     status: Literal["draft", "published", "archived"]
     based_on_version_id: UUID | None

@@ -10,6 +10,7 @@ from sqlmodel import Session, SQLModel
 from server.core.access.repository import AccessRepository
 from server.core.access.services import AccessService
 from server.core.domain.migration import migrate_er, migrate_rooms_permission
+from server.core.domain.school_layout_migration import migrate_school_layout
 from server.core.domain.workflow_migration import (
     migrate_annual_intervals,
     migrate_domain_locks,
@@ -39,6 +40,7 @@ def migrate(engine: Engine) -> None:
             ("20261113_07_annual_intervals", migrate_annual_intervals),
             ("20261113_08_domain_locks", migrate_domain_locks),
             ("20261113_09_role_scopes", migrate_role_scopes),
+            ("20261120_10_school_layout", migrate_school_layout),
         ):
             applied = connection.execute(
                 text("SELECT 1 FROM schema_migrations WHERE version = :version"),

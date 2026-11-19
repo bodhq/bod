@@ -1,5 +1,49 @@
 # bod API
 
+## Obory, zaměření a rozložení budov
+
+Obory (`/api/v1/school/study-fields`) a zaměření
+(`/api/v1/school/specializations`) jsou samostatné katalogy s poli `code`, `name`
+a `is_active`. Oba mohou zůstat prázdné. Zaměření má volitelný `study_field_id`;
+bez něj může existovat samostatně. Zařazení žáka má nezávislá volitelná pole
+`study_field_id` a `specialization_id`. Pokud zaměření patří konkrétnímu oboru,
+musí jej mít vybraný také žák. PATCH obou polí na `null` jejich přiřazení odstraní.
+Neaktivní obor nebo zaměření nelze nově přiřadit, dosavadní evidence se zachová.
+Dělení skupin podporuje samostatně metody `study_field` a `specialization`;
+pravidla oborů jsou pod `/school/group-study-field-rules`.
+
+Fyzické rozložení se ukládá přes CRUD `/api/v1/rooms/buildings` a
+`/api/v1/rooms/building-floors`. Budova má `code`, `name` a volitelnou `address`.
+Patro má `building_id`, celočíselné `number` (0 je přízemí, záporná čísla suterén),
+volitelný `name` a kladné celočíselné rozměry `width`, `height` (výchozí 1000).
+Číslo patra je v budově unikátní. Místnost má volitelný `floor_id` a pro umístění
+v půdorysu čtveřici celočíselných polí `x`, `y`, `width`, `height`. Souřadnice
+začínají na nule; rozměry musí být kladné. Umístění vyžaduje všechna čtyři pole
+a patro a nesmí přesáhnout jeho rozměry. Místnost může být přiřazená k patru
+i bez souřadnic. PATCH vynechané hodnoty zachová; odstranění celého umístění
+používá `null` ve všech pěti polích. Zmenšení patra kontroluje uložené místnosti.
+
+`GET /api/v1/rooms/buildings/{id}/layout` vrací budovu s poli `floors` a v každém
+patře `rooms`, seřazenými podle čísla patra a kódu místnosti. Prázdná patra se
+vracejí také. Správa budov a rozložení používá `rooms.manage`, katalogy
+oborů a zaměření `school.manage`; změny procházejí běžným auditem a transakcemi.
+Budovu s patry ani patro s místnostmi nelze smazat bez vypořádání vazeb.
+
+Verze rozvrhu již nevyžadují `distance_model_id`; bez něj funguje založení,
+publikování i klonování. Návrh lze založit bez dat platnosti; po zadání začátku
+se vynechaný konec doplní koncem školního roku. Publikování vyžaduje platný
+začátek a konec nelze zadat samostatně.
+Původní API modelů vzdáleností a spojnic je v OpenAPI
+označené jako zastaralé. Jeho data a existující vazby zůstávají zachované pro
+starší klienty a publikovanou historii. Pro nové rozložení se zadávají budovy,
+patra a poloha místností, nikoli relativní náročnost přesunu. Automatický
+výpočet vzdáleností nebo generátor rozvrhu tato změna nepřidává.
+
+Migrace `20261120_10_school_layout` přidá tabulky a volitelné sloupce bez
+domýšlení oborů či poloh u existujících záznamů. Běží transakčně při startupu.
+Regresní scénáře jsou v `tests/api/domain/test_school_layout.py` včetně
+opakované migrace starého schématu na izolovaném PostgreSQL.
+
 FastAPI služba pro školní informační systém bod. Python balíček se jmenuje `server`.
 
 ## ER model a rozdělení backendu

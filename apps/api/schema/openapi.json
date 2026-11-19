@@ -752,6 +752,386 @@
         "title": "BatchCreate",
         "type": "object"
       },
+      "BuildingFloorLayoutRead": {
+        "properties": {
+          "building_id": {
+            "format": "uuid",
+            "title": "Building Id",
+            "type": "string"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "rooms": {
+            "items": {
+              "$ref": "#/components/schemas/RoomsRead"
+            },
+            "title": "Rooms",
+            "type": "array"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "building_id",
+          "number",
+          "name",
+          "width",
+          "height",
+          "rooms"
+        ],
+        "title": "BuildingFloorLayoutRead",
+        "type": "object"
+      },
+      "BuildingFloorsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "building_id": {
+            "format": "uuid",
+            "title": "Building Id",
+            "type": "string"
+          },
+          "height": {
+            "default": 1000,
+            "exclusiveMinimum": 0.0,
+            "maximum": 2147483647.0,
+            "title": "Height",
+            "type": "integer"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "number": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Number",
+            "type": "integer"
+          },
+          "width": {
+            "default": 1000,
+            "exclusiveMinimum": 0.0,
+            "maximum": 2147483647.0,
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "building_id",
+          "number"
+        ],
+        "title": "BuildingFloorsCreate",
+        "type": "object"
+      },
+      "BuildingFloorsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "building_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Building Id"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "maximum": 2147483647.0,
+                "minimum": -2147483648.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "title": "BuildingFloorsPatch",
+        "type": "object"
+      },
+      "BuildingFloorsRead": {
+        "properties": {
+          "building_id": {
+            "format": "uuid",
+            "title": "Building Id",
+            "type": "string"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "building_id",
+          "number",
+          "name",
+          "width",
+          "height"
+        ],
+        "title": "BuildingFloorsRead",
+        "type": "object"
+      },
+      "BuildingLayoutRead": {
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "floors": {
+            "items": {
+              "$ref": "#/components/schemas/BuildingFloorLayoutRead"
+            },
+            "title": "Floors",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "address",
+          "floors"
+        ],
+        "title": "BuildingLayoutRead",
+        "type": "object"
+      },
+      "BuildingsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "code": {
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "BuildingsCreate",
+        "type": "object"
+      },
+      "BuildingsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "BuildingsPatch",
+        "type": "object"
+      },
+      "BuildingsRead": {
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "address"
+        ],
+        "title": "BuildingsRead",
+        "type": "object"
+      },
       "ChildRead": {
         "properties": {
           "name": {
@@ -795,6 +1175,18 @@
             "format": "uuid",
             "title": "Student Id",
             "type": "string"
+          },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
           },
           "valid_from": {
             "format": "date",
@@ -861,6 +1253,18 @@
             ],
             "title": "Student Id"
           },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
+          },
           "valid_from": {
             "anyOf": [
               {
@@ -918,6 +1322,18 @@
             "title": "Student Id",
             "type": "string"
           },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
+          },
           "valid_from": {
             "format": "date",
             "title": "Valid From",
@@ -940,6 +1356,7 @@
           "id",
           "student_id",
           "class_id",
+          "study_field_id",
           "specialization_id",
           "valid_from",
           "valid_to"
@@ -1829,6 +2246,7 @@
           "method": {
             "enum": [
               "alphabetical",
+              "study_field",
               "specialization",
               "manual"
             ],
@@ -1883,6 +2301,7 @@
               {
                 "enum": [
                   "alphabetical",
+                  "study_field",
                   "specialization",
                   "manual"
                 ],
@@ -1941,6 +2360,7 @@
           "method": {
             "enum": [
               "alphabetical",
+              "study_field",
               "specialization",
               "manual"
             ],
@@ -2063,6 +2483,47 @@
           "specialization_id"
         ],
         "title": "GroupSpecializationRulesRead",
+        "type": "object"
+      },
+      "GroupStudyFieldRulesCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "study_field_id": {
+            "format": "uuid",
+            "title": "Study Field Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id",
+          "study_field_id"
+        ],
+        "title": "GroupStudyFieldRulesCreate",
+        "type": "object"
+      },
+      "GroupStudyFieldRulesRead": {
+        "properties": {
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "study_field_id": {
+            "format": "uuid",
+            "title": "Study Field Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id",
+          "study_field_id"
+        ],
+        "title": "GroupStudyFieldRulesRead",
         "type": "object"
       },
       "IssuedAccount": {
@@ -3463,6 +3924,31 @@
             "title": "Code",
             "type": "string"
           },
+          "floor_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Id"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
           "is_active": {
             "default": true,
             "title": "Is Active",
@@ -3485,6 +3971,45 @@
             "minLength": 1,
             "title": "Room Type Code",
             "type": "string"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "maximum": 2147483647.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "maximum": 2147483647.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
           }
         },
         "required": [
@@ -3522,6 +4047,31 @@
             ],
             "title": "Code"
           },
+          "floor_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Id"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
           "is_active": {
             "anyOf": [
               {
@@ -3557,6 +4107,45 @@
               }
             ],
             "title": "Room Type Code"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 2147483647.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "maximum": 2147483647.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "maximum": 2147483647.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
           }
         },
         "title": "RoomsPatch",
@@ -3571,6 +4160,29 @@
           "code": {
             "title": "Code",
             "type": "string"
+          },
+          "floor_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Floor Id"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
           },
           "id": {
             "format": "uuid",
@@ -3595,6 +4207,39 @@
           "room_type_code": {
             "title": "Room Type Code",
             "type": "string"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
           }
         },
         "required": [
@@ -3603,7 +4248,12 @@
           "name",
           "room_type_code",
           "capacity",
-          "is_active"
+          "is_active",
+          "floor_id",
+          "x",
+          "y",
+          "width",
+          "height"
         ],
         "title": "RoomsRead",
         "type": "object"
@@ -3915,6 +4565,18 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
           }
         },
         "required": [
@@ -3963,12 +4625,138 @@
               }
             ],
             "title": "Name"
+          },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
           }
         },
         "title": "SpecializationsPatch",
         "type": "object"
       },
       "SpecializationsRead": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "study_field_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Study Field Id"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "is_active",
+          "study_field_id"
+        ],
+        "title": "SpecializationsRead",
+        "type": "object"
+      },
+      "StudyFieldsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "StudyFieldsCreate",
+        "type": "object"
+      },
+      "StudyFieldsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "StudyFieldsPatch",
+        "type": "object"
+      },
+      "StudyFieldsRead": {
         "properties": {
           "code": {
             "title": "Code",
@@ -3994,7 +4782,7 @@
           "name",
           "is_active"
         ],
-        "title": "SpecializationsRead",
+        "title": "StudyFieldsRead",
         "type": "object"
       },
       "SubjectsCreate": {
@@ -6275,9 +7063,16 @@
             "title": "Based On Version Id"
           },
           "distance_model_id": {
-            "format": "uuid",
-            "title": "Distance Model Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Model Id"
           },
           "name": {
             "maxLength": 150,
@@ -6333,7 +7128,6 @@
         "required": [
           "teaching_plan_id",
           "time_grid_id",
-          "distance_model_id",
           "name"
         ],
         "title": "TimetableVersionsCreate",
@@ -6472,9 +7266,16 @@
             "type": "string"
           },
           "distance_model_id": {
-            "format": "uuid",
-            "title": "Distance Model Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Model Id"
           },
           "id": {
             "format": "uuid",
@@ -7396,7 +8197,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -7561,7 +8362,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -7726,7 +8527,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -7895,7 +8696,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8061,7 +8862,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8242,7 +9043,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8431,7 +9232,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8600,7 +9401,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8775,7 +9576,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -8939,7 +9740,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -9108,7 +9909,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -9287,7 +10088,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -9458,7 +10259,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -9609,7 +10410,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -9760,7 +10561,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -10021,7 +10822,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -10162,7 +10963,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -10308,7 +11109,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -10652,7 +11453,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -10821,7 +11622,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11002,7 +11803,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11191,7 +11992,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11380,7 +12181,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11549,7 +12350,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11720,7 +12521,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -11899,7 +12700,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12088,7 +12889,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12257,7 +13058,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12421,7 +13222,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12590,7 +13391,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12769,7 +13570,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -12958,7 +13759,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13127,7 +13928,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13308,7 +14109,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13479,7 +14280,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13643,7 +14444,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13812,7 +14613,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -13991,7 +14792,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -14180,7 +14981,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -14349,7 +15150,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -14523,7 +15324,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -14702,7 +15503,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -14891,7 +15692,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15062,7 +15863,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15233,7 +16034,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15424,7 +16225,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15595,7 +16396,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15766,7 +16567,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -15930,7 +16731,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -16099,7 +16900,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -16278,7 +17079,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -16463,7 +17264,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -16703,7 +17504,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -16868,7 +17669,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -17078,7 +17879,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -17301,7 +18102,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -17490,7 +18291,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -17659,7 +18460,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -17673,6 +18474,1917 @@
           }
         },
         "summary": "Create Rooms",
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/v1/rooms/building-floors": {
+      "get": {
+        "operationId": "list_building_floors_api_v1_rooms_building_floors_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BuildingFloorsRead"
+                  },
+                  "title": "Response List Building Floors Api V1 Rooms Building Floors Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "List Building Floors",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "post": {
+        "operationId": "create_building_floors_api_v1_rooms_building_floors_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildingFloorsCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingFloorsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Building Floors",
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/v1/rooms/building-floors/{id}": {
+      "delete": {
+        "operationId": "delete_building_floors_api_v1_rooms_building_floors__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Building Floors",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "get": {
+        "operationId": "get_building_floors_api_v1_rooms_building_floors__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingFloorsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Building Floors",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_building_floors_api_v1_rooms_building_floors__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildingFloorsPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingFloorsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Patch Building Floors",
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/v1/rooms/buildings": {
+      "get": {
+        "operationId": "list_buildings_api_v1_rooms_buildings_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BuildingsRead"
+                  },
+                  "title": "Response List Buildings Api V1 Rooms Buildings Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "List Buildings",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "post": {
+        "operationId": "create_buildings_api_v1_rooms_buildings_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildingsCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Buildings",
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/v1/rooms/buildings/{id}": {
+      "delete": {
+        "operationId": "delete_buildings_api_v1_rooms_buildings__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Buildings",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "get": {
+        "operationId": "get_buildings_api_v1_rooms_buildings__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Buildings",
+        "tags": [
+          "rooms"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_buildings_api_v1_rooms_buildings__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildingsPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Patch Buildings",
+        "tags": [
+          "rooms"
+        ]
+      }
+    },
+    "/api/v1/rooms/buildings/{id}/layout": {
+      "get": {
+        "operationId": "get_building_layout_api_v1_rooms_buildings__id__layout_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildingLayoutRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Building Layout",
         "tags": [
           "rooms"
         ]
@@ -17848,7 +20560,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18017,7 +20729,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18181,7 +20893,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18350,7 +21062,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18529,7 +21241,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18550,6 +21262,7 @@
     },
     "/api/v1/rooms/room-connections": {
       "get": {
+        "deprecated": true,
         "operationId": "list_room_connections_api_v1_rooms_room_connections_get",
         "parameters": [
           {
@@ -18718,7 +21431,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18737,6 +21450,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "operationId": "create_room_connections_api_v1_rooms_room_connections_post",
         "parameters": [
           {
@@ -18887,7 +21601,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -18908,6 +21622,7 @@
     },
     "/api/v1/rooms/room-connections/{distance_model_id}/{from_room_id}/{to_room_id}": {
       "delete": {
+        "deprecated": true,
         "operationId": "delete_room_connections_api_v1_rooms_room_connections__distance_model_id___from_room_id___to_room_id__delete",
         "parameters": [
           {
@@ -19071,7 +21786,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -19090,6 +21805,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "operationId": "get_room_connections_api_v1_rooms_room_connections__distance_model_id___from_room_id___to_room_id__get",
         "parameters": [
           {
@@ -19260,7 +21976,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -19279,6 +21995,7 @@
         ]
       },
       "patch": {
+        "deprecated": true,
         "operationId": "patch_room_connections_api_v1_rooms_room_connections__distance_model_id___from_room_id___to_room_id__patch",
         "parameters": [
           {
@@ -19459,7 +22176,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -19480,6 +22197,7 @@
     },
     "/api/v1/rooms/room-distance-models": {
       "get": {
+        "deprecated": true,
         "operationId": "list_room_distance_models_api_v1_rooms_room_distance_models_get",
         "parameters": [
           {
@@ -19648,7 +22366,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -19667,6 +22385,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "operationId": "create_room_distance_models_api_v1_rooms_room_distance_models_post",
         "parameters": [
           {
@@ -19817,7 +22536,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -19838,6 +22557,7 @@
     },
     "/api/v1/rooms/room-distance-models/{id}": {
       "delete": {
+        "deprecated": true,
         "operationId": "delete_room_distance_models_api_v1_rooms_room_distance_models__id__delete",
         "parameters": [
           {
@@ -19981,7 +22701,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -20000,6 +22720,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "operationId": "get_room_distance_models_api_v1_rooms_room_distance_models__id__get",
         "parameters": [
           {
@@ -20150,7 +22871,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -20169,6 +22890,7 @@
         ]
       },
       "patch": {
+        "deprecated": true,
         "operationId": "patch_room_distance_models_api_v1_rooms_room_distance_models__id__patch",
         "parameters": [
           {
@@ -20329,7 +23051,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -20518,7 +23240,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -20687,7 +23409,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -20850,7 +23572,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21018,7 +23740,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21196,7 +23918,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21385,7 +24107,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21554,7 +24276,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21718,7 +24440,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -21887,7 +24609,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22066,7 +24788,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22230,7 +24952,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22399,7 +25121,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22578,7 +25300,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22767,7 +25489,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -22936,7 +25658,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23100,7 +25822,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23269,7 +25991,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23448,7 +26170,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23637,7 +26359,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23806,7 +26528,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -23970,7 +26692,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -24139,7 +26861,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -24318,7 +27040,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -24507,7 +27229,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -24676,7 +27398,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -24861,7 +27583,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25025,7 +27747,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25194,7 +27916,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25373,7 +28095,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25562,7 +28284,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25731,7 +28453,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -25905,7 +28627,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26084,7 +28806,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26098,6 +28820,717 @@
           }
         },
         "summary": "Get Group Specialization Rules",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/group-study-field-rules": {
+      "get": {
+        "operationId": "list_group_study_field_rules_api_v1_school_group_study_field_rules_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupStudyFieldRulesRead"
+                  },
+                  "title": "Response List Group Study Field Rules Api V1 School Group Study Field Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "List Group Study Field Rules",
+        "tags": [
+          "school"
+        ]
+      },
+      "post": {
+        "operationId": "create_group_study_field_rules_api_v1_school_group_study_field_rules_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupStudyFieldRulesCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupStudyFieldRulesRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Group Study Field Rules",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/group-study-field-rules/{group_id}/{study_field_id}": {
+      "delete": {
+        "operationId": "delete_group_study_field_rules_api_v1_school_group_study_field_rules__group_id___study_field_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "study_field_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Study Field Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Group Study Field Rules",
+        "tags": [
+          "school"
+        ]
+      },
+      "get": {
+        "operationId": "get_group_study_field_rules_api_v1_school_group_study_field_rules__group_id___study_field_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "study_field_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Study Field Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupStudyFieldRulesRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Group Study Field Rules",
         "tags": [
           "school"
         ]
@@ -26273,7 +29706,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26442,7 +29875,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26616,7 +30049,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26795,7 +30228,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -26984,7 +30417,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -27153,7 +30586,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -27317,7 +30750,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -27486,7 +30919,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -27665,7 +31098,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -27854,7 +31287,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28023,7 +31456,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28187,7 +31620,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28356,7 +31789,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28535,7 +31968,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28549,6 +31982,876 @@
           }
         },
         "summary": "Patch Specializations",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/study-fields": {
+      "get": {
+        "operationId": "list_study_fields_api_v1_school_study_fields_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StudyFieldsRead"
+                  },
+                  "title": "Response List Study Fields Api V1 School Study Fields Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "List Study Fields",
+        "tags": [
+          "school"
+        ]
+      },
+      "post": {
+        "operationId": "create_study_fields_api_v1_school_study_fields_post",
+        "parameters": [
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudyFieldsCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyFieldsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Create Study Fields",
+        "tags": [
+          "school"
+        ]
+      }
+    },
+    "/api/v1/school/study-fields/{id}": {
+      "delete": {
+        "operationId": "delete_study_fields_api_v1_school_study_fields__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Delete Study Fields",
+        "tags": [
+          "school"
+        ]
+      },
+      "get": {
+        "operationId": "get_study_fields_api_v1_school_study_fields__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyFieldsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Study Fields",
+        "tags": [
+          "school"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_study_fields_api_v1_school_study_fields__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+            "in": "header",
+            "name": "origin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2048,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f mus\u00ed p\u016fvod pat\u0159it do ALLOWED_ORIGINS. Bez Origin je nutn\u00e9 X-Requested-With: bod.",
+              "title": "Origin"
+            }
+          },
+          {
+            "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+            "in": "header",
+            "name": "X-Requested-With",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "U m\u011bn\u00edc\u00edch po\u017eadavk\u016f bez Origin mus\u00ed m\u00edt hodnotu bod.",
+              "examples": [
+                "bod"
+              ],
+              "title": "X-Requested-With"
+            }
+          },
+          {
+            "description": "SSR: skip validates without extending DB or cookie expiry.",
+            "in": "header",
+            "name": "X-Session-Refresh",
+            "required": false,
+            "schema": {
+              "default": "allow",
+              "description": "SSR: skip validates without extending DB or cookie expiry.",
+              "enum": [
+                "allow",
+                "skip"
+              ],
+              "title": "X-Session-Refresh",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+            "in": "cookie",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nepr\u016fhledn\u00fd session token vydan\u00fd p\u0159ihl\u00e1\u0161en\u00edm; nejde o JWT.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudyFieldsPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyFieldsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Patch Study Fields",
         "tags": [
           "school"
         ]
@@ -28724,7 +33027,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -28893,7 +33196,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29057,7 +33360,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29226,7 +33529,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29405,7 +33708,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29594,7 +33897,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29763,7 +34066,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -29927,7 +34230,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30096,7 +34399,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30275,7 +34578,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30464,7 +34767,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30633,7 +34936,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30797,7 +35100,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -30966,7 +35269,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -31145,7 +35448,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -31334,7 +35637,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -31503,7 +35806,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -31667,7 +35970,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -31836,7 +36139,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32015,7 +36318,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32204,7 +36507,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32373,7 +36676,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32537,7 +36840,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32706,7 +37009,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -32885,7 +37188,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33056,7 +37359,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33268,7 +37571,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33457,7 +37760,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33626,7 +37929,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33790,7 +38093,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -33959,7 +38262,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -34138,7 +38441,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -34344,7 +38647,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -34513,7 +38816,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -34687,7 +38990,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -34866,7 +39169,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35055,7 +39358,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35295,7 +39598,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35464,7 +39767,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35628,7 +39931,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35797,7 +40100,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -35976,7 +40279,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -36165,7 +40468,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -36334,7 +40637,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -36508,7 +40811,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -36687,7 +40990,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -36876,7 +41179,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37065,7 +41368,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37234,7 +41537,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37398,7 +41701,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37567,7 +41870,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37746,7 +42049,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -37935,7 +42238,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38104,7 +42407,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38268,7 +42571,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38437,7 +42740,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38616,7 +42919,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38822,7 +43125,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -38991,7 +43294,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -39155,7 +43458,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -39324,7 +43627,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -39503,7 +43806,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -39692,7 +43995,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -39861,7 +44164,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40035,7 +44338,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40214,7 +44517,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40403,7 +44706,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40592,7 +44895,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40761,7 +45064,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -40935,7 +45238,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -41114,7 +45417,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -41303,7 +45606,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -41509,7 +45812,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -41678,7 +45981,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -41842,7 +46145,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42011,7 +46314,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42190,7 +46493,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42365,7 +46668,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42554,7 +46857,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42723,7 +47026,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -42887,7 +47190,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43056,7 +47359,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43235,7 +47538,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43441,7 +47744,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43610,7 +47913,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43774,7 +48077,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -43943,7 +48246,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -44122,7 +48425,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -44345,7 +48648,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -44514,7 +48817,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -44678,7 +48981,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -44847,7 +49150,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45026,7 +49329,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45215,7 +49518,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45384,7 +49687,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45548,7 +49851,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45717,7 +50020,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -45896,7 +50199,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46123,7 +50426,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46292,7 +50595,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46456,7 +50759,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46625,7 +50928,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46804,7 +51107,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -46985,7 +51288,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -47166,7 +51469,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -47338,7 +51641,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -47510,7 +51813,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -47681,7 +51984,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -47852,7 +52155,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -48006,7 +52309,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -48026,7 +52329,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -48235,7 +52538,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -48255,7 +52558,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -48419,7 +52722,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -48439,7 +52742,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -48615,7 +52918,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -48635,7 +52938,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -48854,7 +53157,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -48874,7 +53177,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {
@@ -49064,7 +53367,7 @@
                 }
               }
             },
-            "description": "Request Entity Too Large"
+            "description": "Content Too Large"
           },
           "415": {
             "content": {
@@ -49084,7 +53387,7 @@
                 }
               }
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "503": {
             "content": {

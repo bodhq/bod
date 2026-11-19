@@ -561,3 +561,113 @@ def delete_group_specialization_rules(
         session, next(r for r in RESOURCES if r.name == "group_specialization_rules")
     ).delete(context, {"group_id": group_id, "specialization_id": specialization_id})
     return Response(status_code=204)
+
+
+@router.get("/study-fields", response_model=list[schemas.StudyFieldsRead])
+def list_study_fields(
+    context: CurrentContextDep,
+    session: SessionDep,
+    page: Annotated[Pagination, Query()],
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "study_fields")
+    ).list(context, page.offset, page.limit)
+
+
+@router.get("/study-fields/{id}", response_model=schemas.StudyFieldsRead)
+def get_study_fields(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "study_fields")
+    ).get(context, {"id": id})
+
+
+@router.post("/study-fields", response_model=schemas.StudyFieldsRead, status_code=201)
+def create_study_fields(
+    payload: schemas.StudyFieldsCreate,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "study_fields")
+    ).create(context, payload)
+
+
+@router.patch("/study-fields/{id}", response_model=schemas.StudyFieldsRead)
+def patch_study_fields(
+    id: UUID,
+    payload: schemas.StudyFieldsPatch,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "study_fields")
+    ).patch(context, {"id": id}, payload)
+
+
+@router.delete("/study-fields/{id}", status_code=204)
+def delete_study_fields(
+    id: UUID, context: CurrentContextDep, session: SessionDep
+) -> Response:
+    SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "study_fields")
+    ).delete(context, {"id": id})
+    return Response(status_code=204)
+
+
+@router.get(
+    "/group-study-field-rules",
+    response_model=list[schemas.GroupStudyFieldRulesRead],
+)
+def list_group_study_field_rules(
+    context: CurrentContextDep,
+    session: SessionDep,
+    page: Annotated[Pagination, Query()],
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "group_study_field_rules")
+    ).list(context, page.offset, page.limit)
+
+
+@router.get(
+    "/group-study-field-rules/{group_id}/{study_field_id}",
+    response_model=schemas.GroupStudyFieldRulesRead,
+)
+def get_group_study_field_rules(
+    group_id: UUID,
+    study_field_id: UUID,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "group_study_field_rules")
+    ).get(context, {"group_id": group_id, "study_field_id": study_field_id})
+
+
+@router.post(
+    "/group-study-field-rules",
+    response_model=schemas.GroupStudyFieldRulesRead,
+    status_code=201,
+)
+def create_group_study_field_rules(
+    payload: schemas.GroupStudyFieldRulesCreate,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> object:
+    return SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "group_study_field_rules")
+    ).create(context, payload)
+
+
+@router.delete("/group-study-field-rules/{group_id}/{study_field_id}", status_code=204)
+def delete_group_study_field_rules(
+    group_id: UUID,
+    study_field_id: UUID,
+    context: CurrentContextDep,
+    session: SessionDep,
+) -> Response:
+    SchoolDomainService(
+        session, next(r for r in RESOURCES if r.name == "group_study_field_rules")
+    ).delete(context, {"group_id": group_id, "study_field_id": study_field_id})
+    return Response(status_code=204)
