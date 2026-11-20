@@ -8,6 +8,7 @@ součtu započítej jednou. Rozliš dokončenou a rozpracovanou práci, další
 | Sprint | Ukončen | Review |
 | --- | --- | --- |
 | 1 | 23. 10. 2026 | [Sprint 1](sprint-1.md) |
+| 2 | Plán 13. 11.; kontrola 20. 11. 2026 | [Sprint 2](sprint-2.md) |
 
 ## Šablona
 

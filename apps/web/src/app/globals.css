@@ -6,6 +6,13 @@
 @import "../core/shell/shell.css";
 
 @layer accessibility {
+  :where(input, select, textarea, button, a[href], summary, [tabindex]) {
+    scroll-margin-block: 6rem 10rem;
+  }
+  summary {
+    min-height: 44px;
+    align-content: center;
+  }
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -12,6 +12,7 @@ import {
   rolesApiV1AdminRolesGet,
   updateRoleApiV1AdminRolesCodePut,
   updateUserApiV1AdminUsersUserIdPatch,
+  userApiV1AdminUsersUserIdGet,
   usersApiV1AdminUsersGet,
 } from "@bod/api-client/sdk.gen";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,6 +22,7 @@ import { apiClient } from "@/core/api/client";
 import { apiData, apiVoid } from "@/core/api/result";
 import { useAuthStore, useAuthUser } from "@/core/auth/store";
 import { toast } from "@/core/ui/feedback/toast";
+import { collectPages, PAGE_SIZE } from "@/modules/shared/records/api";
 
 const isCurrentSession = (version: number | undefined) =>
   version === useAuthStore.getState().sessionVersion;
@@ -35,7 +37,23 @@ type Section = "accounts" | "roles" | "audit";
 export function useAccessManagement() {
   const user = useAuthUser();
   const queryClient = useQueryClient();
-  const [section, setSection] = useState<Section>("accounts");
+  const [auditScope] = useState(() =>
+    typeof window === "undefined"
+      ? { entity: "", record: "" }
+      : {
+          entity: new URLSearchParams(window.location.search).get("entity") ?? "",
+          record: new URLSearchParams(window.location.search).get("record") ?? "",
+        },
+  );
+  const [section, setSection] = useState<Section>(() =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("section") === "audit"
+      ? "audit"
+      : "accounts",
+  );
+  const [accountsOffset, setAccountsOffset] = useState(0);
+  const [auditOffset, setAuditOffset] = useState(0);
+  const [accountsSearch, setAccountsSearch] = useState("");
   const [username, setUsername] = useState("");
   const [batchUsernames, setBatchUsernames] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
@@ -44,6 +62,9 @@ export function useAccessManagement() {
   const [roleCode, setRoleCode] = useState("");
   const [roleName, setRoleName] = useState("");
   const [roleDescription, setRoleDescription] = useState("");
+  const [roleSchoolScope, setRoleSchoolScope] = useState<
+    NonNullable<RoleRead["school_role_code"]> | ""
+  >("");
   const [rolePermissions, setRolePermissions] = useState<string[]>([]);
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const canManageUsers = user?.permissions?.includes("users.manage") ?? false;
@@ -60,8 +81,27 @@ export function useAccessManagement() {
           ? "roles"
           : "audit";
   const accountsQuery = useQuery({
-    queryKey: ["access", "users"],
-    queryFn: async () => apiData(await usersApiV1AdminUsersGet({ client: apiClient })),
+    queryKey: ["access", "users", accountsSearch.trim() ? "all" : accountsOffset],
+    queryFn: async ({ signal }) =>
+      accountsSearch.trim()
+        ? collectPages(
+            async (offset, limit) =>
+              apiData(
+                await usersApiV1AdminUsersGet({
+                  client: apiClient,
+                  signal,
+                  query: { offset, limit },
+                }),
+              ),
+            signal,
+          )
+        : apiData(
+            await usersApiV1AdminUsersGet({
+              client: apiClient,
+              signal,
+              query: { offset: accountsOffset, limit: PAGE_SIZE },
+            }),
+          ),
     enabled: canManageUsers && activeSection === "accounts",
   });
   const rolesQuery = useQuery({
@@ -75,9 +115,74 @@ export function useAccessManagement() {
     enabled: canManageRoles && activeSection === "roles",
   });
   const auditQuery = useQuery({
-    queryKey: ["access", "audit"],
-    queryFn: async () => apiData(await auditApiV1AdminAuditGet({ client: apiClient })),
+    queryKey: ["access", "audit", auditOffset, auditScope],
+    queryFn: async ({ signal }) => {
+      if (auditScope.entity || auditScope.record) {
+        const rows = await collectPages(
+          async (offset, limit) =>
+            apiData(
+              await auditApiV1AdminAuditGet({
+                client: apiClient,
+                signal,
+                query: { offset, limit },
+              }),
+            ),
+          signal,
+        );
+        return rows
+          .filter(
+            (event) =>
+              (!auditScope.entity || event.entity_type === auditScope.entity) &&
+              (!auditScope.record || event.entity_id === auditScope.record),
+          )
+          .slice(auditOffset, auditOffset + PAGE_SIZE);
+      }
+      return apiData(
+        await auditApiV1AdminAuditGet({
+          client: apiClient,
+          signal,
+          query: { offset: auditOffset, limit: PAGE_SIZE },
+        }),
+      );
+    },
     enabled: canReadAudit && activeSection === "audit",
+  });
+  const actorIds = [
+    ...new Set(
+      (auditQuery.data ?? []).flatMap((event) =>
+        event.actor_user_id ? [event.actor_user_id] : [],
+      ),
+    ),
+  ].sort();
+  const auditActors = useQuery({
+    queryKey: ["access", "audit-actors", actorIds],
+    enabled: canManageUsers && activeSection === "audit" && actorIds.length > 0,
+    queryFn: async ({ signal }) => {
+      const users: UserRead[] = [];
+      for (let offset = 0; offset < actorIds.length; offset += 4) {
+        signal.throwIfAborted();
+        const batch = await Promise.all(
+          actorIds.slice(offset, offset + 4).map(async (id) => {
+            const result = await userApiV1AdminUsersUserIdGet({
+              client: apiClient,
+              signal,
+              path: { user_id: id },
+            });
+            if (result.response?.status === 404) return null;
+            return apiData(result);
+          }),
+        );
+        users.push(...batch.filter((actor): actor is UserRead => actor !== null));
+      }
+      return Object.fromEntries(
+        users.map((actor) => [
+          actor.id,
+          actor.display_name ||
+            [actor.first_name, actor.last_name].filter(Boolean).join(" ") ||
+            actor.username,
+        ]),
+      );
+    },
   });
   const refresh = async (...keys: string[][]) => {
     await Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
@@ -180,6 +285,7 @@ export function useAccessManagement() {
             name: roleName.trim(),
             description: roleDescription.trim() || null,
             permission_codes: rolePermissions,
+            school_role_code: roleSchoolScope || null,
           },
         });
         apiVoid(result);
@@ -191,6 +297,7 @@ export function useAccessManagement() {
             name: roleName.trim(),
             description: roleDescription.trim() || null,
             permission_codes: rolePermissions,
+            school_role_code: roleSchoolScope || null,
           },
         });
         apiVoid(result);
@@ -203,6 +310,7 @@ export function useAccessManagement() {
       setRoleName("");
       setRoleDescription("");
       setRolePermissions([]);
+      setRoleSchoolScope("");
       await refresh(["access", "roles"], ["access", "permissions"], ["access", "users"]);
       if (isCurrentSession(version)) toast.success("Role byla uložena.");
     },
@@ -228,6 +336,7 @@ export function useAccessManagement() {
     setRoleName(role.name);
     setRoleDescription(role.description ?? "");
     setRolePermissions(role.permission_codes ?? []);
+    setRoleSchoolScope(role.school_role_code ?? "");
   };
   const sections: { id: Section; title: string; visible: boolean }[] = [
     { id: "accounts", title: "Účty", visible: canManageUsers },
@@ -237,6 +346,14 @@ export function useAccessManagement() {
   const visibleSections = sections.filter((item) => item.visible);
   return {
     setSection,
+    accountsOffset,
+    setAccountsOffset,
+    auditOffset,
+    setAuditOffset,
+    accountsSearch,
+    setAccountsSearch,
+    auditActors,
+    auditScope,
     username,
     setUsername,
     batchUsernames,
@@ -253,6 +370,8 @@ export function useAccessManagement() {
     setRoleName,
     roleDescription,
     setRoleDescription,
+    roleSchoolScope,
+    setRoleSchoolScope,
     rolePermissions,
     setRolePermissions,
     editingRole,

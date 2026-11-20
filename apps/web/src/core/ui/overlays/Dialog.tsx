@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useId, useRef } from "react";
 
+import { Button } from "@/core/ui/actions/Button";
 import { cn } from "@/core/utils";
 
 export function Dialog({
@@ -11,6 +12,8 @@ export function Dialog({
   description,
   children,
   className,
+  busy = false,
+  presentation = "dialog",
 }: {
   open: boolean;
   onClose: () => void;
@@ -18,6 +21,8 @@ export function Dialog({
   description?: string;
   children: ReactNode;
   className?: string;
+  busy?: boolean;
+  presentation?: "dialog" | "drawer";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -39,17 +44,22 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
+      data-presentation={presentation}
       style={open ? undefined : { display: "none" }}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onKeyDown={(event) => {
+        if (event.key === "Tab" || event.key === "Escape") event.stopPropagation();
         if (event.key === "Tab") {
           const controls = Array.from(
             event.currentTarget.querySelectorAll<HTMLElement>(
               'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             ),
           ).filter(
-            (element) => !element.matches(":disabled") && element.getClientRects().length > 0,
+            (element) =>
+              element.tabIndex >= 0 &&
+              !element.matches(":disabled") &&
+              element.getClientRects().length > 0,
           );
           const first = controls[0];
           const last = controls.at(-1);
@@ -70,21 +80,22 @@ export function Dialog({
         }
         if (event.key === "Escape") {
           event.preventDefault();
-          onClose();
+          if (!busy) onClose();
         }
       }}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!busy) onClose();
       }}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return;
         const bounds = event.currentTarget.getBoundingClientRect();
         if (
-          event.clientX < bounds.left ||
-          event.clientX > bounds.right ||
-          event.clientY < bounds.top ||
-          event.clientY > bounds.bottom
+          !busy &&
+          (event.clientX < bounds.left ||
+            event.clientX > bounds.right ||
+            event.clientY < bounds.top ||
+            event.clientY > bounds.bottom)
         )
           onClose();
       }}
@@ -92,9 +103,20 @@ export function Dialog({
     >
       {open && (
         <>
-          <h2 id={titleId} className="dialog-title">
-            {title}
-          </h2>
+          {presentation === "drawer" ? (
+            <h2 id={titleId} className="sr-only">
+              {title}
+            </h2>
+          ) : (
+            <div className="dialog-header">
+              <h2 id={titleId} className="dialog-title">
+                {title}
+              </h2>
+              <Button variant="ghost" disabled={busy} onClick={onClose}>
+                Zavřít
+              </Button>
+            </div>
+          )}
           {description && (
             <p id={descriptionId} className="dialog-description">
               {description}

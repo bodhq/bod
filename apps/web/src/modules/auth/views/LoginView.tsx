@@ -20,10 +20,10 @@ export default function LoginView() {
       <div className="login-pattern" aria-hidden="true">
         <div className="login-pattern__tiles" />
       </div>
-      <ThemeToggle className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20" />
+      <ThemeToggle className="absolute top-4 right-4 z-20 sm:top-6 sm:right-6" />
 
       <main className="relative z-10 w-full max-w-sm">
-        <section className="rounded-2xl border border-(--color-border) bg-(--color-surface-100) p-8 sm:p-10">
+        <section className="ui-panel p-8 sm:p-10">
           <header className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">Přihlášení</h1>
             <p className="mt-2 text-sm text-(--color-muted-foreground)">

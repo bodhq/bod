@@ -1,9 +1,10 @@
 "use client";
-
 import type { useAccessManagement } from "../hooks/useAccessManagement";
 
 import { Button } from "@/core/ui/actions/Button";
+import { Checkbox } from "@/core/ui/forms/Checkbox";
 import { Input } from "@/core/ui/forms/Input";
+import { Select } from "@/core/ui/forms/Select";
 import { useConfirm } from "@/core/ui/overlays/ConfirmProvider";
 export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManagement> }) {
   const confirm = useConfirm();
@@ -14,6 +15,8 @@ export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManage
     setRoleName,
     roleDescription,
     setRoleDescription,
+    roleSchoolScope,
+    setRoleSchoolScope,
     rolePermissions,
     setRolePermissions,
     editingRole,
@@ -27,7 +30,7 @@ export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManage
   return (
     <div className="space-y-6">
       <form
-        className="space-y-4 rounded-[var(--radius)] border border-(--color-border) bg-(--color-surface-100) p-4"
+        className="ui-panel ui-stack p-4"
         onSubmit={(event) => {
           event.preventDefault();
           saveRole.mutate();
@@ -59,16 +62,29 @@ export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManage
           onChange={(event) => setRoleDescription(event.target.value)}
           maxLength={255}
         />
+        <Select
+          label="Školní identita"
+          value={roleSchoolScope}
+          disabled={["admin", "teacher", "student", "parent"].includes(editingRole ?? "")}
+          onChange={(event) => setRoleSchoolScope(event.target.value as typeof roleSchoolScope)}
+        >
+          <option value="">Provozní role bez školní identity</option>
+          <option value="teacher">Učitel</option>
+          <option value="student">Žák</option>
+          <option value="parent">Rodič</option>
+        </Select>
+        <p className="text-sm text-(--color-muted-foreground)">
+          Určuje vlastní výuku nebo propojené děti. Oprávnění vyberte samostatně.
+        </p>
         <fieldset className="grid gap-2 sm:grid-cols-2">
           <legend className="mb-2 text-sm font-medium">Oprávnění</legend>
           {(permissionsQuery.data ?? []).map((permission) => (
             <label
               key={permission.code}
-              className="flex min-w-0 items-start gap-2 rounded-lg border border-(--color-border) p-3 text-sm"
+              className="flex min-w-0 items-start gap-2 rounded-lg bg-(--color-surface-200) p-3 text-sm"
             >
-              <input
-                type="checkbox"
-                className="mt-1 accent-(--color-primary)"
+              <Checkbox
+                className="mt-1"
                 checked={rolePermissions.includes(permission.code)}
                 onChange={(event) =>
                   setRolePermissions((current) =>
@@ -99,6 +115,7 @@ export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManage
                 setRoleName("");
                 setRoleDescription("");
                 setRolePermissions([]);
+                setRoleSchoolScope("");
               }}
             >
               Zrušit úpravy
@@ -106,7 +123,7 @@ export function RolesPanel({ model }: { model: ReturnType<typeof useAccessManage
           )}
         </div>
       </form>
-      <div className="divide-y divide-(--color-border) rounded-[var(--radius)] border border-(--color-border)">
+      <div className="record-list divide-y divide-(--color-border)">
         {(rolesQuery.data ?? []).map((role) => (
           <article
             key={role.code}

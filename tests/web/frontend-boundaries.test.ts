@@ -46,3 +46,14 @@ it("keeps generic UI independent of auth, networking, preferences and applicatio
   );
   expect(violations).toEqual([]);
 });
+
+it("keeps shared school workflows independent of concrete feature modules", () => {
+  const shared = path.join(source, "modules/shared") + path.sep;
+  const modules = path.join(source, "modules") + path.sep;
+  const violations = files(shared).flatMap((file) =>
+    imports(file)
+      .filter((target) => target.startsWith(modules) && !target.startsWith(shared))
+      .map((target) => `${path.relative(source, file)} → ${path.relative(source, target)}`),
+  );
+  expect(violations).toEqual([]);
+});

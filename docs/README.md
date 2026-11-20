@@ -8,6 +8,7 @@ První spuštění: [Lokální vývoj](development.md).
 | Spustit projekt a založit správce | [Lokální vývoj](development.md) |
 | Pracovat s API a doménovým modelem | [Backend a API](../apps/api/README.md) |
 | Upravit vzhled nebo komponenty | [Vizuální identita a UI](design-system.md) |
+| Posoudit úplnost produktu a další práci | [Produktový audit](product-review.md) |
 | Ověřit změnu | [Testování](testing.md) |
 | Nasadit aplikaci, zálohovat nebo obnovit data | [Nasazení](deployment.md) |
 | Připravit větev, PR nebo dokumentaci | [Spolupráce](../CONTRIBUTING.md) |

@@ -11,9 +11,11 @@
       "!**/node_modules",
       "!**/dist",
       "!**/coverage",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!**/.local-notes",
       "!apps/api/uv.lock",
       "!packages/api-client/src",
-      "!apps/api/schema/openapi.json",
       "!apps/api/schema/openapi.json"
     ]
   },
@@ -29,7 +31,13 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "a11y": {
+        "noLabelWithoutControl": {
+          "level": "error",
+          "options": { "inputComponents": ["Checkbox"] }
+        }
+      }
     }
   },
 

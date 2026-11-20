@@ -10,14 +10,31 @@ test("shared form styles survive stylesheet ordering and theme changes", async (
     .toBeGreaterThan(250);
   const username = page.getByRole("textbox", { name: "Uživatelské jméno" });
   await expect(username).toHaveCSS("padding-top", "8px");
-  await expect(username).toHaveCSS("border-top-width", "1px");
-  await expect(username).toHaveCSS("border-top-style", "solid");
+  await expect(username).toHaveCSS("border-top-width", "0px");
+  await username.focus();
+  await expect(username).toHaveCSS("outline-width", "2px");
+  await expect(username).toHaveCSS("outline-style", "solid");
+  await expect(username).not.toHaveCSS("outline-color", "rgba(0, 0, 0, 0)");
   const button = page.getByRole("button", { name: "Přihlásit se" });
-  await expect(button).toHaveCSS("padding-top", "8px");
+  await expect(button.locator(".button-content")).toHaveCSS("padding-top", "8px");
+  expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await page.getByRole("button", { name: "Přepnout motiv" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
-  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(16, 18, 22)");
-  await expect(username).toHaveCSS("background-color", "rgb(25, 28, 34)");
+  const palette = await page.evaluate(() => {
+    const probe = document.createElement("span");
+    document.body.append(probe);
+    const color = (token: string) => {
+      probe.style.backgroundColor = `var(${token})`;
+      return getComputedStyle(probe).backgroundColor;
+    };
+    const result = { canvas: color("--bod-dark-canvas"), input: color("--bod-dark-input") };
+    probe.remove();
+    return result;
+  });
+  expect(palette.canvas).not.toBe("rgba(0, 0, 0, 0)");
+  expect(palette.input).not.toBe(palette.canvas);
+  await expect(page.locator("body")).toHaveCSS("background-color", palette.canvas);
+  await expect(username).toHaveCSS("background-color", palette.input);
 });
 
 test("login assets are public while account pages stay protected", async ({ page }) => {

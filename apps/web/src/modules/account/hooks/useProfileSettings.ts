@@ -32,11 +32,13 @@ export function useProfileSettings() {
   const queryClient = useQueryClient();
   const [values, setValues] = useState<ProfileValues>(() => profileValues(user));
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const identity = useRef(user?.id);
   useEffect(() => {
     if (identity.current !== user?.id) {
       identity.current = user?.id;
       setValues(profileValues(user));
+      setDirty(false);
     }
   }, [user]);
   const syncUser = (next: Partial<UserPublic>) => {
@@ -64,6 +66,7 @@ export function useProfileSettings() {
       if (version !== useAuthStore.getState().sessionVersion) return;
       syncUser(data);
       setValues(profileValues(data));
+      setDirty(false);
       toast.success("Osobní údaje byly uloženy.");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -101,11 +104,13 @@ export function useProfileSettings() {
   });
   const switchRole = useSwitchRole();
   const setField = (field: keyof ProfileValues, value: string) => {
+    setDirty(true);
     setValues((current) => ({ ...current, [field]: value }));
   };
   return {
     user,
     values,
+    dirty,
     avatarError,
     setAvatarError,
     saveProfile,

@@ -1,0 +1,55 @@
+@layer components {
+  .visual-dots {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.35rem;
+    max-width: 230px;
+    margin-bottom: 0.6rem;
+  }
+  .visual-dots > span {
+    height: 0.8rem;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface-200));
+    border: 1px solid var(--color-border);
+  }
+  .visual-dots > .visual-more {
+    height: auto;
+    background: transparent;
+    border: 0;
+    grid-column: span 2;
+    font-size: var(--bod-type-caption);
+  }
+  .visual-bar-track {
+    height: 0.65rem;
+    border-radius: 999px;
+    background: var(--color-surface-200);
+    overflow: hidden;
+  }
+  .visual-bar-track > div {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary-accessible);
+    opacity: 0.65;
+  }
+  .visual-distribution {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .visual-bar-row {
+    display: grid;
+    grid-template-columns: minmax(80px, 1fr) minmax(60px, 2fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: var(--bod-type-caption);
+  }
+  .visual-distribution {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+  .visual-bar-row > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}

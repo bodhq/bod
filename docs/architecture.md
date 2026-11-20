@@ -46,6 +46,7 @@ aplikace. Tyto hranice hlídá
 | Layout a navigaci jedné agendy | `modules/<agenda>/layout` |
 | Stav, dotazy a operace agendy | `modules/<agenda>/hooks` |
 | Ucelenou část obrazovky | `modules/<agenda>/components` |
+| Školní workflow sdílené více agendami | `modules/shared` |
 
 Složka vzniká až s obsahem. Routa předává view nebo layout; klientské
 formuláře a datová logika patří do modulu. Například přihlášení má view
@@ -55,11 +56,26 @@ Moduly skládají `Page`, `PageHeader`, `Section`, `Field` a další primitiva.
 Nevytvářejí jejich kopie podle názvu obrazovky. Tokeny, styly a exporty
 popisuje [vizuální identita a UI](design-system.md).
 
+`modules/shared` obsahuje katalog evidencí, jejich formuláře a kontext školního
+roku. Neimportuje konkrétní agendy. Přehled, výběr i editor agendy skládají
+společná primitiva; dotazy, stav a odvozená data drží její hooky. Styly
+vizualizací patří k modulu, obecné ovládání do `core/ui`.
+
+`StepProgress` a `FormActions` sjednocují kroky a ovládání formulářů.
+Volně přístupné kroky neoznačují dokončení pouhým přepnutím obrazovky.
+Výběr žáků, tvorbu skupin a kontrolu jejich překryvů sdílí evidence školy
+a rozvrh v `modules/shared/groups`. Členství se porovnává včetně platnosti;
+časové kolize výuky vyhodnocuje modul rozvrhu.
+
 ## Data a stav
 
 PostgreSQL je zdroj dat. TanStack Query drží klientskou cache serverových dat.
 Zustand drží snapshot přihlášení a preference. Stav formuláře patří
 k příslušné obrazovce.
+
+Podstránky, kroky přípravy a detail učebny jsou součástí URL. Obnovení stránky
+a historie prohlížeče zachovávají jejich výběr. `ModuleProvider` předává shellu
+popisky aktuální cesty; `core/shell` nezná katalog ani implementaci modulů.
 
 Po zápisu se obnoví související dotazy. Změna účtu nebo role zruší běžící
 dotazy a vyčistí cache. Verze přihlášení brání tomu, aby pozdní odpověď

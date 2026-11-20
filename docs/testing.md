@@ -84,12 +84,80 @@ pnpm --filter @bod/e2e test
 
 Playwright spustí vývojový web na `http://localhost:3000`. Testy ověřují
 načtení stránky, chyby přihlášení, styly formulářů, logo, veřejné soubory
-přihlášení a omezení pohybu. Síťové chyby přihlášení se simulují v prohlížeči.
+přihlášení, omezení pohybu, automatickou přístupnost ve světlém a tmavém motivu
+a ovládání přihlášení při zvětšení textu na 200 %. Síťové chyby přihlášení se simulují v prohlížeči.
 Kompletní školní workflow tím pokryté není.
+
+Vitest používá nejvýše dva workery, Playwright jeden. Kontroly tak nezatěžují
+stejný počítač neomezeným počtem souběžných prohlížečů a procesů. Turbo sleduje
+i OpenAPI snapshot a konfiguraci generátoru klienta; změna kontraktu zneplatní
+výsledky. Cache Next.js se nebalí do cache výstupů Turba.
+
+Regresní testy webu ověřují také výběr propojeného dítěte pro vlastní rodičovskou
+roli, načítání dalších stránek osobních záznamů, uložení docházky podle seznamu
+žáků hodiny a rozhodnutí o konkrétní absenci ze schránky omluvenek. Tyto testy
+simulují HTTP odpovědi; oprávnění a transakce nad skutečnou databází ověřuje
+integrační sada API.
+
+`personal-attendance.test.tsx` ověřuje datum, předmět, minuty a stav žádosti,
+výlučný konec období ve všech stránkách API, hromadný výběr nejvýše 100
+záznamů, potvrzení změny dítěte a zachování rozepsaného důvodu při chybě.
+Při konfliktu 409 se zablokuje opakované podání vybraných záznamů; žádost se
+bez zásahu uživatele nezúží ani znovu neodešle. HTTP odpovědi odpovídají
+původnímu kontraktu: docházka neobsahuje termín, názvy ani stav žádosti.
+Frontend je spojuje z existujících endpointů a čekající stav označuje pouze
+podle detailu vlastního podání. Stav druhého rodiče bez důkazu neodvozuje.
 
 Existující testovací server lze předat přes `PLAYWRIGHT_BASE_URL`
 a `PLAYWRIGHT_SKIP_WEBSERVER=1`. `PLAYWRIGHT_IGNORE_HTTPS_ERRORS=1` patří
 pouze k lokálnímu testu s nedůvěryhodným certifikátem.
+
+### Audit naplněné školy
+
+```sh
+node tests/e2e/audit-school.cjs /cesta/access.json .local-notes/ux-audit/current
+```
+
+Použij izolovanou testovací školu. Soubor mimo Git obsahuje `origin`, `day`
+(den se zapsanou hodinou), `teacher` a `manager`, každý účet s `username` a
+`password`. Správce má oprávnění pro školu, učebny a rozvrh; učitel vlastní
+nepodepsanou hodinu se 30 účastníky včetně Adama Bartoše. Jde o konkrétní
+regresní scénář testovacích dat, nikoliv příkaz pro provozní školu.
+
+Skript ověřuje hlavní obrazovky, změny velikosti textu a šířky, ovládání rádia
+klávesnicí, ochranu rozepsaného profilu a fokus dialogu. Neukládá testovací
+změny do školy. Výsledkem jsou screenshoty, metriky a `report.json`; přístupové
+údaje se do výstupu nevypisují. Automatická pravidla nenahrazují testování
+se skutečnými uživateli. Závěry shrnuje [UX audit](ux-audit.md).
+
+### Mobilní pracovní postupy
+
+```sh
+node tests/e2e/mobile-workflows.cjs .local-notes/classbook-preview/access.json .local-notes/mobile-review-final/workflows
+```
+
+Použij pouze izolovanou lokální školu s `project` začínajícím `bod-preview-`
+a adresou na `127.0.0.1`. Fixture obsahuje `teacher`, `parent`, `manager`
+a volitelně `admin`. Učitel má rozpracovanou hodinu se 30 žáky; Adam Bartoš
+slouží ke kontrolní změně docházky. Skript kontroluje zavření menu, odhlášení
+na portrétu i naležato, šířky 320/390 px, dvojnásobné písmo, axe, dostupnost
+prvního žáka nad ukládacím panelem, obnovu po chybě a skutečné uložení i reload.
+Ukládá pouze do této fixture a ve `finally` obnoví původní hodnoty docházky.
+
+`accessible-workflows.test.tsx` simuluje původní HTTP kontrakt a ověřuje další
+stránky účtů a historie, hledání za první stránkou a bez diakritiky, oprávnění
+k dohledání autora, změněné hodnoty, detail rozhodnutí omluvenky, úpravu profilu,
+odstranění fotografie a potvrzené odstranění prázdného vlastního návrhu hodiny.
+
+### Backendové přehledy ve frontendu
+
+Regresní sada `tests/web/timetable-overview.test.tsx` ověřuje názvy učitelských
+hodin bez oprávnění správy školy, editor pouze s `timetable.edit`, serverové
+počty úvazků, zákaz úprav i opakování neúspěšného načtení přehledu. Při úpravě
+položky odděluje popisky místností od `expected_state`, aby přísný kontrakt
+backendu přijal revizní stav. Příprava úvazků se testuje i bez existující varianty.
+HTTP odpovědi v této sadě jsou simulované; skutečný zápis a následné načtení
+byly ověřené také v izolované preview škole.
 
 ## Nasazení
 
@@ -107,23 +175,29 @@ mechanismus, nikoli migraci mezi dvěma skutečnými vydáními. Nejde o kapacit
 
 ## GitHub a GitLab
 
-Obě konfigurace spouštějí stejný [`scripts/ci`](../scripts/ci):
+Oba poskytovatelé spouštějí stejný [`scripts/ci`](../scripts/ci):
 
 | Příkaz | Účel |
 | --- | --- |
-| `scripts/ci install` | Závislosti podle lockfiles |
-| `scripts/ci check` | Kontrakt, klient, audit závislostí a úplná kontrola |
-| `scripts/ci integration` | PostgreSQL/Redis testy v izolovaných Docker službách |
-| `scripts/ci production` | Sestavení a provozní smoke test |
+| `metadata` | Názvy větví a PR/MR: stejné prefixy, scopes a Conventional Commits |
+| `install` | Závislosti podle lockfiles |
+| `check` | Kontrakt, generování klienta, audit, lint, typy, testy a build |
+| `integration` | PostgreSQL/Redis testy v izolovaných službách |
+| `production` | Docker build a provozní smoke test |
+| `package` | Offline instalační archiv z právě ověřených obrazů |
+| `docs` | Společné PDF maturitní dokumentace |
 
-Integrace si vytvoří vlastní databáze. Existující testovací služby můžeš
-předat oběma proměnnými `TEST_POSTGRES_URL` a `TEST_REDIS_URL`.
-Nepředávej adresy školní instalace.
+Metadata používají `BOD_BRANCH` a `BOD_TITLE`. Balíček vyžaduje
+`BOD_VERSION`: tag `vX.Y.Z` nebo plný SHA commitu. Ruční pipeline připraví
+archiv s checksumem; běžné PR/MR zbytečně neukládají velké instalační artefakty.
 
-GitLab vyžaduje Linux shell runner označený `bod-linux`, s Node.js podle
-`.nvmrc`, Corepackem, uv, Docker Compose a přístupem k Dockeru. Runner pro
-nedůvěryhodné projekty nesmí sdílet provozní školní server.
-Samotný mirror repozitáře runner nezřizuje.
+GitHub navíc publikuje obrazy (`publish`), připravuje drafty vydání (`release`)
+a synchronizuje stabilní větve do školního GitLabu (`mirror`). Vydání používá
+stejné obrazy, které prošly smoke testem. Produkční build se neopakuje.
 
-Publikování obrazů a draftů vydání zajišťuje GitHub. GitLab spouští ověření,
-aby nevznikala dvě nezávislá vydání stejných verzí.
+GitLab vyžaduje Linux shell runner `bod-linux`, Node.js podle `.nvmrc`,
+Corepack, uv, Python 3.12 a Docker Compose. Runner pro ověřování nesdílí
+provozní školní server. Mirror sám runner nezřizuje.
+
+Instalace na VPS je [ruční](deployment.md). CI nepotřebuje školní VPN,
+přístupové údaje k serveru ani nasazovací runner ve školní síti.
