@@ -7,12 +7,14 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import { useAuthStore } from "@/core/auth/store";
 import {
+  getBuildingLayouts,
   getConnections,
   getDistanceModel,
   getDistanceModels,
   getRooms,
   roomKeys,
   saveDistanceModel,
+  saveSchoolLayout,
   writeConnection,
 } from "@/modules/rooms/api";
 import { connectionKey } from "@/modules/rooms/connections";
@@ -25,15 +27,18 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/modules/rooms/api", () => ({
   roomKeys: {
     rooms: ["module-records", "rooms"],
+    layouts: ["module-records", "layouts"],
     models: ["module-records", "models"],
     connections: ["module-records", "connections"],
   },
   getConnections: vi.fn(),
+  getBuildingLayouts: vi.fn(),
   getDistanceModel: vi.fn(),
   getDistanceModels: vi.fn(),
   getRooms: vi.fn(),
   writeConnection: vi.fn(),
   saveDistanceModel: vi.fn(),
+  saveSchoolLayout: vi.fn(),
 }));
 const user = { id: "admin", active_role: "admin", permissions: ["rooms.manage"] } as User;
 const model = {
@@ -64,8 +69,10 @@ beforeEach(() => {
     })),
   );
   vi.mocked(getDistanceModels).mockImplementation(async () => [{ ...model }]);
+  vi.mocked(getBuildingLayouts).mockResolvedValue([]);
   vi.mocked(getDistanceModel).mockImplementation(async () => ({ ...model }));
   vi.mocked(getConnections).mockImplementation(async () => [...persisted]);
+  vi.mocked(saveSchoolLayout).mockImplementation(async (plan) => plan);
   vi.mocked(writeConnection).mockImplementation(async (operation) => {
     const { distance_model_id, from_room_id, to_room_id } = operation;
     const identity = { distance_model_id, from_room_id, to_room_id };
@@ -340,11 +347,20 @@ it("derives rules from areas and lets a room exception take precedence", async (
     buildings: [
       {
         id: "a",
+        code: "A",
         name: "Hlavní",
         x: 24,
         y: 140,
         betweenFloors: "3",
-        floors: [{ id: "a0", name: "Přízemí", cost: "1", roomIds: ["room-0", "room-1", "room-2"] }],
+        floors: [
+          {
+            id: "a0",
+            name: "Přízemí",
+            number: 0,
+            cost: "1",
+            roomIds: ["room-0", "room-1", "room-2"],
+          },
+        ],
       },
     ],
   };
@@ -369,11 +385,14 @@ it("restores this user's local layout and does not replace edits on directory re
       buildings: [
         {
           id: "a",
+          code: "A",
           name: "Hlavní",
           x: 24,
           y: 140,
           betweenFloors: "3",
-          floors: [{ id: "a0", name: "Přízemí", cost: "1", roomIds: ["room-0", "room-1"] }],
+          floors: [
+            { id: "a0", name: "Přízemí", number: 0, cost: "1", roomIds: ["room-0", "room-1"] },
+          ],
         },
       ],
     },
@@ -459,6 +478,7 @@ it("saves a hundred-room plan through the existing endpoints with exact final pr
       buildings: [
         {
           id: "a",
+          code: "A",
           name: "Škola",
           x: 24,
           y: 140,
@@ -467,6 +487,7 @@ it("saves a hundred-room plan through the existing endpoints with exact final pr
             {
               id: "a0",
               name: "Přízemí",
+              number: 0,
               cost: "1",
               roomIds: Array.from({ length: 100 }, (_, index) => `room-${index}`),
             },

@@ -1,3 +1,4 @@
+import type { BuildingLayoutRead } from "@bod/api-client/types.gen";
 import type { SchoolPlan } from "@/modules/rooms/school-plan";
 
 import { describe, expect, it } from "vitest";
@@ -6,12 +7,15 @@ import { pairKey, planConnectionEdits } from "@/modules/rooms/connections";
 import {
   compileSchoolPlan,
   emptySchoolPlan,
+  mergeSchoolPlans,
   placeRooms,
   planLocations,
   pruneSchoolPlan,
   schoolPlanDocumentSchema,
+  schoolPlanFromLayouts,
   schoolPlanSchema,
   schoolPlanStorageKey,
+  suggestBuildingCode,
 } from "@/modules/rooms/school-plan";
 import { projectTransfers } from "@/modules/rooms/transfer-draft";
 
@@ -22,6 +26,7 @@ function school(): SchoolPlan {
     links: [],
     buildings: [0, 1].map((building) => ({
       id: `building-${building}`,
+      code: `B${building}`,
       name: `Budova ${building}`,
       x: 24 + building * 350,
       y: 140,
@@ -29,6 +34,7 @@ function school(): SchoolPlan {
       floors: [0, 1].map((floor) => ({
         id: `floor-${building}-${floor}`,
         name: `Patro ${floor}`,
+        number: floor,
         cost: "1",
         roomIds: Array.from(
           { length: 25 },
@@ -40,6 +46,144 @@ function school(): SchoolPlan {
 }
 
 describe("high-level school plan", () => {
+  it("hydrates shared building, floor and room identities from the backend layout", () => {
+    const layouts: BuildingLayoutRead[] = [
+      {
+        id: "shared-building",
+        code: "MAIN",
+        name: "Hlavní budova",
+        address: null,
+        floors: [
+          {
+            id: "shared-floor",
+            building_id: "shared-building",
+            name: "Přízemí",
+            number: 0,
+            width: 1200,
+            height: 900,
+            rooms: [
+              {
+                id: "room-1",
+                code: "101",
+                name: null,
+                room_type_code: "classroom",
+                capacity: 30,
+                is_active: true,
+                floor_id: "shared-floor",
+                x: null,
+                y: null,
+                width: null,
+                height: null,
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const plan = schoolPlanFromLayouts(layouts);
+    expect(plan.buildings[0]).toMatchObject({
+      id: "shared-building",
+      code: "MAIN",
+      floors: [{ id: "shared-floor", number: 0, roomIds: ["room-1"] }],
+    });
+  });
+  it("merges saved transfer rules into shared layout and migrates legacy placements", () => {
+    const shared = schoolPlanFromLayouts([
+      {
+        id: "shared-building",
+        code: "MAIN",
+        name: "Hlavní budova",
+        address: null,
+        floors: [
+          {
+            id: "shared-floor",
+            building_id: "shared-building",
+            name: "Přízemí",
+            number: 0,
+            width: 1000,
+            height: 1000,
+            rooms: [],
+          },
+        ],
+      },
+    ]);
+    const saved: SchoolPlan = {
+      ...emptySchoolPlan(),
+      betweenBuildings: "8",
+      buildings: [
+        {
+          id: "legacy-building",
+          code: "",
+          name: "Hlavní budova",
+          x: 24,
+          y: 140,
+          betweenFloors: "4",
+          floors: [
+            {
+              id: "legacy-floor",
+              name: "Přízemí",
+              number: 0,
+              cost: "2",
+              roomIds: ["room-1"],
+            },
+          ],
+        },
+      ],
+    };
+    const merged = mergeSchoolPlans(shared, saved);
+    expect(merged.betweenBuildings).toBe("8");
+    expect(merged.buildings).toHaveLength(1);
+    expect(merged.buildings[0]).toMatchObject({
+      id: "shared-building",
+      code: "MAIN",
+      betweenFloors: "4",
+      floors: [{ id: "shared-floor", cost: "2", roomIds: ["room-1"] }],
+    });
+  });
+  it("prefers shared room placement over a saved per-model layout", () => {
+    const shared = schoolPlanFromLayouts([
+      {
+        id: "shared-building",
+        code: "MAIN",
+        name: "Hlavní budova",
+        address: null,
+        floors: [
+          {
+            id: "shared-floor",
+            building_id: "shared-building",
+            name: "Přízemí",
+            number: 0,
+            width: 1000,
+            height: 1000,
+            rooms: [
+              {
+                id: "room-2",
+                code: "102",
+                name: null,
+                room_type_code: "classroom",
+                capacity: 30,
+                is_active: true,
+                floor_id: "shared-floor",
+                x: null,
+                y: null,
+                width: null,
+                height: null,
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    const saved = mergeSchoolPlans(shared, school());
+    expect(saved.buildings[0]?.floors[0]?.roomIds).toEqual(["room-2"]);
+  });
+  it("does not restore buildings deleted from an already-shared layout", () => {
+    expect(mergeSchoolPlans(emptySchoolPlan(), school(), false).buildings).toEqual([]);
+  });
+  it("generates unique school-compatible building codes", () => {
+    expect(suggestBuildingCode("Hlavní budova", [])).toBe("HLAVNI-BUDOVA");
+    expect(suggestBuildingCode("Hlavní budova", ["HLAVNI-BUDOVA"])).toBe("HLAVNI-BUDOVA-2");
+  });
   it("derives all 9900 directions for 100 rooms from two buildings and four floors", () => {
     const edits = compileSchoolPlan(school(), "model", [], false);
     expect(edits).toHaveLength(9900);
@@ -183,6 +327,34 @@ describe("high-level school plan", () => {
     expect(schoolPlanDocumentSchema.parse(JSON.parse(JSON.stringify(document)))).toEqual(document);
     expect(schoolPlanStorageKey("a", "model")).not.toBe(schoolPlanStorageKey("b", "model"));
     expect(schoolPlanStorageKey("a", "model")).not.toBe(schoolPlanStorageKey("a", "other"));
+  });
+  it("reads older local plans without shared building codes or floor numbers", () => {
+    const current = school();
+    const legacy = {
+      ...current,
+      buildings: current.buildings.map((building) => ({
+        id: building.id,
+        name: building.name,
+        x: building.x,
+        y: building.y,
+        betweenFloors: building.betweenFloors,
+        floors: building.floors.map((floor) => ({
+          id: floor.id,
+          name: floor.name,
+          cost: floor.cost,
+          roomIds: floor.roomIds,
+        })),
+      })),
+    };
+
+    const parsed = schoolPlanDocumentSchema.parse({
+      plan: legacy,
+      overrides: [],
+      applyExisting: false,
+    });
+
+    expect(parsed.plan.buildings[0]?.code).toBe("");
+    expect(parsed.plan.buildings[0]?.floors.map((floor) => floor.number)).toEqual([0, 1]);
   });
   it("prunes deleted rooms from local placement and exceptions", () => {
     const document = {

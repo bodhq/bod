@@ -41,10 +41,16 @@
 - Frontend a backend byly propojeny a společné školní postupy ověřeny v běžící aplikaci.
 - **#11 — Dokumentace.** Společný výstup je dokončený a issue je uzavřené.
 
-### Výhled a navazující úkoly
+### Dlouhodobý výhled
 
-V dalším sprintu se zaměříme na návaznosti školních agend, dokončení provozních postupů
-v třídnici a propojení sdíleného plánu budov s editorem přesunů.
+Dlouhodobě se zaměřit na tři oblasti:
+
+- Rozšiřovat a vyladit práci s rozvrhem: zjednodušit tvorbu a úpravy, zpřehlednit
+  kontrolu kolizí a usnadnit ověření rozvrhu před jeho zveřejněním.
+- Průběžně refaktorovat části aplikace tak, aby se snížila duplicita a změny šly
+  bezpečněji testovat a rozvíjet bez nechtěných regresí.
+- Zpevnit proces nasazování: mít opakovatelný postup, automatické kontroly před
+  nasazením a ověření základního provozu po něm.
 
 ### Společné poznámky a rizika
 

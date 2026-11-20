@@ -14,11 +14,13 @@ import { planConnectionEdits } from "../connections";
 import {
   compileSchoolPlan,
   emptySchoolPlan,
+  mergeSchoolPlans,
   planLocations,
   pruneSchoolPlan,
   type SchoolPlan,
   type SchoolPlanDocument,
   schoolPlanDocumentSchema,
+  schoolPlanFromLayouts,
   schoolPlanStorageKey,
 } from "../school-plan";
 import { assignTransferCost, projectTransfers, transferCoverage } from "../transfer-draft";
@@ -34,7 +36,7 @@ export function useTransferSetup(
   const [originId, setOriginId] = useState(startRoomId ?? editor.rooms[0]?.id ?? "");
   const [both, setBoth] = useState(true);
   const [edits, setEdits] = useState<ConnectionEdit[]>([]);
-  const [plan, setPlan] = useState<SchoolPlan>(emptySchoolPlan);
+  const [plan, setPlan] = useState<SchoolPlan>(() => schoolPlanFromLayouts(editor.buildingLayouts));
   const [baseline, setBaseline] = useState<SchoolPlan>(emptySchoolPlan);
   const [applyExisting, setApplyExisting] = useState(false);
   const [localReady, setLocalReady] = useState(false);
@@ -65,6 +67,13 @@ export function useTransferSetup(
     loaded.current = true;
     try {
       const userId = context.current.userId;
+      const shared = schoolPlanFromLayouts(editor.buildingLayouts);
+      setPlan(shared);
+      initialDocument.current = JSON.stringify({
+        plan: shared,
+        overrides: [],
+        applyExisting: false,
+      });
       const raw =
         userId && initial?.id
           ? localStorage.getItem(schoolPlanStorageKey(userId, initial.id))
@@ -72,12 +81,16 @@ export function useTransferSetup(
       if (raw) {
         const loaded = schoolPlanDocumentSchema.parse(JSON.parse(raw));
         const parsed = pruneSchoolPlan(loaded, new Set(editor.rooms.map((room) => room.id)));
-        setPlan(parsed.plan);
+        const mergedPlan = mergeSchoolPlans(shared, parsed.plan, parsed.sharedLayout !== true);
+        setPlan(mergedPlan);
         setEdits(parsed.overrides);
         setApplyExisting(parsed.applyExisting);
-        setBaseline(parsed.baseline ?? emptySchoolPlan());
+        const mergedBaseline = parsed.baseline
+          ? mergeSchoolPlans(shared, parsed.baseline, parsed.sharedLayout !== true)
+          : emptySchoolPlan();
+        setBaseline(mergedBaseline);
         initialDocument.current = JSON.stringify({
-          plan: parsed.plan,
+          plan: mergedPlan,
           overrides: parsed.overrides,
           applyExisting: parsed.applyExisting,
         });
@@ -90,7 +103,7 @@ export function useTransferSetup(
       );
     }
     setLocalReady(true);
-  }, [initial?.id, editor.rooms]);
+  }, [initial?.id, editor.buildingLayouts, editor.rooms]);
   const modelId = savedModel.current?.id ?? "draft";
   const stages = initial ? ["Plán školy", "Kontrola"] : ["Název", "Plán školy", "Kontrola"];
   const stage = initial ? step + 1 : step;
@@ -158,6 +171,32 @@ export function useTransferSetup(
             stored = true;
           }
         } catch {
+          /* A later write may succeed after the shared layout is saved. */
+        }
+        const ensureCurrent = () => {
+          if (version !== useAuthStore.getState().sessionVersion)
+            throw new DOMException("Ukládání bylo přerušeno.", "AbortError");
+        };
+        const savedPlan = await editor.persistSchoolPlan(plan, ensureCurrent);
+        const savedBaseline = baseline.buildings.length
+          ? mergeSchoolPlans(savedPlan, baseline, false)
+          : baseline;
+        try {
+          if (context.current.userId) {
+            localStorage.setItem(
+              schoolPlanStorageKey(context.current.userId, savedModel.current.id),
+              JSON.stringify(
+                schoolPlanDocumentSchema.parse({
+                  ...document,
+                  plan: savedPlan,
+                  baseline: savedBaseline,
+                  sharedLayout: true,
+                }),
+              ),
+            );
+            stored = true;
+          }
+        } catch {
           /* The review keeps an export available when browser storage is unavailable. */
         }
         await editor.apply({
@@ -165,24 +204,32 @@ export function useTransferSetup(
           edits: combined,
           sessionVersion: version,
         });
-        setBaseline(plan);
         try {
           if (context.current.userId) {
             localStorage.setItem(
               schoolPlanStorageKey(context.current.userId, savedModel.current.id),
-              JSON.stringify(schoolPlanDocumentSchema.parse({ ...document, baseline: plan })),
+              JSON.stringify(
+                schoolPlanDocumentSchema.parse({
+                  ...document,
+                  plan: savedPlan,
+                  baseline: savedPlan,
+                  sharedLayout: true,
+                }),
+              ),
             );
             stored = true;
           }
         } catch {
           stored = false;
         }
-        return stored;
+        return { stored, plan: savedPlan };
       } finally {
         setIsWriting(false);
       }
     },
-    onSuccess: (stored) => {
+    onSuccess: ({ stored, plan: savedPlan }) => {
+      setPlan(savedPlan);
+      setBaseline(savedPlan);
       if (stored) onComplete();
       else setStorageFailed(true);
     },

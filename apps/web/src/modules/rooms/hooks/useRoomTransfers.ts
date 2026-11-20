@@ -11,12 +11,14 @@ import { workspaceKey } from "@/modules/shared/records/api";
 import { usePermissions } from "@/modules/shared/records/hooks";
 
 import {
+  getBuildingLayouts,
   getConnections,
   getDistanceModel,
   getDistanceModels,
   getRooms,
   roomKeys,
   saveDistanceModel,
+  saveSchoolLayout,
   writeConnection,
 } from "../api";
 import { applyConnections, connectionKey, planConnectionEdits, roomOption } from "../connections";
@@ -29,6 +31,11 @@ export function useRoomTransfers() {
     queryFn: ({ signal }) => getRooms(signal),
     enabled: allowed,
   });
+  const layoutsQuery = useQuery({
+    queryKey: roomKeys.layouts,
+    queryFn: ({ signal }) => getBuildingLayouts(signal),
+    enabled: allowed,
+  });
   const modelsQuery = useQuery({
     queryKey: roomKeys.models,
     queryFn: ({ signal }) => getDistanceModels(signal),
@@ -39,7 +46,7 @@ export function useRoomTransfers() {
     queryFn: ({ signal }) => getConnections(signal),
     enabled: allowed,
   });
-  const queries = [roomsQuery, modelsQuery, connectionsQuery];
+  const queries = [roomsQuery, layoutsQuery, modelsQuery, connectionsQuery];
   const rooms = useMemo(
     () =>
       [...(roomsQuery.data ?? [])].sort((a, b) =>
@@ -69,6 +76,21 @@ export function useRoomTransfers() {
     () => (connectionsQuery.data ?? []).filter((edge) => edge.distance_model_id === model?.id),
     [connectionsQuery.data, model?.id],
   );
+  const persistSchoolPlan = async (
+    plan: Parameters<typeof saveSchoolLayout>[0],
+    ensureCurrent: () => void = () => {},
+  ) => {
+    ensureCurrent();
+    const [latestLayouts, latestRooms] = await Promise.all([getBuildingLayouts(), getRooms()]);
+    ensureCurrent();
+    const saved = await saveSchoolLayout(plan, latestLayouts, latestRooms, ensureCurrent);
+    await Promise.all([
+      client.invalidateQueries({ queryKey: roomKeys.layouts }),
+      client.invalidateQueries({ queryKey: roomKeys.rooms }),
+      client.invalidateQueries({ queryKey: workspaceKey }),
+    ]);
+    return saved;
+  };
   const locked = !allowed || !!model?.frozen_at;
   const mutation = useMutation({
     onMutate: () => useAuthStore.getState().sessionVersion,
@@ -167,6 +189,7 @@ export function useRoomTransfers() {
   return {
     allowed,
     rooms,
+    buildingLayouts: layoutsQuery.data ?? [],
     models,
     model,
     connections,
@@ -179,6 +202,7 @@ export function useRoomTransfers() {
     notice,
     apply,
     saveModel,
+    persistSchoolPlan,
     chooseModel: (id: string) => {
       if (writing.current) return;
       setModelId(id);

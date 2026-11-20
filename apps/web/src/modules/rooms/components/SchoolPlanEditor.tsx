@@ -203,7 +203,8 @@ export function SchoolPlanEditor({
               </div>
             )}
             <p className="school-local-note">
-              Rozložení zůstává v tomto prohlížeči. Do školy se ukládají výsledné přesuny.
+              Budovy, patra a umístění učeben se uloží do sdílené evidence školy. Pravidla
+              náročnosti patří k tomuto nastavení přesunů.
             </p>
           </div>
         </details>

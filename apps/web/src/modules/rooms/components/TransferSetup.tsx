@@ -162,8 +162,8 @@ export function TransferSetup({
           )}
           {setup.storageFailed && (
             <ErrorState
-              title="Přesuny se uložily, místní rozložení ne"
-              message="Prohlížeč odmítl uložení budov a pater. Před zavřením si rozložení exportujte."
+              title="Plán a přesuny se uložily, místní kopie nastavení ne"
+              message="Prohlížeč odmítl uložení pravidel a výjimek pro toto nastavení. Před zavřením si je exportujte."
               action={
                 <Button variant="outline" onClick={setup.exportPlan}>
                   Exportovat rozložení

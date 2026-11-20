@@ -12,6 +12,7 @@ import { useConfirm } from "@/core/ui/overlays/ConfirmProvider";
 import { Dialog } from "@/core/ui/overlays/Dialog";
 
 import { relativeCost } from "../connections";
+import { suggestBuildingCode } from "../school-plan";
 import { TransferCostField } from "./TransferCostField";
 
 export type SchoolAreaTarget =
@@ -53,10 +54,28 @@ export function SchoolAreaDialog({
       : target.kind === "building"
         ? (building?.betweenFloors ?? "3")
         : (link?.cost ?? plan.betweenBuildings);
+  const initialCode =
+    target.kind === "building"
+      ? building?.code ||
+        suggestBuildingCode(
+          "BUDOVA",
+          plan.buildings.map((item) => item.code),
+        )
+      : "";
+  const initialNumber =
+    target.kind === "floor"
+      ? (floor?.number ?? Math.max(-1, ...(building?.floors.map((item) => item.number) ?? [])) + 1)
+      : 0;
   const [name, setName] = useState(initialName);
+  const [code, setCode] = useState(initialCode);
+  const [number, setNumber] = useState(String(initialNumber));
   const [value, setValue] = useState(initialCost);
   const confirm = useConfirm();
-  const dirty = name !== initialName || value !== initialCost;
+  const dirty =
+    name !== initialName ||
+    code !== initialCode ||
+    number !== String(initialNumber) ||
+    value !== initialCost;
   useUnsavedChanges(dirty);
   const close = () =>
     dirty
@@ -69,11 +88,32 @@ export function SchoolAreaDialog({
       : onClose();
   const named = target.kind === "building" || target.kind === "floor";
   let valid = true;
+  let floorNumber = initialNumber;
   try {
     relativeCost(value);
   } catch {
     valid = false;
   }
+  if (target.kind === "floor") {
+    floorNumber = Number(number);
+    if (
+      !Number.isInteger(floorNumber) ||
+      building?.floors.some((item) => item.id !== target.id && item.number === floorNumber)
+    )
+      valid = false;
+  }
+  const buildingCode = code.trim();
+  if (
+    target.kind === "building" &&
+    (!buildingCode ||
+      buildingCode.length > 30 ||
+      plan.buildings.some(
+        (item) =>
+          item.id !== target.id &&
+          item.code.toLocaleUpperCase("cs") === buildingCode.toLocaleUpperCase("cs"),
+      ))
+  )
+    valid = false;
   const title =
     target.kind === "building"
       ? target.id
@@ -98,19 +138,28 @@ export function SchoolAreaDialog({
             const id = target.id ?? crypto.randomUUID();
             const created = {
               id,
+              code: buildingCode,
               name: name.trim(),
               x: 24 + plan.buildings.length * 350,
               y: 140,
               betweenFloors: cost,
               floors: [
-                { id: crypto.randomUUID(), name: "Přízemí", cost: "1", roomIds: [] as string[] },
+                {
+                  id: crypto.randomUUID(),
+                  name: "Přízemí",
+                  number: 0,
+                  cost: "1",
+                  roomIds: [] as string[],
+                },
               ],
             };
             next = {
               ...plan,
               buildings: target.id
                 ? plan.buildings.map((item) =>
-                    item.id === id ? { ...item, name: name.trim(), betweenFloors: cost } : item,
+                    item.id === id
+                      ? { ...item, code: buildingCode, name: name.trim(), betweenFloors: cost }
+                      : item,
                   )
                 : [...plan.buildings, created],
             };
@@ -124,9 +173,14 @@ export function SchoolAreaDialog({
                       ...item,
                       floors: target.id
                         ? item.floors.map((floor) =>
-                            floor.id === id ? { ...floor, name: name.trim(), cost } : floor,
+                            floor.id === id
+                              ? { ...floor, name: name.trim(), number: floorNumber, cost }
+                              : floor,
                           )
-                        : [...item.floors, { id, name: name.trim(), cost, roomIds: [] }],
+                        : [
+                            ...item.floors,
+                            { id, name: name.trim(), number: floorNumber, cost, roomIds: [] },
+                          ],
                     }
                   : item,
               ),
@@ -149,15 +203,35 @@ export function SchoolAreaDialog({
         }}
       >
         {named && (
-          <Input
-            label={target.kind === "building" ? "Název budovy" : "Název patra"}
-            placeholder={target.kind === "building" ? "Např. Hlavní budova" : "Např. 1. patro"}
-            value={name}
-            required
-            maxLength={100}
-            onChange={(event) => setName(event.target.value)}
-            autoFocus
-          />
+          <>
+            <Input
+              label={target.kind === "building" ? "Název budovy" : "Název patra"}
+              placeholder={target.kind === "building" ? "Např. Hlavní budova" : "Např. 1. patro"}
+              value={name}
+              required
+              maxLength={100}
+              onChange={(event) => setName(event.target.value)}
+              autoFocus
+            />
+            {target.kind === "building" ? (
+              <Input
+                label="Kód budovy"
+                required
+                maxLength={30}
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+              />
+            ) : (
+              <Input
+                label="Číslo patra"
+                type="number"
+                step={1}
+                required
+                value={number}
+                onChange={(event) => setNumber(event.target.value)}
+              />
+            )}
+          </>
         )}
         {target.kind === "link" && (
           <p className="font-semibold">

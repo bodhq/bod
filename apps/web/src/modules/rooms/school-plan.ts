@@ -1,4 +1,4 @@
-import type { RoomConnectionsRead } from "@bod/api-client/types.gen";
+import type { BuildingLayoutRead, RoomConnectionsRead } from "@bod/api-client/types.gen";
 import type { ConnectionEdit } from "./connections";
 
 import { z } from "zod";
@@ -20,16 +20,18 @@ const id = z.string().min(1).max(100);
 const floor = z.object({
   id,
   name: z.string().trim().min(1).max(100),
+  number: z.number().int().optional(),
   cost,
   roomIds: z.array(id).max(5000),
 });
 const building = z.object({
   id,
   name: z.string().trim().min(1).max(100),
+  code: z.string().trim().max(30).default(""),
   x: z.number().min(24).max(20000),
   y: z.number().min(100).max(20000),
   betweenFloors: cost,
-  floors: z.array(floor).min(1).max(25),
+  floors: z.array(floor).max(25),
 });
 export const schoolPlanSchema = z
   .object({
@@ -38,10 +40,25 @@ export const schoolPlanSchema = z
     buildings: z.array(building).max(30),
     links: z.array(z.object({ from: id, to: id, cost })).max(435),
   })
+  .transform((plan) => ({
+    ...plan,
+    buildings: plan.buildings.map((item) => ({
+      ...item,
+      floors: item.floors.map((area, index) => ({
+        ...area,
+        number: area.number ?? index,
+      })),
+    })),
+  }))
   .superRefine((plan, context) => {
     const ids = new Set<string>();
     const assigned = new Set<string>();
+    const buildingCodes = new Set<string>();
     for (const item of plan.buildings) {
+      const code = item.code.toLocaleUpperCase("cs");
+      if (code && buildingCodes.has(code))
+        context.addIssue({ code: "custom", message: "Kód budovy se nesmí opakovat." });
+      buildingCodes.add(code);
       for (const area of [item, ...item.floors]) {
         if (ids.has(area.id))
           context.addIssue({
@@ -56,6 +73,15 @@ export const schoolPlanSchema = z
             context.addIssue({ code: "custom", message: "Učebna může být právě v jednom patře." });
           assigned.add(room);
         }
+      const floorNumbers = new Set<number>();
+      for (const area of item.floors) {
+        if (floorNumbers.has(area.number))
+          context.addIssue({
+            code: "custom",
+            message: "Číslo patra se v jedné budově nesmí opakovat.",
+          });
+        floorNumbers.add(area.number);
+      }
     }
     const buildings = new Set(plan.buildings.map((item) => item.id));
     const links = new Set<string>();
@@ -83,6 +109,135 @@ export const emptySchoolPlan = (): SchoolPlan => ({
   buildings: [],
   links: [],
 });
+
+export function schoolPlanFromLayouts(layouts: BuildingLayoutRead[]): SchoolPlan {
+  return {
+    ...emptySchoolPlan(),
+    buildings: layouts.map((building, index) => ({
+      id: building.id,
+      code: building.code,
+      name: building.name,
+      x: 24 + (index % 3) * 350,
+      y: 140 + Math.floor(index / 3) * 400,
+      betweenFloors: "3",
+      floors: [...building.floors]
+        .sort((a, b) => a.number - b.number)
+        .map((floor) => ({
+          id: floor.id,
+          name: floor.name?.trim() || (floor.number === 0 ? "Přízemí" : `${floor.number}. patro`),
+          number: floor.number,
+          cost: "1",
+          roomIds: floor.rooms.map((room) => room.id),
+        })),
+    })),
+  };
+}
+
+export function mergeSchoolPlans(
+  shared: SchoolPlan,
+  saved: SchoolPlan,
+  preserveUnmatchedSaved = true,
+): SchoolPlan {
+  const hasSharedPlacements = shared.buildings.some((building) =>
+    building.floors.some((floor) => floor.roomIds.length > 0),
+  );
+  const usedSavedBuildings = new Set<string>();
+  const buildingIds = new Map<string, string>();
+  const buildings = shared.buildings.map((building) => {
+    const savedBuilding = saved.buildings.find(
+      (candidate) =>
+        !usedSavedBuildings.has(candidate.id) &&
+        (candidate.id === building.id ||
+          (candidate.code && candidate.code === building.code) ||
+          candidate.name.toLocaleLowerCase("cs") === building.name.toLocaleLowerCase("cs")),
+    );
+    if (!savedBuilding) return building;
+    usedSavedBuildings.add(savedBuilding.id);
+    buildingIds.set(savedBuilding.id, building.id);
+    const floors = building.floors.map((floor, index) => {
+      const savedFloor =
+        savedBuilding.floors.find((candidate) => candidate.id === floor.id) ??
+        savedBuilding.floors.find(
+          (candidate) =>
+            candidate.number === floor.number &&
+            candidate.name.toLocaleLowerCase("cs") === floor.name.toLocaleLowerCase("cs"),
+        ) ??
+        savedBuilding.floors.find(
+          (candidate) =>
+            candidate.name.toLocaleLowerCase("cs") === floor.name.toLocaleLowerCase("cs"),
+        ) ??
+        savedBuilding.floors[index];
+      return savedFloor
+        ? {
+            ...floor,
+            cost: savedFloor.cost,
+            roomIds: hasSharedPlacements ? floor.roomIds : savedFloor.roomIds,
+          }
+        : floor;
+    });
+    return {
+      ...building,
+      x: savedBuilding.x,
+      y: savedBuilding.y,
+      betweenFloors: savedBuilding.betweenFloors,
+      floors,
+    };
+  });
+  const unassignedSaved = saved.buildings.filter(
+    (building) => !usedSavedBuildings.has(building.id),
+  );
+  const roomIds = new Set(
+    shared.buildings.flatMap((building) => building.floors.flatMap((floor) => floor.roomIds)),
+  );
+  const added = preserveUnmatchedSaved
+    ? unassignedSaved.map((building) => {
+        const copied = {
+          ...building,
+          floors: building.floors.map((floor) => ({
+            ...floor,
+            roomIds: hasSharedPlacements ? [] : floor.roomIds.filter((id) => !roomIds.has(id)),
+          })),
+        };
+        buildingIds.set(building.id, copied.id);
+        return copied;
+      })
+    : [];
+  const allBuildings = [...buildings, ...added];
+  const validBuildings = new Set(allBuildings.map((building) => building.id));
+  return {
+    ...shared,
+    betweenBuildings: saved.betweenBuildings,
+    buildings: allBuildings,
+    links: saved.links
+      .filter(
+        (link) =>
+          validBuildings.has(buildingIds.get(link.from) ?? link.from) &&
+          validBuildings.has(buildingIds.get(link.to) ?? link.to),
+      )
+      .map((link) => ({
+        ...link,
+        from: buildingIds.get(link.from) ?? link.from,
+        to: buildingIds.get(link.to) ?? link.to,
+      })),
+  };
+}
+
+export function suggestBuildingCode(name: string, existing: string[]): string {
+  const base =
+    name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 24) || "BUDOVA";
+  const used = new Set(existing.map((code) => code.toLocaleUpperCase("cs")));
+  if (!used.has(base)) return base;
+  for (let suffix = 2; ; suffix += 1) {
+    const candidate = `${base.slice(0, 29 - String(suffix).length)}-${suffix}`;
+    if (!used.has(candidate)) return candidate;
+  }
+}
 
 export function placeRooms(
   plan: SchoolPlan,
@@ -194,6 +349,7 @@ export const schoolPlanDocumentSchema = z.object({
     )
     .max(250000),
   applyExisting: z.boolean(),
+  sharedLayout: z.literal(true).optional(),
   baseline: schoolPlanSchema.optional(),
 });
 export type SchoolPlanDocument = z.infer<typeof schoolPlanDocumentSchema>;
